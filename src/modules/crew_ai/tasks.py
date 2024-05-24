@@ -1,5 +1,7 @@
-from crewai import Task
+"""Tasks for the email filter crew."""
+
 from textwrap import dedent
+from crewai import Task
 
 class EmailFilterTasks:
     def filter_emails_task(self, agent, emails):
@@ -45,7 +47,7 @@ class EmailFilterTasks:
 
     def draft_responses_task(self, agent):
         return Task(
-            description=dedent(f"""\
+            description=dedent("""\
                 Based on the action-required emails identified, draft responses for each.
                 Ensure that each response is tailored to address the specific needs
                 and context outlined in the email.

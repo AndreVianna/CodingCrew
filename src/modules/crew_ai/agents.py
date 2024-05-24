@@ -1,8 +1,11 @@
+"""Agents for the email filter crew."""
+
+from textwrap import dedent
+
 from langchain_community.agent_toolkits import GmailToolkit
 from langchain_community.tools.gmail.get_thread import GmailGetThread
 from langchain_community.tools.tavily_search import TavilySearchResults
 
-from textwrap import dedent
 from crewai import Agent
 from .tools import CreateDraftTool
 

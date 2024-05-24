@@ -1,3 +1,5 @@
+"""Nodes for the email workflow."""
+
 import os
 
 from langchain_community.agent_toolkits import GmailToolkit

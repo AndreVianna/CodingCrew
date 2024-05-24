@@ -1,3 +1,5 @@
+"""States for the email workflow."""
+
 from typing import TypedDict
 
 class EmailsState(TypedDict):

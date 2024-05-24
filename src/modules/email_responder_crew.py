@@ -1,7 +1,9 @@
+"""Email filter crew."""
+
 from crewai import Crew
 
-from .agents import EmailFilterAgents
-from .tasks import EmailFilterTasks
+from .crew_ai.agents import EmailFilterAgents
+from .crew_ai.tasks import EmailFilterTasks
 
 class EmailFilterCrew():
     def __init__(self):
@@ -34,7 +36,7 @@ class EmailFilterCrew():
                 f"- Thread ID: {email['threadId']}",
                 f"- Snippet: {email['snippet']}",
                 f"- From: {email['sender']}",
-                f"--------"
+                "--------"
             ]
             emails_string.append("\n".join(arr))
         return "\n".join(emails_string)

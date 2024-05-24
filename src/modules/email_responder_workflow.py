@@ -1,11 +1,13 @@
+"""Main workflow."""
+
 from dotenv import load_dotenv
-load_dotenv()
-
 from langgraph.graph import StateGraph
+from .email_responder_crew import EmailFilterCrew
 
-from .states import EmailsState
-from .nodes import Nodes
-from crew.crew import EmailFilterCrew
+from .workflows.states import EmailsState
+from .workflows.nodes import Nodes
+
+load_dotenv()
 
 class WorkFlow():
     def __init__(self):
