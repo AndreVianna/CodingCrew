@@ -1,0 +1,62 @@
+%% @config(mermaid.json)
+stateDiagram-v2
+    state Planning {
+        direction LR
+        [*] --> Start_Project
+        state Start_Project {
+            state Have_Questions <<choice>>
+            [*] --> Analyse_Input: Get Input { Name, Description }
+            Analyse_Input --> Update_Context: Update Context Dict
+            Update_Context --> Have_Questions: Have Question?
+            Have_Questions --> Human_1: Yes
+            Have_Questions --> [*]: No
+            Human_1 --> Analyse_Input: Answer
+        }
+        Start_Project --> Define_Requirements
+        state Define_Requirements {
+            state Requirement_Types <<fork>>
+            [*] --> Requirement_Types
+            Requirement_Types --> Identify_Business_Requirements: Business Requirements
+            Requirement_Types --> Identify_System_Requirements: Technical Requirements
+            Identify_Business_Requirements --> Update_Business_Requirements: Generate Requirements
+            Identify_System_Requirements --> Update_System_Requirements: Generate Requirements
+            Update_Business_Requirements --> Join_Requirements
+            Update_System_Requirements --> Join_Requirements
+            state Join_Requirements <<join>>
+            Join_Requirements --> Update_Requirements
+            state Approve_Requirements <<choice>>
+            Update_Requirements --> Approve_Requirements: Approved?
+            Approve_Requirements --> Human_3: No
+            Human_3 --> Requirement_Types: More info
+            Approve_Requirements --> [*]: Yes
+        }
+        Define_Requirements --> Define_Work
+        state Define_Work {
+            [*] --> Identify_Features: Analyse Requirements
+            Identify_Features --> Update_Features: Update Context
+            Update_Features --> Identify_Activities: Analyse Features
+            Identify_Activities --> Update_Activities: Update Context
+            Update_Activities --> Identify_Tasks: Analyse Activities
+            Identify_Tasks --> Update_Tasks: Update Context
+            Update_Tasks --> Approve_Tasks: Approved?
+            Approve_Tasks --> Human_6: No
+            Human_6 --> Identify_Features: More info
+            Approve_Tasks --> [*]: Yes
+        }
+        state Need_UI <<choice>>
+        Define_Work --> Need_UI: Need UI?
+        Need_UI --> Define_UI: Yes
+        state Define_UI {
+            state Approve_UI <<choice>>
+            [*] --> Analyse_UI
+            Analyse_UI --> Identify_UI_Elements
+            Identify_UI_Elements --> Define_Navigation
+            Define_Navigation --> Create_Wireframe
+            Create_Wireframe --> Update_UI
+            Update_UI --> Approve_UI: Approved?
+            Approve_UI --> Human_9: No
+            Human_9 --> Analyse_UI: More info
+            Approve_UI --> [*]: Yes
+        }
+        Need_UI --> [*]: No
+    }

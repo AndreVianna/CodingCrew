@@ -1,0 +1,16 @@
+crewai
+langchain
+langchain-core
+langchain-openai
+langchain-community
+langchainhub
+langgraph
+pygraphviz
+python-dotenv
+google-search-results
+google-api-python-client
+google-auth-oauthlib
+google-auth-httplib2
+beautifulsoup4
+tavily-python
+pynput

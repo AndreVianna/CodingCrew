@@ -1,0 +1,35 @@
+%% @config(mermaid.json)
+stateDiagram-v2
+    state Planning {
+        state Have_Questions <<choice>>
+        [*] --> Analyse_Input: Get Input { Name, Description }
+        Analyse_Input --> Update_Context: Update Context Dict
+        Update_Context --> Have_Questions: Have Question?
+        Have_Questions --> Human_1: Yes
+        Have_Questions --> Identify_Business_Requirements: No
+        Human_1 --> Analyse_Input: Answer
+        Identify_Business_Requirements --> Update_Business_Requirements: Generate Requirements
+        Update_Business_Requirements --> Identify_System_Requirements: Technical Requirements
+        Identify_System_Requirements --> Update_System_Requirements: Generate Requirements
+        Update_System_Requirements --> Consolidate_Requirements: Finalize Requirements
+        Consolidate_Requirements --> Update_Requirements: Update Context
+        Update_Requirements --> Identify_Features: Analyse Requirements
+        Identify_Features --> Update_Features: Update Context
+        Update_Features --> Identify_Activities: Analyse Features
+        Identify_Activities --> Update_Activities: Update Context
+        Update_Activities --> Identify_Tasks: Analyse Activities
+        state Need_UI <<choice>>
+        Identify_Tasks --> Need_UI: Need UI?
+        Need_UI --> Consolidate_Project: No
+        Need_UI --> Identify_UI_Elements: Yes
+        Identify_UI_Elements --> Define_Navigation
+        Define_Navigation --> Create_Wireframe
+        Create_Wireframe --> Update_UI: Update Context
+        Update_UI --> Consolidate_Project
+        Consolidate_Project --> Update_Project: Update Context
+        state Approve_Project <<choice>>
+        Update_Project --> Approve_Project: Approved?
+        Approve_Project --> Human_1: No
+        Human_1 --> Analyse_Input: More info
+        Approve_Project --> [*]: Yes
+    }
