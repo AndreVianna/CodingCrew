@@ -2,8 +2,8 @@
 
 from crewai import Crew
 
-from crew_ai.agents import EmailFilterAgents
-from crew_ai.tasks import EmailFilterTasks
+from crews.email_filter.agents import EmailFilterAgents
+from crews.email_filter.tasks import EmailFilterTasks
 
 class EmailFilterCrew():
     """

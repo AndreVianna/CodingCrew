@@ -2,9 +2,9 @@
 
 from dotenv import load_dotenv
 from langgraph.graph import StateGraph
-from workflows.states import EmailsState
-from workflows.nodes import Nodes
-from crew_ai.crew import EmailFilterCrew
+from workflows.email_filter.states import EmailsState
+from workflows.email_filter.nodes import Nodes
+from crews.email_filter.crew import EmailFilterCrew
 
 load_dotenv()
 

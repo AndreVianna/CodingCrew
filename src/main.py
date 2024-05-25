@@ -1,7 +1,7 @@
 """Entry point."""
 
 import sys
-from workflows.email_workflow import WorkFlow
+from workflows.email_filter.workflow import WorkFlow
 
 app = WorkFlow().app
 
