@@ -1,3 +1,5 @@
+"""Tools for the crew agents."""
+
 from langchain_community.agent_toolkits import GmailToolkit
 from langchain_community.tools.gmail.create_draft import GmailCreateDraft
 from langchain.tools import tool
@@ -12,6 +14,7 @@ class CreateDraftTool():
     def create_draft(self, data: str):
         """
         This method creates an email draft.
+
         The input to this tool should be a pipe (|) separated text
         of length 3 (three), representing who to send the email to,
         the subject of the email and the actual message.

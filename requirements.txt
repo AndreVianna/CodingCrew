@@ -13,4 +13,4 @@ google-auth-oauthlib
 google-auth-httplib2
 beautifulsoup4
 tavily-python
-pynput
+curtsies

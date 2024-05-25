@@ -1,7 +1,7 @@
 """Entry point."""
 
 import sys
-from modules.email_responder_workflow import WorkFlow
+from workflows.email_workflow import WorkFlow
 
 app = WorkFlow().app
 

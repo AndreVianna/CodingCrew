@@ -4,7 +4,21 @@ from textwrap import dedent
 from crewai import Task
 
 class EmailFilterTasks:
+    """
+    A class that defines tasks related to email filtering and analysis.
+    """
+
     def filter_emails_task(self, agent, emails):
+        """
+        Task to filter a batch of emails and remove non-essential ones.
+
+        Parameters:
+        - agent (str): The name of the agent responsible for filtering the emails.
+        - emails (list): A list of email messages to be filtered.
+
+        Returns:
+        - Task: A Task object representing the filtering task.
+        """
         return Task(
             description=dedent(f"""\
                 Analyze a batch of emails and filter out
@@ -25,6 +39,15 @@ class EmailFilterTasks:
         )
 
     def action_required_emails_task(self, agent):
+        """
+        Task to analyze and summarize action-required emails.
+
+        Parameters:
+        - agent (str): The name of the agent responsible for analyzing the emails.
+
+        Returns:
+        - Task: A Task object representing the analysis task.
+        """
         return Task(
             description=dedent("""\
                 For each email thread, pull and analyze the complete threads using only the actual Thread ID.
@@ -46,6 +69,15 @@ class EmailFilterTasks:
         )
 
     def draft_responses_task(self, agent):
+        """
+        Task to draft responses for action-required emails.
+
+        Parameters:
+        - agent (str): The name of the agent responsible for drafting the responses.
+
+        Returns:
+        - Task: A Task object representing the drafting task.
+        """
         return Task(
             description=dedent("""\
                 Based on the action-required emails identified, draft responses for each.
