@@ -7,10 +7,26 @@ from langchain_community.tools.gmail.search import GmailSearch
 from curtsies import Input
 
 class Nodes():
+    """
+    Class representing a collection of nodes in a workflow.
+
+    Attributes:
+        gmail (GmailToolkit): An instance of the GmailToolkit class.
+    """
+
     def __init__(self):
         self.gmail = GmailToolkit()
 
     def check_email(self, state):
+        """
+        Checks for new emails and updates the state accordingly.
+
+        Args:
+            state (dict): The current state of the workflow.
+
+        Returns:
+            dict: The updated state with new emails and checked email IDs.
+        """
         print("# Checking for new emails")
         search = GmailSearch(api_resource=self.gmail.api_resource)
         emails = search('after:newer_than:1d')
@@ -36,22 +52,48 @@ class Nodes():
         }
 
     def wait_next_run(self, state):
-        print("## Waiting for 180 seconds. Press 'q' to quit or any other key to run immediatelly.")
+        """
+        Waits for a specified amount of time or until the user presses 'q' to quit.
+
+        Args:
+            state (dict): The current state of the workflow.
+
+        Returns:
+            dict: The updated state.
+        """
+        print("## Waiting for 180 seconds. Press 'q' to quit or any other key to run immediately.")
         with Input() as input_generator:
-            if (input_generator.send(180) == 'q'):
+            if input_generator.send(180) == 'q':
                 state['quit'] = True
         return state
 
     def terminate(self, state):
+        """
+        Checks if the workflow should be terminated based on the state.
+
+        Args:
+            state (dict): The current state of the workflow.
+
+        Returns:
+            str: Either "end" if the workflow should be terminated or "continue" if it should continue.
+        """
         if state['quit']:
             print("## Terminate")
             return "end"
         return "continue"
 
     def new_emails(self, state):
+        """
+        Checks if there are new emails in the state and updates the workflow accordingly.
+
+        Args:
+            state (dict): The current state of the workflow.
+
+        Returns:
+            str: Either "sleep" if there are no new emails or "you_have_mail" if there are new emails.
+        """
         if len(state['emails']) == 0:
             print("## No new emails")
             return "sleep"
         print("## New emails")
         return "you_have_mail"
-
