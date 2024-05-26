@@ -1,7 +1,7 @@
 """Entry point."""
 
 import sys
-from workflows.planning.workflow import PlaningWorkflow
+from workflows.workflow import PlaningWorkflow
 
 app = PlaningWorkflow().app
 

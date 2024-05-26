@@ -7,8 +7,7 @@ from langchain_community.tools.gmail.get_thread import GmailGetThread
 from langchain_community.tools.tavily_search import TavilySearchResults
 
 from crewai import Agent
-from crews.planning.tools import PlanningTools
-from workflows.planning.states import PlanningState
+from crews.tools import PlanningTools
 
 class PlanningAgents():
     def system_analyst(self):
@@ -33,7 +32,7 @@ class PlanningAgents():
                                 - data requirements, like data sources, data formats, data storage, data access;
                                 - design preferences, like colors, fonts, themes, layouts, navigation;
                                 - development requirements, like programming languages, frameworks, and tools;
-                             You will analyse the current information about the project and ask the user for more details to refine the project description.
+                             You will analyze the current information about the project and ask the user for more details to refine the project description.
                              You will keep asking until you have all the information you need to properly define the project or until the user ask you to proceed.
                              """),
             memory=True,
