@@ -7,7 +7,7 @@ from langchain_community.tools.gmail.get_thread import GmailGetThread
 from langchain_community.tools.tavily_search import TavilySearchResults
 
 from crewai import Agent
-from crews.email_filter.tools import CreateDraftTool    
+from crews.email_filter.tools import EmailFilterTools    
 
 class EmailFilterAgents():
     """
@@ -93,7 +93,7 @@ class EmailFilterAgents():
             tools=[
                 TavilySearchResults(),
                 GmailGetThread(api_resource=self.gmail.api_resource),
-                CreateDraftTool.create_draft
+                EmailFilterTools.create_draft
             ],
             verbose=True,
             allow_delegation=False,

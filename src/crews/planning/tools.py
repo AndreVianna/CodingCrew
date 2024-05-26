@@ -4,7 +4,7 @@ from langchain_community.agent_toolkits import GmailToolkit
 from langchain_community.tools.gmail.create_draft import GmailCreateDraft
 from langchain.tools import tool
 
-class EmailFilterTools():
+class PlanningTools():
     """
     This class represents a tool for creating email drafts.
     It uses the GmailToolkit and GmailCreateDraft from the langchain_community package.

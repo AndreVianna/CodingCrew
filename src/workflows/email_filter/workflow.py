@@ -2,13 +2,13 @@
 
 from dotenv import load_dotenv
 from langgraph.graph import StateGraph
-from workflows.email_filter.states import EmailsState
-from workflows.email_filter.nodes import Nodes
+from workflows.email_filter.states import EmailFilterState
+from workflows.email_filter.nodes import EmailFilterNodes
 from crews.email_filter.crew import EmailFilterCrew
 
 load_dotenv()
 
-class WorkFlow():
+class EmailFilterWorkflow():
     """
     Represents a workflow for responding to emails.
 
@@ -34,8 +34,8 @@ class WorkFlow():
     """
 
     def __init__(self):
-        nodes = Nodes()
-        workflow = StateGraph(EmailsState)
+        nodes = EmailFilterNodes()
+        workflow = StateGraph(EmailFilterState)
 
         workflow.add_node("check_new_emails", nodes.check_email)
         workflow.add_node("wait_next_run", nodes.wait_next_run)

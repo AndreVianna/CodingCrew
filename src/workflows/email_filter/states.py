@@ -2,7 +2,7 @@
 
 from typing import TypedDict
 
-class EmailsState(TypedDict):
+class EmailFilterState(TypedDict):
     """
     Represents the state of emails in the workflow.
 

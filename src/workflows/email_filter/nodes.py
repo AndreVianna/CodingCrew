@@ -6,7 +6,7 @@ from langchain_community.agent_toolkits import GmailToolkit
 from langchain_community.tools.gmail.search import GmailSearch
 from curtsies import Input
 
-class Nodes():
+class EmailFilterNodes():
     """
     Class representing a collection of nodes in a workflow.
 
