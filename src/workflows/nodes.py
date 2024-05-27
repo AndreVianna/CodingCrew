@@ -2,23 +2,43 @@
 
 from textwrap import dedent
 
-from common import Query
 from workflows.states import AnalysisState
-from common import Query, Question
+from common import Query
 
 class PlanningNodes():
+    """
+    This class represents a set of planning nodes used in the workflow.
+    """
+
     def start_project(self, state: AnalysisState):
-        # project_name = input("Enter the project name: ")
-        # project_description = input("Enter the project description: ")
-        project_name = "FacePuppy"
-        project_description = "FacePuppy is a social media web application dedicated to dog owners. It is created using Flutter/Dart and Node.js/Angular. Users can register their puppies, create profiles, upload photos, and share blog posts. User interaction is encouraged through a search and follow feature, allowing users to search for puppies by name, breed, color, size, etc., and follow profiles they are interested in. Notifications are managed through an in-app alert system, with an optional real-time email alert system that users can unsubscribe from through a link in the email or via their profile on the site. The application is designed with a modern, clean aesthetic using a light blue and light green color scheme. There are three user roles - Guest, User, and Administrator - each with varying permissions. Guests only have access to the public areas of the site. Registered users have access to all functionalities except administration actions, while administrators have access to everything, including managing users and puppies, responding to contact requests, and moderating blog posts and comments to prevent inappropriate content. The application is responsive and hosted on Azure. Currently, there are no specific performance, backup, recovery, or regulatory requirements. User data deletion requests will be handled in adherence to GDPR or similar regulations."
+        """
+        Prompts the user to enter the project name and description, and updates the state accordingly.
+
+        Args:
+            state (AnalysisState): The current state of the analysis.
+
+        Returns:
+            dict: The updated state with the project name and description added.
+        """
+        project_name = input("Enter the project name: ")
+        project_description = input("Enter the project description: ")
         return {
             **state,
             'project_name': project_name,
             'project_description': project_description,
         }
-    
+
     def query_user(self, state: AnalysisState):
+        """
+        Queries the user for additional information to refine the project description.
+
+        Args:
+            state (AnalysisState): The current state of the analysis.
+
+        Returns:
+            dict: The updated state after querying the user.
+
+        """
         if state['questions'] is None or state['questions'] == []:
             return {
                 **state,
@@ -31,12 +51,12 @@ class PlanningNodes():
         skip = False
         finish = False
         print(dedent("""
-                     Here are some addtional questions.
+                     Here are some additional questions.
                      Please answer them to refine the project description.
                      To mark the answer as not applicable, type 'N/A'. (The question will be marked as answered as not applicable to the project.)
                      To accept the analyst proposal to that question type 'ACCEPT' or 'OK' or just press [enter]. (The question will be marked as answered by the analyst.)
-                     To finish the questionary type 'SKIP'. (All the remaining questions will be marked as answered by the analyst.)
-                     To finish the analysis type 'FINISH'. (All the remaining questions will be marked as answered by the analyst ans no more questions will be generated ending the analysis.)
+                     To finish the questionnaire type 'SKIP'. (All the remaining questions will be marked as answered by the analyst.)
+                     To finish the analysis type 'FINISH'. (All the remaining questions will be marked as answered by the analyst and no more questions will be generated, ending the analysis.)
                      """))
         for question in state['questions']:
             skip=finish
@@ -51,15 +71,14 @@ class PlanningNodes():
                                 Analyst Proposal:
                                 {question['proposal']}
                                 """
-                         
                 prompt = dedent(f"""
-                                 Question {count} ot {total}
+                                 Question {count} of {total}
                                  {question['text']}{proposal}
                                  Answer:
                                  """)
                 query['answer'] = input(prompt)
             if query['answer'] == 'N/A':
-                query['answer'] = 'This question is not applicable to the project67yumjk.',
+                query['answer'] = 'This question is not applicable to the project.',
             if query['answer'] == 'FINISH':
                 finish = True
                 query['answer'] = 'SKIP'
@@ -69,8 +88,8 @@ class PlanningNodes():
                 query['answer'] = question['proposal'] or 'The analyst can propose the answer to this question.',
             queries.append(query)
         if not finish:
-            
-            finish = (input("Finish the analisys? (yes/[no]): ") or "n")[0].lower == 'y',
+            yes_no = input("Finish the analysis? (yes/[no]): ")
+            finish = (yes_no or "n")[0].lower == "y",
         return {
             **state,
             'queries': queries,
@@ -78,6 +97,15 @@ class PlanningNodes():
         }
 
     def has_answers(self, state: AnalysisState):
+        """
+        Checks if there are any unanswered questions in the given state.
+
+        Args:
+            state (AnalysisState): The state containing the questions.
+
+        Returns:
+            str: "FINISH" if there are no questions or "CONTINUE" if there are unanswered questions.
+        """
         if state['questions'] is None or state['questions'] == []:
             return "FINISH"
         return "CONTINUE"
