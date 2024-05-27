@@ -78,6 +78,8 @@ class ReportingCrew():
             verbose=True
         )
         response = crew.kickoff()
+        with open("report.md", "w", encoding="utf-8") as file:
+            file.write(response)
         return {
             **state,
             "final_report": response,
