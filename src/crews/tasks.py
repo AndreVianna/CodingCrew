@@ -22,7 +22,7 @@ class PlanningTasks:
         - Task: A Task object representing the initial analisys task.
         """
         queries_output = ''
-        if (data['queries'] is not None):
+        if data['queries'] is not None:
             queries_output = "\n\nQueries:\n"
             for i, query in enumerate(data['queries']):
                 question = query['question']
@@ -146,7 +146,7 @@ class PlanningTasks:
         - Task: A Task object representing the final analysis task.
         """
         queries_output = ''
-        if (data['queries'] is not None):
+        if data['queries'] is not None:
             queries_output = "\n\nQueries:\n"
             for i, query in enumerate(data['queries']):
                 question = query['question']

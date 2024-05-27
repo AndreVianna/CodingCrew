@@ -9,6 +9,19 @@ from crews.crew import AnalysisCrew, ReportingCrew
 load_dotenv()
 
 class PlaningWorkflow():
+    """
+    Represents a planning workflow.
+
+    This class defines the structure and behavior of a planning workflow.
+    It contains methods to add nodes, edges, and conditional edges to the workflow,
+    as well as set the entry point and compile the workflow.
+
+    Attributes:
+        app: The compiled workflow application.
+
+    Methods:
+        __init__: Initializes the PlaningWorkflow class.
+    """
 
     def __init__(self):
         nodes = PlanningNodes()

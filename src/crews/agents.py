@@ -2,15 +2,28 @@
 
 from textwrap import dedent
 
-from langchain_community.agent_toolkits import GmailToolkit
-from langchain_community.tools.gmail.get_thread import GmailGetThread
-from langchain_community.tools.tavily_search import TavilySearchResults
-
 from crewai import Agent
-from crews.tools import PlanningTools
 
 class PlanningAgents():
+    """
+    A class representing planning agents for software development projects.
+
+    Attributes:
+        None
+
+    Methods:
+        system_analyst: Represents a system analyst planning agent.
+
+    """
+
     def system_analyst(self):
+        """
+        Represents a system analyst planning agent.
+
+        Returns:
+            Agent: An instance of the Agent class representing a system analyst.
+
+        """
         return Agent(
             role='Senior System Analyst',
             goal='Expand the project description by getting more information from the user.',
@@ -21,7 +34,7 @@ class PlanningAgents():
                              You are able to process and interpret the information from stakeholders to identify patterns, trends, and gaps in the information.
                              You are able to assess the validity and reliability of the sources.
                              You are attentive to details and able to identify inconsistencies in the information provided.
-                             You are always throurough in your analysis to find any and all the information required to proper define a software development project.
+                             You are always thorough in your analysis to find any and all the information required to properly define a software development project.
                              You enjoy generating the most accurate and complete project descriptions possible.
                              You will cover all the most important aspects of the project, including but not limited to:
                                 - the project's goals and objectives;
@@ -33,7 +46,7 @@ class PlanningAgents():
                                 - design preferences, like colors, fonts, themes, layouts, navigation;
                                 - development requirements, like programming languages, frameworks, and tools;
                              You will analyze the current information about the project and ask the user for more details to refine the project description.
-                             You will keep asking until you have all the information you need to properly define the project or until the user ask you to proceed.
+                             You will keep asking until you have all the information you need to properly define the project or until the user asks you to proceed.
                              """),
             memory=True,
             verbose=True,
