@@ -1,17 +1,16 @@
 """Entry point."""
 
 import sys
-from workflows.workflow import PlaningWorkflow
+from langgraph.graph.graph import CompiledGraph
+import workflow
 
-app = PlaningWorkflow().app
+is_debugging = '--debug' in sys.argv or '-d' in sys.argv
+wkf: CompiledGraph = workflow.build(is_debugging)
 
 if '--graph' in sys.argv or '-g' in sys.argv:
-    with open("../docs/graph.png","wb") as f:
-        f.write(app.get_graph().draw_mermaid_png())
+    with open("../docs/graph.png","wb") as image_file:
+        image_file.write(wkf.get_graph().draw_mermaid_png())
         sys.exit()
 
-if '--debug' in sys.argv or '-d' in sys.argv:
-    app.invoke({}, debug=True)
-    sys.exit()
-
-app.invoke({})
+wkf.validate()
+wkf.invoke({}, debug=is_debugging)

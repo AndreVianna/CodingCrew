@@ -1,8 +1,11 @@
-"""Models for the planning crew."""
+"""
+Represents the crew data models.
+"""
 
 import ast
 from pydantic import BaseModel
-from common import Query, Question
+from models.common import Query, Question
+
 
 class CrewInput(BaseModel):
     """
@@ -18,6 +21,7 @@ class CrewInput(BaseModel):
     description: str
     queries: list[Query]
     finish: bool
+
 
 class CrewOutput(BaseModel):
     """Represents the output of a crew."""
@@ -36,5 +40,5 @@ class CrewOutput(BaseModel):
             CrewOutput: The created CrewOutput object.
         """
         if isinstance(json_data, str):
-            json_data = ast.literal_eval(json_data)
+            json_data = ast.literal_eval(json_data.strip(" `\n"))
         return cls(**json_data)

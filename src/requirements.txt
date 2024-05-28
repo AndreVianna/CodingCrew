@@ -1,0 +1,4 @@
+setuptools
+crewai
+langgraph
+pygraphviz
