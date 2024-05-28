@@ -19,6 +19,7 @@ class AnalysisState(TypedDict):
         report (str | None): The final report of the analysis.
     """
     project_name: str
+    project_root_folder: str
     project_description: str
     queries: list[Query]
     questions: list[Question] | None

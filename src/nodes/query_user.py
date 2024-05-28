@@ -11,6 +11,7 @@ Returns:
 import sys
 from textwrap import dedent
 
+import utils
 from models.common import Query
 from models.workflow import AnalysisState
 
@@ -47,46 +48,30 @@ def create(state: AnalysisState) -> AnalysisState:
         query['question'] = question['text']
         answer: str = ""
         if not skip:
-            proposal = ""
-            if (question['proposal'] is not None and question['proposal'] != ''):
-                proposal = dedent(f"""
-                            Analyst Proposed Answer:
-                            {question['proposal']}
-                            """)
-            prompt = dedent(f"""
-                                Question {count} of {total}
-                                {question['text']}{proposal}
-                                Answer:""")
-            print(prompt)
-            line = ""
-            while True:
-                try:
-                    line = input()
-                    if line == 'EXIT':
-                        sys.exit(0)
-                    if line == 'N/A':
-                        answer = 'This question is not applicable to the project.'
-                        line=""
-                        break
-                    if line == 'OK':
-                        answer = ""
-                        line=""
-                        break
-                    if line == 'SKIP':
-                        skip = True
-                        answer = ""
-                        line=""
-                        break
-                    if line == 'FINISH':
-                        skip = True
-                        finish = True
-                        answer = ""
-                        line=""
-                        break
-                except EOFError:
-                    break
-            answer += f"{line}\n"
-        answer = str(answer or "").strip()
+            proposed_answer = ""
+            if (question['proposed_answer'] is not None and question['proposed_answer'] != ''):
+                proposed_answer = f"Analyst Proposed Answer:\n{question['proposed_answer']}\n"
+            prompt = f"\nQuestion {count} of {total}\n{question['text']}\n{proposed_answer}Answer:\n"
+            lines = utils.multiline_input(prompt)
+            answer = ('\n'.join(lines)).strip()
+            if answer == 'EXIT':
+                sys.exit(0)
+            if answer == 'N/A':
+                answer = 'This question is not applicable to the project.'
+                line=""
+                break
+            if answer == 'OK':
+                answer = ""
+                break
+            if line == 'SKIP':
+                skip = True
+                answer = ""
+                break
+            if line == 'FINISH':
+                skip = True
+                finish = True
+                answer = ""
+                break
         if answer == "":
             answer = 'The analyst can propose the answer to this question.'
         query['answer'] = answer

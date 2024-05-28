@@ -18,11 +18,11 @@ class Query(TypedDict):
 
 class Question(TypedDict):
     """
-    Represents a question with its text and proposal.
+    Represents a question with its text and proposed answer.
 
     Attributes:
         text (str): The text of the question.
-        proposal (str): The proposed answer to the question.
+        proposed_answer (str): The proposed answer to the question.
     """
     text: str
-    proposal: str
+    proposed_answer: str
