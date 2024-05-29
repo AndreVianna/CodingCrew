@@ -9,9 +9,7 @@ Returns:
 """
 
 import sys
-from textwrap import dedent
-
-import utils
+from utils import multiline_read, outdent, write_line
 from models.common import Query
 from models.workflow import AnalysisState
 
@@ -32,7 +30,7 @@ def create(state: AnalysisState) -> AnalysisState:
     count = 0
     skip = False
     finish = False
-    print(dedent("""
+    print(outdent("""
                     Here are some additional questions.
                     Please answer them to refine the project description.
                     - To mark the answer as not applicable, type 'N/A'. (The question will be marked as answered as not applicable to the project.)
@@ -52,7 +50,8 @@ def create(state: AnalysisState) -> AnalysisState:
             if (question['proposed_answer'] is not None and question['proposed_answer'] != ''):
                 proposed_answer = f"Analyst Proposed Answer:\n{question['proposed_answer']}\n"
             prompt = f"\nQuestion {count} of {total}\n{question['text']}\n{proposed_answer}Answer:\n"
-            lines = utils.multiline_input(prompt)
+            write_line(prompt)
+            lines = multiline_read()
             answer = ('\n'.join(lines)).strip()
             if answer == 'EXIT':
                 sys.exit(0)

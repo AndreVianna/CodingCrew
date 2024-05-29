@@ -8,9 +8,10 @@ Methods:
     create: Creates an instance of the Agent class representing a system analyst.
 """
 
-from textwrap import dedent
 from crewai import Agent
 from langchain_openai import ChatOpenAI
+
+from utils import outdent
 
 def create(is_debugging: bool) -> Agent:
     """
@@ -23,7 +24,7 @@ def create(is_debugging: bool) -> Agent:
     return Agent(
         role='Senior System Analyst',
         goal='Improve the project description by getting more information from the user in order to generate a detailed project summary report.',
-        backstory=dedent("""\
+        backstory=outdent("""\
                             You are an expert in system analysis.
                             You are able to communicate effectively with both technical and non-technical stakeholders.
                             This includes active listening, asking questions, and explaining technical concepts in simple terms.

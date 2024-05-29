@@ -8,9 +8,10 @@ Methods:
     create: Creates an instance of the Agent class representing a senior report writer.
 """
 
-from textwrap import dedent
 from crewai import Agent
 from langchain_openai import ChatOpenAI
+
+from utils import outdent
 
 def create(is_debugging: bool) -> Agent:
     """
@@ -23,7 +24,7 @@ def create(is_debugging: bool) -> Agent:
     return Agent(
         role='Senior Project Summary Report Writer',
         goal='Generate the final project summary report based on the information contained in the detailed project description.',
-        backstory=dedent("""\
+        backstory=outdent("""\
                             You are an expert in writing project summary reports.
                             You are able to generate clear, concise, and informative reports that capture all the essential details of a project.
                             You will consider both the project description and the questions answered by the user to generate the final project summary report.
