@@ -26,130 +26,121 @@ def create(agent, data: CrewInput) -> Task:
             answer: str = query['answer']
             queries_output += f"{i+1}. {question}\n{answer}\n\n"
 
-    description = dedent(f"""\
-            The objective is to gather all the information required to build a detailed project charter.
-            Analyze the current information about the project including the description and the answers provided by the user.
-            Use your expertise in system analysis to identify patterns, trends, and gaps in the information provided.
-            Assess the validity and reliability of the information.
-            Be attentive to details and identify inconsistencies in the information provided.
-            IMPORTANT! Ask the user questions to refine the project description.
-            Keep asking until you have all the information you need to properly define the project charter or until the user asks you to finish.
-            Make sure to cover all the most important aspects of the project, including but not limited to:
-                - the major components, like a console application, API, library, web application, mobile application, desktop application, or background service;
-                - the os and platform of the project, like Windows, Linux, macOS, Android, iOS, or web;
-                - the programming languages, frameworks, and tools;
-                - the professional resources, like developers, designers, testers, and project managers;
-                - the project's goals and objectives;
-                - major features;
-                - constraints, assumptions, and risks;
-                - target audience;
-                - security requirements, like authentication, authorization, and data protection;
-                - data and services requirements, like data storage, external sources, services or APIs;
-                - design preferences, like colors, fonts, themes, layouts, navigation;
-            The ADDITIONAL QUESTIONS MUST be clear, concise, and relevant to the project.
-            You can ask as many ADDITIONAL QUESTIONS as you need to properly define the project.
-            IMPORTANT! When you ask a question add an explain what information you expect to get from that question, and how it will help you to refine the project description.
-            Here are some examples of questions, their full text are between '[' and ']':
-                -> [What is the Project Objective?
-                    Describe the specific objectives of the project. What value does this project add to the organization? What results are expected?  What are the deliverables? What benefits will be realized? What problems will be resolved?]
-                -> [What is the Project Scope?
-                    Describe the scope of the project. The project scope establishes the boundaries of the project. It identifies the limits of the project and defines the deliverables.]
-                -> [What are the Major Features?
-                    Describe the key functionalities of the project. What are the main components of the project? What are the main use cases of the project?]
-                ->  [What is the major components of the project?
-                    Is it a console application, API, library, web application, mobile application, desktop application, or background service? Are there multiple components? How are they connected?]
-                -> [Does the project requires a frontend?
-                    Describe if the project requires a frontend. That is, if the project requires a user interface that interacts with the user.]
-                -> [What is the os and platform of the components?
-                    Is it Windows, Linux, macOS, Android, iOS, web, or a combination of these?]
-                -> [What are the programming languages, frameworks, and tools used by the project's components?
-                    Is it Python, Java, C#, RUST, .NET, Flutter, Node.js, React, Angular, or some other technology?]
-                -> [What are the Professional Resources?
-                    Describe the professional resources required by the project. What roles are needed? What skills are required? Like developers, designers, testers, project managers, etc.]
-                -> [What are the Assumptions?
-                    Describe the assumptions that have been made in the project. Assumptions are factors that are considered to be true, real, or certain without proof or demonstration.]
-                -> [What are the Constraints?
-                    Describe the constraints that have been identified in the project. Constraints are factors that limit the project team's options.]
-                -> [What are the Risk?
-                    Describe the risks that have been identified in the project. Risks are potential events or conditions that can have a negative impact on the project.]
-                -> [Who is the Target Audience?
-                    Describe the target audience of the project. Who are the end users of the project? What are their needs, preferences, and expectations?]
-                -> [What are the Authentication Requirements?
-                    Describe the authentication requirements of the project. How will users be authenticated? What security measures are in place to protect user data?]
-                -> [What are the Authorization Requirements?
-                    Describe the authorization requirements of the project. What permissions and roles are assigned to users? What actions can users perform?]
-                -> [What are the Data Storage Requirements?
-                    Describe the data storage requirements of the project. What data needs to be stored? How will the data be stored? Where will the data be stored?]
-                -> [What are the External Connections?
-                    Describe the external connections required by the project. What external sources, services, or APIs are needed? How will the project interact with these external entities?]
-            If the project requires a frontend, you can ask additional questions about the design preferences and navigation. For example:
-                -> [what is the UI fremework used?
-                    Describe the UI framework used by the project. Bootstrap, Materialize, Tailwind, or custom?]
-                -> [What are the Design Preferences?
-                    Describe the design preferences of the project. What theme, style, color palette, font, or layout are preferred? What design principles should be followed?]
-                -> [What are the views or pages and how to navigate between them?
-                    Describe the main views/pages of the project. How are they connected? How can users navigate between them?]
-            If the user introduces specifc components like a database, api, or external service, you can ask additional questions about each these components. For example:
-                -> [For the datanase "XYZ", how is the data stored and accessed?
-                    Describe how the data is stored and accessed in the database XYZ. What tables, fields, and relationships are used? What queries are performed? What data is returned?]
-                -> [For the API "XYZ", what are the endpoints and data formats?
-                    Describe the endpoints and data formats used by the API XYZ. What data can be retrieved or sent? What methods are available? What data formats are used?]
-                -> [For the service "XYZ", how is the service accessed and what data is returned?
-                    Describe how the service XYZ is accessed. What data is returned? What methods are available? What data formats are used?]
-            Do NOT limit yourself to these questions. Feel free to ask any question that you think will help you to refine the project description.
-            IMPORTANT! For each question, if you have a proposed solution for the question, you MUST also add your proposed answer to it.
-            Your proposed answer MUST be clear, concise, relevant to the project, and be a solution to the question.
-            Your proposed answer MUST NOT be a question it MUST be assertive.
-            IMPORTANT! Do not add a proposed answer if the answer is to be left completly to the user to answer or you do not have a good proposed answer to it.
-            IMPORTANT! Ask first the questions that do not require information previously provided by the user. To give a proper proposed answer about the required professional resources, you need to know the project's goals and objectives, and the project components. So do not ask about the professional resources before havind all the required information to make a proposed answer.
-            For example:
-                - For the question "Does the project requires a frontend?" you could add the following proposed answer:
-                - "The user responded previously that the project is a web application, because of that, the project requires a frontend."
-                - For the question "What are the Professional Resources?" you could add the following proposed answer:
-                - "The project requires a team of developers, designers, testers, and a project managers. The developers MUST have experience with Python, Django, and React. The designers MUST have experience with UI/UX design. The testers MUST have experience with automated testing. The project managers MUST have experience with Agile methodologies."
-                - For the question "What are the Authentication Requirements?" you could add the following proposed answer:
-                - "The project requires user authentication using JWT tokens. The users will be authenticated using a username and password. The authentication process will be handled by a custom authentication service."
-            Is it ok not having any more relevant additional questions.
-            IMPORTANT! DO NET REPEAT A QUESTION. if an information was already answered by a previous question do not request again the same information.
+    analysis_description = dedent(f"""\
+The objective is to analyze the all the information provided about the project, including the current description and the answers to the existing questions and generate an updated description of the project.
+Use all your expertise in system analysis to identify patterns, trends, and gaps in the information provided.
+Assess the validity and reliability of the information.
+Be attentive to details and identify inconsistencies in the information provided.
+Make sure to try to cover all the most important aspects of the project, including but not limited to:
+ - Major components, like a console application, API, library, web application, mobile application, desktop application, or background service;
+ - OS and Platform of the project, like Windows, Linux, macOS, Android, iOS, or web;
+ - Programming Languages, Frameworks, and/or Tools;
+ - Professional Resources Required, like developers, designers, testers, and project managers;
+ - Goals and Objectives;
+ - Major Features;
+ - Constraints, Assumptions, and Risks;
+ - Target Audience;
+ - Security Requirements, like authentication, authorization, and data protection;
+ - Data Management like data storage, or external data sources;
+ - Externat Resources like services or APIs;
+ - Design preferences, like colors, fonts, themes, layouts, navigation;
+ - UI requiremtns, like pages, components, and navigation;
+IMPORTANT! DO NOT ADD to the description any information not found in the previous description or answered questions.
+IMPORTANT! DO NOT MAKE assumptions or add information that was not yet provided.
+IMPORTANT! DO NOT ADD unanswered questions to the description.
+                                 
+Project Information
+-----------------------------------------------------------
+Project Name: {data['project_name']}
 
-            Project Information
-            -------
-            Project Name: {data['project_name']}
+Project Description:
+{data['project_description']}
+{queries_output}
+-----------------------------------------------------------
 
-            Project Description:
-            {data['project_description']}
-            {queries_output}
-            -------
+User Rquested to Finish Analysis: {data['finish']}
+""")
 
-            Finish: {data['finish']}
-            """)
-    expected_output = dedent("""\
-            Your final answer MUST be a json containing:
-                - a string parameter named "description" containing an UPDATED DESCRIPTION of the project based on the PROJECT DESCRIPTION and answers to the PENDING QUESTION.
-                - an object array parameter named "questions" containing the ADDITIONAL QUESTIONS you want to ask the user to improva and refine the project description.
-                - each object in the array MUST have:
-                - a string parameter named "text" containing the question to ask the user; and
-                - a optional string parameter named "proposed answer" containing the analyst proposed answer to that question. If no proposed answer is given send an empty string.
-            Here is an example of the expected output:
-            {
-                "description": "The project is a simple calculator that performs basic arithmetic operations like addition, subtraction, multiplication, and division.",
-                "questions": [
-                    {
-                        "text": "What is the Project Objective?",
-                        "proposed answer": "The project objective is to create a simple calculator that performs basic arithmetic operations like addition, subtraction, multiplication, and division."
-                    },
-                    {
-                        "text": "What are the Major Features?",
-                        "proposed answer": ""
-                    }
-                }
-            }
-            IMPORTANT! If the user asks you to finish (Finish: True), you MUST return only the updated project description and an empty array of ADDITIONAL QUESTIONS.
-            IMPORTANT! If you DO NOT HAVE any ADDITIONAL QUESTIONS to ask, you MUST return only the updated project description and an empty array of questions.
-            """)
+    questions_description = dedent(f"""\
+The objective is to identify the gaps in the information provided about the project and ask for more details if needed.
+Analyze the current information about the project including the description and the answers provided by the user.
+Use your expertise in system analysis to identify patterns, trends, and GAPS in the information provided.
+Assess the validity and reliability of the information.
+Be attentive to details and identify inconsistencies in the information provided.
+IMPORTANT! Ask as many questions to refine the project information as necessary.
+IMPORTANT! If all the required information is already provided, do not ask any more questions.
+IMPORTANT! Do not repeat a question that was already asked and answered.
+Keep asking until you have all the information you need to properly define the project charter or until the user asks you to finish.
+IMPORTANT! When you ask a question add an explain what information you expect to get from that question, and how it will help you to refine the project description.
+Make sure to cover all the most important aspects of the project, including but not limited to:
+ - What is the Project Goal? The project goal establishes the objectives of the project.
+ - Who is the Target Audience? The target audience is the group of people who will be impacted by the project.
+ - What is the Project Scope? The project scope establishes the boundaries of the project. It identifies the limits and defines the deliverables.
+ - What are the Major Features? Major Features are the key functionalities in a high-level view.
+ - What ara the Major Components? Major Components are the different applications or services that make up the project.
+ - What is the OS and/or Platform? Like Windows, Linux, mobile, web, etc. Different components can be running on different platforms.
+ - What are the programming languages, frameworks, and tools used? Like Python, Java, C#, RUST, .NET, Flutter, Node.js, React, Angular, etc.
+ - What are the Professional Resources? Professional Resources are the people, organizations, or services that are required to perform the project tasks.
+ - What are the Assumptions? Assumptions are the facts that are assumed to be true.
+ - What are the Constraints? Constraints are factors that limit the project team's options.
+ - What are the Risk? Risks are potential events or conditions that can have a negative impact on the project.
+ - What are the Authentication Requirements? Authentication Requirements define how the users will be authenticated.
+ - What are the Authorization Requirements? Authorization Requirements define whatm roles and permissions will be assigned to users.
+ - What are the Data Storage Requirements? Data Storage Requirements define how the data will be stored ans retrived
+ - What are the External Connections? External Connections are the external sources, services, or APIs that are required to perform the project tasks.
+ - What are the Design Preferences? Design Preferences are the colors, fonts, themes, and  layouts that will be used in the project.
+ - What are the views or pages and how to navigate between them? Those are the interfaces that will be used in the project and how they are connected.
+Do NOT limit yourself to these questions. Feel free to ask any question that you think will help you to refine the project description.
+
+Project Information
+-----------------------------------------------------------
+Project Name: {data['project_name']}
+
+Project Description:
+{data['project_description']}
+{queries_output}
+-----------------------------------------------------------
+
+Finish: {data['finish']}
+""")
+    analysis_output = dedent("""\
+Your final answer MUST be a text containing the updated description of the project.
+The description MUST be contain the original description enriched with the answers provided by analysts and the user.
+The description MUST contain ALL the information relevant to the project in a clear, detailed, and concise way.
+The description MUST be organized in in paragraphs and bullet points to help any person to understand the project.
+The description MUST NOT contain unanswered questions, it MUST be an assertive and thoughtful overview of the project.
+IMPORTANT! You MUST NOT add any information that is not in the previous description or in the answers provided by the user.
+You MUST NOT make assumptions or add information that was not yet provided.
+""")
+
+    questions_output = dedent("""\
+Your final answer MUST be a json containing:
+ - a string parameter named "description" containing an UPDATED DESCRIPTION of the project based on the PROJECT DESCRIPTION and answers to the PENDING QUESTION.
+ - an object array parameter named "questions" containing the ADDITIONAL QUESTIONS you want to ask the user to improva and refine the project description.
+ - each object in the array MUST have:
+ - a string parameter named "text" containing the question to ask the user; and
+ - a optional string parameter named "proposed answer" containing the analyst proposed answer to that question. If no proposed answer is given send an empty string.
+Here is an example of the expected output:
+```json
+{
+  "description": "The project is a simple calculator that performs basic arithmetic operations like addition, subtraction, multiplication, and division.",
+  "questions": [
+    {
+      "text": "What is the Project Objective?\nDescribe the specific objectives of the project. What value does this project add to the organization? What results are expected?  What are the deliverables? What benefits will be realized? What problems will be resolved?",
+      "proposed answer": "The project objective is to create a simple calculator that performs basic arithmetic operations like addition, subtraction, multiplication, and division."
+    },
+    {
+      "text": "What are the Major Features?\nDescribe the key functionalities of the project. What are the main components of the project? What are the main use cases of the project?",
+      "proposed answer": ""
+    }
+  }
+}
+IMPORTANT! If the user asks you to finish (Finish: True), you MUST return only the updated project description and an empty array of ADDITIONAL QUESTIONS.
+IMPORTANT! If you DO NOT HAVE any ADDITIONAL QUESTIONS to ask, you MUST return only the updated project description and an empty array of questions.
+""")
     return Task(
-        description=description,
-        expected_output=expected_output,
+        description=questions_description,
+        expected_output=questions_output,
         agent=agent,
         output_json=CrewOutput,
     )

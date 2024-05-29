@@ -29,7 +29,7 @@ def build(is_debugging: bool) -> CompiledGraph:
     workflow = StateGraph(AnalysisState)
 
     workflow.add_node("start_project", start_project.create)
-    workflow.add_node("execute_analysis", ProjectCrew(is_debugging).execute_initial_analysis)
+    workflow.add_node("execute_analysis", ProjectCrew(is_debugging).execute_analysis)
     workflow.add_node("query_user", query_user.create)
     workflow.add_node("generate_report", ProjectCrew(is_debugging).generate_report)
 

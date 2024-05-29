@@ -37,7 +37,7 @@ class ProjectCrew():
         self.report_writer = report_writer.create(is_debugging)
         self.is_debugging = is_debugging
 
-    def execute_initial_analysis(self, state: AnalysisState) -> AnalysisState:
+    def execute_analysis(self, state: AnalysisState) -> AnalysisState:
         """
         Kick off the crew's analysis process.
 
