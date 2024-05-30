@@ -159,9 +159,10 @@ def outdent(text: object) -> str:
     if not is_line_all_whitespace:
         return os.linesep.join(lines)
     indent_size = len(last_line)
+    lines = lines[:-1]
     new_lines = []
     for line in lines:
-        if len(line) < indent_size:
+        if len(line) <= indent_size:
             if not line.strip():
                 new_lines.append('')
             else:

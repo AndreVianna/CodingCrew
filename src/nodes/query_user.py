@@ -33,11 +33,11 @@ def create(state: AnalysisState) -> AnalysisState:
     print(outdent("""
                     Here are some additional questions.
                     Please answer them to refine the project description.
-                    - To mark the answer as not applicable, type 'N/A'. (The question will be marked as answered as not applicable to the project.)
-                    - To accept the analyst propoed answer type 'OK' or just send an empty answer by pressing <CRTL+ENTER>.
-                    - To finish the current questionnaire type 'SKIP'. (All the remaining questions will accept the analyst proposed answer.)
-                    = To finish the analysis type 'FINISH'. (All the remaining questions will accept the analyst proposed answer and no more questions will be generated, ending the analysis.)
-                    - To terminate the application 'EXIT'.
+                     - To mark the answer as not applicable, type 'N/A'. (The question will be marked as answered as not applicable to the project.)
+                     - To accept the analyst propoed answer type 'OK' or just send an empty answer by pressing <CRTL+ENTER>.
+                     - To finish the current questionnaire type 'SKIP'. (All the remaining questions will accept the analyst proposed answer.)
+                     - To finish the analysis type 'FINISH'. (All the remaining questions will accept the analyst proposed answer and no more questions will be generated, ending the analysis.)
+                     - To terminate the application 'EXIT'.
                     Submit your answer by pressing Ctrl-D or Ctrl-Z on windows.
                     """))
     for question in state['questions']:
