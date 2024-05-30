@@ -9,7 +9,7 @@ Returns:
 """
 
 import sys
-from utils import multiline_read, outdent, write_line
+from utils import read_text, outdent, write_line
 from models.common import Query
 from models.workflow import AnalysisState
 
@@ -51,7 +51,7 @@ def create(state: AnalysisState) -> AnalysisState:
                 proposed_answer = f"Analyst Proposed Answer:\n{question['proposed_answer']}\n"
             prompt = f"\nQuestion {count} of {total}\n{question['text']}\n{proposed_answer}Answer:\n"
             write_line(prompt)
-            lines = multiline_read()
+            lines = read_text()
             answer = ('\n'.join(lines)).strip()
             if answer == 'EXIT':
                 sys.exit(0)

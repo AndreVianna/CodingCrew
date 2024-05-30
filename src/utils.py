@@ -3,15 +3,18 @@ Represents utility functions used throughout the application.
 """
 
 import os
+import re
 from typing import Iterable, Literal
 
 Style = Literal[
     "bold",
-    "dark",
+    "dim",
+    "italic",
     "underline",
     "blink",
     "reverse",
-    "concealed",
+    "conceal",
+    "strikethrough",
 ]
 
 Color = Literal[
@@ -36,11 +39,13 @@ Color = Literal[
 
 STYLES: dict[Style, int] = {
     "bold": 1,
-    "dark": 2,
+    "dim": 2,
+    "italic": 3,
     "underline": 4,
     "blink": 5,
     "reverse": 7,
-    "concealed": 8,
+    "conceal": 8,
+    "strikethrough": 9,
 }
 
 COLORS: dict[Color, int] = {
@@ -63,12 +68,7 @@ COLORS: dict[Color, int] = {
 }
 
 
-RESET = "\033[0m"
-
-paint_stack: list[(Color | None, Color | None, Style | None)]
-
-def __init__():
-    paint_stack = list[(Color | None, Color | None, Style | None)]()
+RESET = "\x1b[0m"
 
 def clear():
     """
@@ -99,17 +99,16 @@ def paint(text: object, foreground: Color | None = None, background: Color | Non
             bold, dark, underline, blink, reverse, concealed.
 
         """
-    previous = paint.pop() if paint else (None, None, None)
-    result = str(text)
-    code = "\033[%dm%s"
+    code = "\x1b[%dm%s"
+    fmt = ''
     if foreground is not None:
-        result = code % (COLORS[foreground], result)
+        fmt = code % (COLORS[foreground], fmt)
     if background is not None:
-        result = code % (COLORS[background] + 10, result)
+        fmt = code % (COLORS[background] + 10, fmt)
     if styles is not None:
         for style in styles:
-            result = code % (STYLES[style], result)
-    return result
+            fmt = code % (STYLES[style], fmt)
+    return str(text) if not fmt else RESET+fmt+str(text).replace(RESET+RESET,RESET+fmt)+RESET+RESET
 
 
 def write(text: str, foreground: Color | None = None, background: Color | None = None, styles: Iterable[Style] | None = None) -> None:
@@ -153,7 +152,7 @@ def outdent(text: object) -> str:
         str: The text without the leading whitespace.
     """
     lines = str(text).split(os.linesep)
-    if (len(lines) == 0):
+    if len(lines) == 0:
         return ''
     last_line = lines[-1]
     is_line_all_whitespace = not last_line.strip()
@@ -189,7 +188,7 @@ def read() -> str:
     """
     return input()
 
-def multiline_read() -> Iterable[str]:
+def read_text() -> Iterable[str]:
     """
     Allows the user to enter a multiline string.
 
@@ -204,3 +203,29 @@ def multiline_read() -> Iterable[str]:
             break
         multiline.append(line)
     return multiline
+
+symbols = re.compile(r'\W')
+alpha_before_digit = re.compile(r'([A-Za-z])([0-9])')
+digit_before_alpha = re.compile(r'([0-9])([A-Za-z])')
+char_before_upper = re.compile(r'(.)([A-Z][a-z]+)')
+lower_before_upper = re.compile(r'([a-z])([A-Z])')
+
+def to_snake_case(name):
+    """
+    Converts a given string to snake case.
+
+    Args:
+        name (str): The string to be converted.
+
+    Returns:
+        str: The converted string in snake case.
+    """
+    name = symbols.sub('_', name)
+    name = alpha_before_digit.sub(r'\1_\2', name)
+    name = digit_before_alpha.sub(r'\1_\2', name)
+    name = char_before_upper.sub(r'\1_\2', name)
+    name = lower_before_upper.sub(r'\1_\2', name)
+    while '__' in name:
+        name = name.replace('__', '_')
+    name = name.strip('_')
+    return name.lower()
