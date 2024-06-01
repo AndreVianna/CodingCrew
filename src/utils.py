@@ -6,6 +6,9 @@ import os
 import re
 from typing import Iterable, Literal
 
+from keyboard import is_pressed
+from readchar import readkey
+
 Style = Literal[
     "bold",
     "dim",
@@ -189,19 +192,20 @@ def read() -> str:
     """
     return input()
 
-def read_text() -> Iterable[str]:
+def read_text() -> list[str]:
     """
-    Allows the user to enter a multiline string.
+    Allows the user to enter a multiline string ending by pressing Shift+Enter.
 
-    Returns:
-        Iterable[str]: The multiline string entered by the user.
+        Returns:
+        list[str]: The multiline string entered by the user.
     """
     multiline = list[str]()
-    while True:
-        try:
-            line: str = input()
-        except EOFError:
-            break
+    key = readkey()
+    while key is not 'ctrl+enter':
+        line = ''
+        while key is not 'enter':
+            line += key
+            key = readkey()
         multiline.append(line)
     return multiline
 
