@@ -11,7 +11,7 @@
             "program": "src/main.py",
             "console": "integratedTerminal",
             "args": "-d",
-            "justMyCode": false
+            "justMyCode": true
         }
     ]
 }
