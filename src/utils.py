@@ -6,8 +6,7 @@ import os
 import re
 from typing import Iterable, Literal
 
-from keyboard import is_pressed
-from readchar import readkey
+from readchar import readchar
 
 Style = Literal[
     "bold",
@@ -192,6 +191,48 @@ def read() -> str:
     """
     return input()
 
+key_mapping = {
+    (127,): 'backspace',
+    (10,): 'return',
+    (32,): 'space',
+    (9,): 'tab',
+    (27,): 'esc',
+    (27, 91, 65): 'up',
+    (27, 91, 66,): 'down',
+    (27, 91, 67,): 'right',
+    (27, 91, 68,): 'left',
+    (27, 91, 72): 'home',
+    (27, 91, 70): 'end',
+    (27, 91, 50, 126): 'insert',
+    (27, 91, 51, 126): 'delete',
+    (27, 91, 53, 126): 'pageup',
+    (27, 91, 54, 126): 'pagedown',
+    (27, 79, 80): 'f1',
+    (27, 79, 81): 'f2',
+    (27, 79, 82): 'f3',
+    (27, 79, 83): 'f4',
+    (27, 91, 49, 53, 126): 'f5',
+    (27, 91, 49, 55, 126): 'f6',
+    (27, 91, 49, 56, 126): 'f7',
+    (27, 91, 49, 57, 126): 'f8',
+    (27, 91, 50, 48, 126): 'f9',
+    (27, 91, 50, 49, 126): 'f10',
+    # F11 is already used to toggle fullscreen.
+    (27, 91, 50, 52, 126): 'f12',
+}
+
+def get_key() -> str:
+    """
+    Reads a single key press from the user.
+
+    Returns:
+        str: The key pressed by the user.
+    """
+    key = readchar()
+    if key == '\x19':
+        return 'ctrl+y'
+    return key
+
 def read_text() -> list[str]:
     """
     Allows the user to enter a multiline string ending by pressing Shift+Enter.
@@ -200,12 +241,13 @@ def read_text() -> list[str]:
         list[str]: The multiline string entered by the user.
     """
     multiline = list[str]()
-    key = readkey()
-    while key is not 'ctrl+enter':
+    key = get_key()
+    while key != 'ctrl+enter':
         line = ''
-        while key is not 'enter':
+        while key != 'enter':
             line += key
-            key = readkey()
+            print(key, end = '')
+            key = get_key()
         multiline.append(line)
     return multiline
 
