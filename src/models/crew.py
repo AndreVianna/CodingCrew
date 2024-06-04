@@ -30,7 +30,7 @@ class CrewOutput(BaseModel):
     questions: list[Question]
 
     @classmethod
-    def from_json(cls, json_data: dict | str) -> 'CrewOutput':
+    def from_json(cls, json_data: dict | str) -> "CrewOutput":
         """Create a CrewOutput object from JSON data.
 
         Args:

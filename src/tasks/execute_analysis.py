@@ -18,12 +18,12 @@ def create(agent, data: CrewInput) -> Task:
     Returns:
     - Task: A Task object representing the initial analisys task.
     """
-    queries_output: str = ''
-    if data['queries'] is not None:
+    queries_output: str = ""
+    if data["queries"] is not None:
         queries_output = "\nQueries:\n"
-        for i, query in enumerate(data['queries']):
-            question: str = query['question']
-            answer: str = query['answer']
+        for i, query in enumerate(data["queries"]):
+            question: str = query["question"]
+            answer: str = query["answer"]
             queries_output += f"{i+1}. {question}\n{answer}\n\n"
 
     analysis_description = outdent(f"""\
@@ -51,14 +51,14 @@ def create(agent, data: CrewInput) -> Task:
 
                                 Project Information
                                 -----------------------------------------------------------
-                                Project Name: {data['project_name']}
+                                Project Name: {data["project_name"]}
 
                                 Project Description:
-                                {data['project_description']}
+                                {data["project_description"]}
                                 {queries_output}
                                 -----------------------------------------------------------
 
-                                User Rquested to Finish Analysis: {data['finish']}
+                                User Rquested to Finish Analysis: {data["finish"]}
                                 """)
 
     questions_description = outdent(f"""\
@@ -94,14 +94,14 @@ def create(agent, data: CrewInput) -> Task:
 
                                 Project Information
                                 -----------------------------------------------------------
-                                Project Name: {data['project_name']}
+                                Project Name: {data["project_name"]}
 
                                 Project Description:
-                                {data['project_description']}
+                                {data["project_description"]}
                                 {queries_output}
                                 -----------------------------------------------------------
 
-                                Finish: {data['finish']}
+                                Finish: {data["finish"]}
                                 """)
     analysis_output = outdent("""\
                                 Your final answer MUST be a text containing the updated description of the project.

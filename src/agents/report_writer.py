@@ -22,8 +22,8 @@ def create(is_debugging: bool) -> Agent:
 
     """
     return Agent(
-        role='Senior Project Summary Report Writer',
-        goal='Generate the final project summary report based on the information contained in the detailed project description.',
+        role="Senior Project Summary Report Writer",
+        goal="Generate the final project summary report based on the information contained in the detailed project description.",
         backstory=outdent("""\
                             You are an expert in writing project summary reports.
                             You are able to generate clear, concise, and informative reports that capture all the essential details of a project.

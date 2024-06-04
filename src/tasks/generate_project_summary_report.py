@@ -18,16 +18,16 @@ def create(agent, data: CrewInput) -> Task:
     Returns:
     - Task: A Task object representing the final analysis task.
     """
-    queries_output = ''
-    if data['queries'] is not None:
+    queries_output = ""
+    if data["queries"] is not None:
         queries_output = """
 
             Queries:
             """
-        total = len(data['queries'])
-        for i, query in enumerate(data['queries']):
-            question: str = query['question']
-            answer: str = query['answer']
+        total = len(data["queries"])
+        for i, query in enumerate(data["queries"]):
+            question: str = query["question"]
+            answer: str = query["answer"]
             queries_output += outdent(f"""
 
                 Question {i+1} of {total}:
@@ -41,10 +41,10 @@ def create(agent, data: CrewInput) -> Task:
                             The report in markdown format should contain all the information required to properly define the project.
                             You will base your analysis on the following information:
                             -----------------------
-                            Project Name: {data['project_name']}
+                            Project Name: {data["project_name"]}
 
                             Project Description:
-                            {data['project_description']}
+                            {data["project_description"]}
                             {queries_output}
                             -----------------------
 

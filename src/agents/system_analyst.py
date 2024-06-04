@@ -22,8 +22,8 @@ def create(is_debugging: bool) -> Agent:
 
     """
     return Agent(
-        role='Senior System Analyst',
-        goal='Improve the project description by getting more information from the user in order to generate a detailed project summary report.',
+        role="Senior System Analyst",
+        goal="Improve the project description by getting more information from the user in order to generate a detailed project summary report.",
         backstory=outdent("""\
                             You are an expert in system analysis.
                             You are able to communicate effectively with both technical and non-technical stakeholders.

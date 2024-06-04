@@ -5,13 +5,13 @@ Args:
     state (AnalysisState): The current state of the analysis.
 
 Returns:
-    Literal['FINISH'] | Literal['CONTINUE']: "FINISH" if there are no questions or "CONTINUE" if there are unanswered questions.
+    Literal["FINISH"] | Literal["CONTINUE"]: "FINISH" if there are no questions or "CONTINUE" if there are unanswered questions.
 """
 
 from typing import Literal
 from models.workflow import AnalysisState
 
-def create(state: AnalysisState) -> Literal['FINISH'] | Literal['CONTINUE']:
+def create(state: AnalysisState) -> Literal["FINISH"] | Literal["CONTINUE"]:
     """
     Checks if there are any unanswered questions in the given state.
 
@@ -21,6 +21,6 @@ def create(state: AnalysisState) -> Literal['FINISH'] | Literal['CONTINUE']:
     Returns:
         str: "FINISH" if there are no questions or "CONTINUE" if there are unanswered questions.
     """
-    if state['questions'] is None or state['questions'] == []:
+    if state["questions"] is None or state["questions"] == []:
         return "FINISH"
     return "CONTINUE"

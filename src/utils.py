@@ -5,10 +5,10 @@ Represents utility functions used throughout the application.
 import re
 from typing import Iterable, Literal
 import os
-if os.name == 'nt':
-    from readkey_windows import read_key, Key
+if os.name == "nt":
+    from read_win import readchar, readline, readlines
 else:
-    from readkey_linux import read_key, Key
+    from read_linux import readchar, readline, readlines
 
 Style = Literal[
     "bold",
@@ -80,10 +80,10 @@ def clear():
 
     This function clears the terminal screen by executing the appropriate operating system's command
     """
-    if os.name == 'nt':
-        os.system('cls')
+    if os.name == "nt":
+        os.system("cls")
     else:
-        os.system('clear')
+        os.system("clear")
 
 def paint(text: object, foreground: Color | None = None, background: Color | None = None, styles: Iterable[Style] | None = None) -> str:
     """
@@ -104,7 +104,7 @@ def paint(text: object, foreground: Color | None = None, background: Color | Non
 
         """
     code = "\x1b[%dm%s"
-    fmt = ''
+    fmt = ""
     if foreground is not None:
         fmt = code % (COLORS[foreground], fmt)
     if background is not None:
@@ -157,7 +157,7 @@ def outdent(text: object) -> str:
     """
     lines = str(text).split(os.linesep)
     if len(lines) == 0:
-        return ''
+        return ""
     last_line = lines[-1]
     is_line_all_whitespace = not last_line.strip()
     if not is_line_all_whitespace:
@@ -168,7 +168,7 @@ def outdent(text: object) -> str:
     for line in lines:
         if len(line) <= indent_size:
             if not line.strip():
-                new_lines.append('')
+                new_lines.append("")
             else:
                 return os.linesep.join(lines)
         if not line.startswith(last_line):
@@ -184,6 +184,16 @@ def write_raw(text: str | None = None, foreground: Color | None = None, backgrou
     if text:
         write(outdent(text), foreground, background, styles)
 
+def read_char() -> str:
+    """
+    Allows the user to enter a single string.
+
+    Returns:
+        str: The multiline string entered by the user.
+    """
+    return readchar()
+
+
 def read_line() -> str:
     """
     Allows the user to enter a single string.
@@ -191,33 +201,22 @@ def read_line() -> str:
     Returns:
         str: The multiline string entered by the user.
     """
-    return input()
+    return readline()
 
-def read_text() -> list[str]:
+def read_lines() -> list[str]:
     """
     Allows the user to enter a multiline string ending by pressing Shift+Enter.
 
         Returns:
         list[str]: The multiline string entered by the user.
     """
-    multiline = list[str]()
-    key: str = ''
-    while key != Key.CTRL_ENTER:
-        line = ''
-        key = read_key()
-        while key not in (Key.ENTER, Key.CTRL_ENTER):
-            line += key
-            print(key, end = '')
-            key = read_key()
-        multiline.append(line)
-        print()
-    return multiline
+    return readlines()
 
-symbols = re.compile(r'\W')
-alpha_before_digit = re.compile(r'([A-Za-z])([0-9])')
-digit_before_alpha = re.compile(r'([0-9])([A-Za-z])')
-char_before_upper = re.compile(r'(.)([A-Z][a-z]+)')
-lower_before_upper = re.compile(r'([a-z])([A-Z])')
+symbols = re.compile(r"\W")
+alpha_before_digit = re.compile(r"([A-Za-z])([0-9])")
+digit_before_alpha = re.compile(r"([0-9])([A-Za-z])")
+char_before_upper = re.compile(r"(.)([A-Z][a-z]+)")
+lower_before_upper = re.compile(r"([a-z])([A-Z])")
 
 def to_snake_case(name):
     """
@@ -229,12 +228,12 @@ def to_snake_case(name):
     Returns:
         str: The converted string in snake case.
     """
-    name = symbols.sub('_', name)
-    name = alpha_before_digit.sub(r'\1_\2', name)
-    name = digit_before_alpha.sub(r'\1_\2', name)
-    name = char_before_upper.sub(r'\1_\2', name)
-    name = lower_before_upper.sub(r'\1_\2', name)
-    while '__' in name:
-        name = name.replace('__', '_')
-    name = name.strip('_')
+    name = symbols.sub("_", name)
+    name = alpha_before_digit.sub(r"\1_\2", name)
+    name = digit_before_alpha.sub(r"\1_\2", name)
+    name = char_before_upper.sub(r"\1_\2", name)
+    name = lower_before_upper.sub(r"\1_\2", name)
+    while "__" in name:
+        name = name.replace("__", "_")
+    name = name.strip("_")
     return name.lower()

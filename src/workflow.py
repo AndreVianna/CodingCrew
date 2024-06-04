@@ -34,14 +34,14 @@ def build(is_debugging: bool) -> CompiledGraph:
     workflow.add_node("generate_report", ProjectCrew(is_debugging).generate_report)
 
     workflow.set_entry_point("start_project")
-    workflow.add_edge('start_project', "execute_analysis")
+    workflow.add_edge("start_project", "execute_analysis")
     workflow.add_edge("execute_analysis", "query_user")
     workflow.add_conditional_edges(
-        'query_user',
+        "query_user",
         has_answers.create,
         {
-            "CONTINUE": 'execute_analysis',
-            "FINISH": 'generate_report',
+            "CONTINUE": "execute_analysis",
+            "FINISH": "generate_report",
         })
     workflow.add_edge("generate_report", END)
 
