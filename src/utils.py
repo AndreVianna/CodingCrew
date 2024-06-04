@@ -6,9 +6,9 @@ import re
 from typing import Iterable, Literal
 import os
 if os.name == 'nt':
-    from readkey_windows import read_key
+    from readkey_windows import read_key, Key
 else:
-    from readkey_linux import read_key
+    from readkey_linux import read_key, Key
 
 Style = Literal[
     "bold",
@@ -201,14 +201,16 @@ def read_text() -> list[str]:
         list[str]: The multiline string entered by the user.
     """
     multiline = list[str]()
-    key = read_key()
-    while key != 'ctrl+enter':
+    key: str = ''
+    while key != Key.CTRL_ENTER:
         line = ''
-        while key != 'enter':
+        key = read_key()
+        while key not in (Key.ENTER, Key.CTRL_ENTER):
             line += key
             print(key, end = '')
             key = read_key()
         multiline.append(line)
+        print()
     return multiline
 
 symbols = re.compile(r'\W')

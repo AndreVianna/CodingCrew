@@ -17,11 +17,11 @@ if os.name != "nt":
         """
 
         BACKSPACE: Literal["\x7f"] = "\x7f"
-        TAB: Literal["\t"] = "\t"
-        ENTER: Literal["\r"] = "\r"
-        CTRL_BACKSPACE: Literal["\b"] = "\b"
+        TAB: Literal["\x09"] = "\t"
+        ENTER: Literal["\x0d"] = "\r"
+        CTRL_BACKSPACE: Literal["\x08"] = "\b"
         CTRL_TAB: Literal["Undefined"] = "Undefined"
-        CTRL_ENTER: Literal["\n"] = "\n"
+        CTRL_ENTER: Literal["\x0a"] = "\n"
         UP: Literal["^[[A"] = "^[[A"
         SHIFT_UP: Literal["^[[1;2A"] = "^[[1;2A"
         ALT_UP: Literal["^[[1;3A"] = "^[[1;3A"
@@ -224,6 +224,9 @@ if os.name != "nt":
         CTRL_X: Literal["\x18"] = "\x18"
         CTRL_Y: Literal["\x19"] = "\x19"
         CTRL_Z: Literal["\x1a"] = "\x1a"
+
+        ESC: Literal["\x1b"] = "\x1b"
+
         CTRL_0: Literal["Undefined"] = "Undefined"
         CTRL_1: Literal["Undefined"] = "Undefined"
         CTRL_2: Literal["Undefined"] = "Undefined"
@@ -437,6 +440,7 @@ if os.name != "nt":
             BACKSPACE: "BACKSPACE",
             TAB: "TAB",
             ENTER: "ENTER",
+            ESC: "ESC",
             CTRL_BACKSPACE: "CTRL+BACKSPACE",
             CTRL_TAB: "CTRL+TAB",
             CTRL_ENTER: "CTRL+ENTER",
@@ -448,12 +452,12 @@ if os.name != "nt":
             CTRL_E: "CTRL+E",
             CTRL_F: "CTRL+F",
             CTRL_G: "CTRL+G",
-            CTRL_H: "CTRL+H",
-            CTRL_I: "CTRL+I",
-            CTRL_J: "CTRL+J",
+            CTRL_H: "CTRL+BACKSPACE",
+            CTRL_I: "TAB",
+            CTRL_J: "CTRL+ENTER",
             CTRL_K: "CTRL+K",
             CTRL_L: "CTRL+L",
-            CTRL_M: "CTRL+M",
+            CTRL_M: "ENTER",
             CTRL_N: "CTRL+N",
             CTRL_O: "CTRL+O",
             CTRL_P: "CTRL+P",
@@ -509,7 +513,7 @@ if os.name != "nt":
             result = key if key else char
             return result
 
-    def read_key(raw: bool = False) -> str:
+    def read_key() -> str:
         """
         Reads a single key press from the user.
 
@@ -526,7 +530,7 @@ if os.name != "nt":
         finally :
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
-        if ord(ch) == 27 :
+        if ord(ch) == 27:
             _ch = read_key()
             _ch += read_key()
 
@@ -534,4 +538,13 @@ if os.name != "nt":
                 _ch += read_key()
 
             ch = "^[" + _ch
-        return ch if raw else Key.nameof(ch)
+        return ch
+
+    def read_key_name() -> str:
+        """
+        Reads a single key press from the user.
+
+        Returns:
+            str: The name of key pressed by the user.
+        """
+        return Key.nameof(read_key())

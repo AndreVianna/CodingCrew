@@ -15,10 +15,11 @@ if os.name == "nt":
         Each key is represented as a string literal.
         """
 
-        BACKSPACE: Literal["\x7f"] = "\x7f"
+        BACKSPACE: Literal["\b"] = "\b"
         TAB: Literal["\t"] = "\t"
         ENTER: Literal["\r"] = "\r"
-        CTRL_BACKSPACE: Literal["\b"] = "\b"
+        ESC: Literal["\x1b"] = "\x1b"
+        CTRL_BACKSPACE: Literal["\x7f"] = "\x7f"
         CTRL_TAB: Literal["Undefined"] = "Undefined"
         CTRL_ENTER: Literal["\n"] = "\n"
         UP: Literal["^[H"] = "^[H"
@@ -414,6 +415,7 @@ if os.name == "nt":
             BACKSPACE: "BACKSPACE",
             TAB: "TAB",
             ENTER: "ENTER",
+            ESC: "ESC",
             CTRL_BACKSPACE: "CTRL+BACKSPACE",
             CTRL_TAB: "CTRL+TAB",
             CTRL_ENTER: "CTRL+ENTER",
@@ -424,12 +426,12 @@ if os.name == "nt":
             CTRL_E: "CTRL+E",
             CTRL_F: "CTRL+F",
             CTRL_G: "CTRL+G",
-            CTRL_H: "CTRL+H",
-            CTRL_I: "CTRL+I",
-            CTRL_J: "CTRL+J",
+            CTRL_H: "BACKSPACE",
+            CTRL_I: "TAB",
+            CTRL_J: "CTRL+ENTER",
             CTRL_K: "CTRL+K",
             CTRL_L: "CTRL+L",
-            CTRL_M: "CTRL+M",
+            CTRL_M: "ENTER",
             CTRL_N: "CTRL+N",
             CTRL_O: "CTRL+O",
             CTRL_P: "CTRL+P",
@@ -484,7 +486,7 @@ if os.name == "nt":
             result = key if key else char
             return result
 
-    def read_key(raw: bool = False) -> str:
+    def read_key() -> str:
         """
         Reads a single key press from the user.
 
@@ -494,10 +496,18 @@ if os.name == "nt":
         sys.stdout.flush()
         ch = msvcrt.getwch()
         bt = bytearray(ch , "utf-8")
-        print(f"ch: {ch} = bt: {bt} = ord: {ord(ch)}; ")
 
         if ord(ch) == 0 :
-            ch = "^{" + read_key(True)
+            ch = "^{" + read_key()
         elif ord(ch) == 224 :
-            ch = "^[" + read_key(True)
-        return ch if raw else Key.nameof(ch)
+            ch = "^[" + read_key()
+        return ch
+
+    def read_key_name() -> str:
+        """
+        Reads a single key press from the user.
+
+        Returns:
+            str: The name of key pressed by the user.
+        """
+        return Key.nameof(read_key())

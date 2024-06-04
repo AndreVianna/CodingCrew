@@ -54,7 +54,7 @@ def create(state: AnalysisState) -> AnalysisState:
     write_line()
     write_line("Please provide a detailed description of the project.")
     yes_no = ""
-    submit_key = paint("Ctrl-D" if os.name != 'nt' else "Ctrl-Z", "yellow", styles=['bold', 'dim'])
+    submit_key = paint("Ctrl+Enter", "yellow", styles=['bold', 'dim'])
     lines = []
     while yes_no != "yes" and yes_no != "y":
         yes_no = ""

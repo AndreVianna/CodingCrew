@@ -1,24 +1,23 @@
 """Entry point."""
 
-import utils
+# import utils
 
-key = utils.read_key()
-while key != 'q':
-    print(key, end='')
-    key = utils.read_key()
+# key = utils.read_key()
+# while key != 'q':
+#     print(key)
+#     key = utils.read_key()
 
+import sys
+from langgraph.graph.graph import CompiledGraph
+import workflow
 
-# import sys
-# from langgraph.graph.graph import CompiledGraph
-# import workflow
+is_debugging = '--debug' in sys.argv or '-d' in sys.argv
+wkf: CompiledGraph = workflow.build(is_debugging)
 
-# is_debugging = '--debug' in sys.argv or '-d' in sys.argv
-# wkf: CompiledGraph = workflow.build(is_debugging)
+if '--graph' in sys.argv or '-g' in sys.argv:
+    with open("../docs/graph.png","wb") as image_file:
+        image_file.write(wkf.get_graph().draw_mermaid_png())
+        sys.exit()
 
-# if '--graph' in sys.argv or '-g' in sys.argv:
-#     with open("../docs/graph.png","wb") as image_file:
-#         image_file.write(wkf.get_graph().draw_mermaid_png())
-#         sys.exit()
-
-# wkf.validate()
-# wkf.invoke({}, debug=is_debugging)
+wkf.validate()
+wkf.invoke({}, debug=is_debugging)
