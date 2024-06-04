@@ -5,12 +5,21 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug Main",
+            "name": "Run Debug",
             "type": "debugpy",
             "request": "launch",
             "program": "src/main.py",
             "console": "integratedTerminal",
             "args": "-d",
+            "justMyCode": true
+        },
+        {
+            "name": "Run in Dev Mode",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/main.py",
+            "console": "integratedTerminal",
+            "args": "--dev",
             "justMyCode": true
         }
     ]

@@ -4,10 +4,10 @@ import sys
 
 import utils
 if "--dev" in sys.argv:
-    text = utils.read_lines()
-    print()
-    print()
-    print(text)
+    key=""
+    while key !=  utils.Key.CTRL_ENTER:
+        key = utils.read_char()
+        print(f": {utils.Key.nameof(key)}")
     sys.exit()
 
 from langgraph.graph.graph import CompiledGraph

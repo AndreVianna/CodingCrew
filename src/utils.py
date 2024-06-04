@@ -6,9 +6,9 @@ import re
 from typing import Iterable, Literal
 import os
 if os.name == "nt":
-    from read_win import readchar, readline, readlines
+    from read_win import readchar, readline, readlines, Key
 else:
-    from read_linux import readchar, readline, readlines
+    from read_linux import readchar, readline, readlines, Key
 
 Style = Literal[
     "bold",
@@ -193,6 +193,7 @@ def read_char() -> str:
     """
     return readchar()
 
+Key = Key
 
 def read_line() -> str:
     """

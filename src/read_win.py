@@ -15,446 +15,300 @@ if os.name == "nt":
         Each key is represented as a string literal.
         """
 
-        BACKSPACE: Literal["\b"] = "\b"
-        TAB: Literal["\t"] = "\t"
-        ENTER: Literal["\r"] = "\r"
-        ESC: Literal["\x1b"] = "\x1b"
+        CTRL_A:         Literal["\x01"] = "\x01"
+        CTRL_B:         Literal["\x02"] = "\x02"
+        CTRL_C:         Literal["\x03"] = "\x03"
+        CTRL_D:         Literal["\x04"] = "\x04"
+        CTRL_E:         Literal["\x05"] = "\x05"
+        CTRL_F:         Literal["\x06"] = "\x06"
+        CTRL_G:         Literal["\x07"] = "\x07"
+        CTRL_H:         Literal["\x08"] = "\x08"
+        BACKSPACE:      Literal["\x08"] = "\x08"
+        CTRL_I:         Literal["\x09"] = "\x09"
+        TAB:            Literal["\x09"] = "\x09"
+        CTRL_J:         Literal["\x0a"] = "\x0a"
+        CTRL_ENTER:     Literal["\x0a"] = "\x0a"
+        CTRL_K:         Literal["\x0b"] = "\x0b"
+        CTRL_L:         Literal["\x0c"] = "\x0c"
+        CTRL_M:         Literal["\x0d"] = "\x0d"
+        ENTER:          Literal["\x0d"] = "\x0d"
+        CTRL_N:         Literal["\x0e"] = "\x0e"
+        CTRL_O:         Literal["\x0f"] = "\x0f"
+        CTRL_P:         Literal["\x10"] = "\x10"
+        CTRL_Q:         Literal["\x11"] = "\x11"
+        CTRL_R:         Literal["\x12"] = "\x12"
+        CTRL_S:         Literal["\x13"] = "\x13"
+        CTRL_T:         Literal["\x14"] = "\x14"
+        CTRL_U:         Literal["\x15"] = "\x15"
+        CTRL_V:         Literal["\x16"] = "\x16"
+        CTRL_W:         Literal["\x17"] = "\x17"
+        CTRL_X:         Literal["\x18"] = "\x18"
+        CTRL_Y:         Literal["\x19"] = "\x19"
+        CTRL_Z:         Literal["\x1a"] = "\x1a"
+        ESC:            Literal["\x1b"] = "\x1b"
+
+        CTRL_0:         Literal["Undefined"] = "Undefined"
+        CTRL_1:         Literal["Undefined"] = "Undefined"
+        CTRL_2:         Literal["^\x03"] = "^\x03"
+        CTRL_3:         Literal["Undefined"] = "Undefined"
+        CTRL_4:         Literal["Undefined"] = "Undefined"
+        CTRL_5:         Literal["Undefined"] = "Undefined"
+        CTRL_6:         Literal["Undefined"] = "Undefined"
+        CTRL_7:         Literal["Undefined"] = "Undefined"
+        CTRL_8:         Literal["Undefined"] = "Undefined"
+        CTRL_9:         Literal["Undefined"] = "Undefined"
+
         CTRL_BACKSPACE: Literal["\x7f"] = "\x7f"
-        CTRL_TAB: Literal["Undefined"] = "Undefined"
-        CTRL_ENTER: Literal["\n"] = "\n"
-        UP: Literal["^H"] = "^H"
-        SHIFT_UP: Literal["^1;2A"] = "^1;2A"
-        ALT_UP: Literal["^1;3A"] = "^1;3A"
-        ALT_SHIFT_UP: Literal["^1;4A"] = "^1;4A"
-        CTRL_UP: Literal["^\x8d"] = "^\x8d"
-        CTRL_SHIFT_UP: Literal["^1;6A"] = "^1;6A"
-        CTRL_ALT_UP: Literal["^1;7A"] = "^1;7A"
-        CTRL_ALT_SHIFT_UP: Literal["^1;8A"] = "^1;8A"
-        DOWN: Literal["^P"] = "^P"
-        SHIFT_DOWN: Literal["^1;2B"] = "^1;2B"
-        ALT_DOWN: Literal["^1;3B"] = "^1;3B"
-        ALT_SHIFT_DOWN: Literal["^1;4B"] = "^1;4B"
-        CTRL_DOWN: Literal["^1;5B"] = "^1;5B"
-        CTRL_SHIFT_DOWN: Literal["^1;6B"] = "^1;6B"
-        CTRL_ALT_DOWN: Literal["^1;7B"] = "^1;7B"
-        CTRL_ALT_SHIFT_DOWN: Literal["^1;8B"] = "^1;8B"
-        RIGHT: Literal["^M"] = "^M"
-        SHIFT_RIGHT: Literal["^1;2C"] = "^1;2C"
-        ALT_RIGHT: Literal["^1;3C"] = "^1;3C"
-        ALT_SHIFT_RIGHT: Literal["^1;4C"] = "^1;4C"
-        CTRL_RIGHT: Literal["^1;5C"] = "^1;5C"
-        CTRL_SHIFT_RIGHT: Literal["^1;6C"] = "^1;6C"
-        CTRL_ALT_RIGHT: Literal["^1;7C"] = "^1;7C"
-        CTRL_ALT_SHIFT_RIGHT: Literal["^1;8C"] = "^1;8C"
-        LEFT: Literal["^K"] = "^K"
-        SHIFT_LEFT: Literal["^1;2D"] = "^1;2D"
-        ALT_LEFT: Literal["^1;3D"] = "^1;3D"
-        ALT_SHIFT_LEFT: Literal["^1;4D"] = "^1;4D"
-        CTRL_LEFT: Literal["^1;5D"] = "^1;5D"
-        CTRL_SHIFT_LEFT: Literal["^1;6D"] = "^1;6D"
-        CTRL_ALT_LEFT: Literal["^1;7D"] = "^1;7D"
-        CTRL_ALT_SHIFT_LEFT: Literal["^1;8D"] = "^1;8D"
-        END: Literal["^O"] = "^O"
-        SHIFT_END: Literal["^1;2F"] = "^1;2F"
-        ALT_END: Literal["^1;3F"] = "^1;3F"
-        ALT_SHIFT_END: Literal["^1;4F"] = "^1;4F"
-        CTRL_END: Literal["^1;5F"] = "^1;5F"
-        CTRL_SHIFT_END: Literal["^1;6F"] = "^1;6F"
-        CTRL_ALT_END: Literal["^1;7F"] = "^1;7F"
-        CTRL_ALT_SHIFT_END: Literal["^1;8F"] = "^1;8F"
-        HOME: Literal["^G"] = "^G"
-        SHIFT_HOME: Literal["^1;2H"] = "^1;2H"
-        ALT_HOME: Literal["^1;3H"] = "^1;3H"
-        ALT_SHIFT_HOME: Literal["^1;4H"] = "^1;4H"
-        CTRL_HOME: Literal["^1;5H"] = "^1;5H"
-        CTRL_SHIFT_HOME: Literal["^1;6H"] = "^1;6H"
-        CTRL_ALT_HOME: Literal["^1;7H"] = "^1;7H"
-        CTRL_ALT_SHIFT_HOME: Literal["^1;8H"] = "^1;8H"
-        INSERT: Literal["^R"] = "^R"
-        SHIFT_INSERT: Literal["^2;2~"] = "^2;2~"
-        ALT_INSERT: Literal["^2;3~"] = "^2;3~"
-        ALT_SHIFT_INSERT: Literal["^2;4~"] = "^2;4~"
-        CTRL_INSERT: Literal["^2;5~"] = "^2;5~"
-        CTRL_SHIFT_INSERT: Literal["^2;6~"] = "^2;6~"
-        CTRL_ALT_INSERT: Literal["^2;7~"] = "^2;7~"
-        CTRL_ALT_SHIFT_INSERT: Literal["^2;8~"] = "^2;8~"
-        DEL: Literal["^S"] = "^S"
-        SHIFT_DEL: Literal["^3;2~"] = "^3;2~"
-        ALT_DEL: Literal["^3;3~"] = "^3;3~"
-        ALT_SHIFT_DEL: Literal["^3;4~"] = "^3;4~"
-        CTRL_DEL: Literal["^3;5~"] = "^3;5~"
-        CTRL_SHIFT_DEL: Literal["^3;6~"] = "^3;6~"
-        CTRL_ALT_DEL: Literal["^3;7~"] = "^3;7~"
-        CTRL_ALT_SHIFT_DEL: Literal["^3;8~"] = "^3;8~"
-        PG_UP: Literal["^I"] = "^I"
-        SHIFT_PG_UP: Literal["^5;2~"] = "^5;2~"
-        ALT_PG_UP: Literal["^5;3~"] = "^5;3~"
-        ALT_SHIFT_PG_UP: Literal["^5;4~"] = "^5;4~"
-        CTRL_PG_UP: Literal["^5;5~"] = "^5;5~"
-        CTRL_SHIFT_PG_UP: Literal["^5;6~"] = "^5;6~"
-        CTRL_ALT_PG_UP: Literal["^5;7~"] = "^5;7~"
-        CTRL_ALT_SHIFT_PG_UP: Literal["^5;8~"] = "^5;8~"
-        PG_DOWN: Literal["^Q"] = "^Q"
-        SHIFT_PG_DOWN: Literal["^6;2~"] = "^6;2~"
-        ALT_PG_DOWN: Literal["^6;3~"] = "^6;3~"
-        ALT_SHIFT_PG_DOWN: Literal["^6;4~"] = "^6;4~"
-        CTRL_PG_DOWN: Literal["^6;5~"] = "^6;5~"
-        CTRL_SHIFT_PG_DOWN: Literal["^6;6~"] = "^6;6~"
-        CTRL_ALT_PG_DOWN: Literal["^6;7~"] = "^6;7~"
-        CTRL_ALT_SHIFT_PG_DOWN: Literal["^6;8~"] = "^6;8~"
-        F1: Literal["^OP"] = "^OP"
-        SHIFT_F1: Literal["^1;2P"] = "^1;2P"
-        ALT_F1: Literal["^1;3P"] = "^1;3P"
-        ALT_SHIFT_F1: Literal["^1;4P"] = "^1;4P"
-        CTRL_F1: Literal["^1;5P"] = "^1;5P"
-        CTRL_SHIFT_F1: Literal["^1;6P"] = "^1;6P"
-        CTRL_ALT_F1: Literal["^1;7P"] = "^1;7P"
-        CTRL_ALT_SHIFT_F1: Literal["^1;8P"] = "^1;8P"
-        F2: Literal["^OQ"] = "^OQ"
-        SHIFT_F2: Literal["^1;2Q"] = "^1;2Q"
-        ALT_F2: Literal["^1;3Q"] = "^1;3Q"
-        ALT_SHIFT_F2: Literal["^1;4Q"] = "^1;4Q"
-        CTRL_F2: Literal["^1;5Q"] = "^1;5Q"
-        CTRL_SHIFT_F2: Literal["^1;6Q"] = "^1;6Q"
-        CTRL_ALT_F2: Literal["^1;7Q"] = "^1;7Q"
-        CTRL_ALT_SHIFT_F2: Literal["^1;8Q"] = "^1;8Q"
-        F3: Literal["^OR"] = "^OR"
-        SHIFT_F3: Literal["^1;2R"] = "^1;2R"
-        ALT_F3: Literal["^1;3R"] = "^1;3R"
-        ALT_SHIFT_F3: Literal["^1;4R"] = "^1;4R"
-        CTRL_F3: Literal["^1;5R"] = "^1;5R"
-        CTRL_SHIFT_F3: Literal["^1;6R"] = "^1;6R"
-        CTRL_ALT_F3: Literal["^1;7R"] = "^1;7R"
-        CTRL_ALT_SHIFT_F3: Literal["^1;8R"] = "^1;8R"
-        F4: Literal["^OS"] = "^OS"
-        SHIFT_F4: Literal["^1;2S"] = "^1;2S"
-        ALT_F4: Literal["^1;3S"] = "^1;3S"
-        ALT_SHIFT_F4: Literal["^1;4S"] = "^1;4S"
-        CTRL_F4: Literal["^1;5S"] = "^1;5S"
-        CTRL_SHIFT_F4: Literal["^1;6S"] = "^1;6S"
-        CTRL_ALT_F4: Literal["^1;7S"] = "^1;7S"
-        CTRL_ALT_SHIFT_F4: Literal["^1;8S"] = "^1;8S"
-        F5: Literal["^15~"] = "^15~"
-        SHIFT_F5: Literal["^15;2~"] = "^15;2~"
-        ALT_F5: Literal["^15;3~"] = "^15;3~"
-        ALT_SHIFT_F5: Literal["^15;4~"] = "^15;4~"
-        CTRL_F5: Literal["^15;5~"] = "^15;5~"
-        CTRL_SHIFT_F5: Literal["^15;6~"] = "^15;6~"
-        CTRL_ALT_F5: Literal["^15;7~"] = "^15;7~"
-        CTRL_ALT_SHIFT_F5: Literal["^15;8~"] = "^15;8~"
-        F6: Literal["^17~"] = "^17~"
-        SHIFT_F6: Literal["^17;2~"] = "^17;2~"
-        ALT_F6: Literal["^17;3~"] = "^17;3~"
-        ALT_SHIFT_F6: Literal["^17;4~"] = "^17;4~"
-        CTRL_F6: Literal["^17;5~"] = "^17;5~"
-        CTRL_SHIFT_F6: Literal["^17;6~"] = "^17;6~"
-        CTRL_ALT_F6: Literal["^17;7~"] = "^17;7~"
-        CTRL_ALT_SHIFT_F6: Literal["^17;8~"] = "^17;8~"
-        F7: Literal["^18~"] = "^18~"
-        SHIFT_F7: Literal["^18;2~"] = "^18;2~"
-        ALT_F7: Literal["^18;3~"] = "^18;3~"
-        ALT_SHIFT_F7: Literal["^18;4~"] = "^18;4~"
-        CTRL_F7: Literal["^18;5~"] = "^18;5~"
-        CTRL_SHIFT_F7: Literal["^18;6~"] = "^18;6~"
-        CTRL_ALT_F7: Literal["^18;7~"] = "^18;7~"
-        CTRL_ALT_SHIFT_F7: Literal["^18;8~"] = "^18;8~"
-        F8: Literal["^19~"] = "^19~"
-        SHIFT_F8: Literal["^19;2~"] = "^19;2~"
-        ALT_F8: Literal["^19;3~"] = "^19;3~"
-        ALT_SHIFT_F8: Literal["^19;4~"] = "^19;4~"
-        CTRL_F8: Literal["^19;5~"] = "^19;5~"
-        CTRL_SHIFT_F8: Literal["^19;6~"] = "^19;6~"
-        CTRL_ALT_F8: Literal["^19;7~"] = "^19;7~"
-        CTRL_ALT_SHIFT_F8: Literal["^19;8~"] = "^19;8~"
-        F9: Literal["^20~"] = "^20~"
-        SHIFT_F9: Literal["^20;2~"] = "^20;2~"
-        ALT_F9: Literal["^20;3~"] = "^20;3~"
-        ALT_SHIFT_F9: Literal["^20;4~"] = "^20;4~"
-        CTRL_F9: Literal["^20;5~"] = "^20;5~"
-        CTRL_SHIFT_F9: Literal["^20;6~"] = "^20;6~"
-        CTRL_ALT_F9: Literal["^20;7~"] = "^20;7~"
-        CTRL_ALT_SHIFT_F9: Literal["^20;8~"] = "^20;8~"
-        F10: Literal["^21~"] = "^21~"
-        SHIFT_F10: Literal["^21;2~"] = "^21;2~"
-        ALT_F10: Literal["^21;3~"] = "^21;3~"
-        ALT_SHIFT_F10: Literal["^21;4~"] = "^21;4~"
-        CTRL_F10: Literal["^21;5~"] = "^21;5~"
-        CTRL_SHIFT_F10: Literal["^21;6~"] = "^21;6~"
-        CTRL_ALT_F10: Literal["^21;7~"] = "^21;7~"
-        CTRL_ALT_SHIFT_F10: Literal["^21;8~"] = "^21;8~"
-        F11: Literal["^23~"] = "^23~"
-        SHIFT_F11: Literal["^23;2~"] = "^23;2~"
-        ALT_F11: Literal["^23;3~"] = "^23;3~"
-        ALT_SHIFT_F11: Literal["^23;4~"] = "^23;4~"
-        CTRL_F11: Literal["^23;5~"] = "^23;5~"
-        CTRL_SHIFT_F11: Literal["^23;6~"] = "^23;6~"
-        CTRL_ALT_F11: Literal["^23;7~"] = "^23;7~"
-        CTRL_ALT_SHIFT_F11: Literal["^23;8~"] = "^23;8~"
-        F12: Literal["^24~"] = "^24~"
-        SHIFT_F12: Literal["^24;2~"] = "^24;2~"
-        ALT_F12: Literal["^24;3~"] = "^24;3~"
-        ALT_SHIFT_F12: Literal["^24;4~"] = "^24;4~"
-        CTRL_F12: Literal["^24;5~"] = "^24;5~"
-        CTRL_SHIFT_F12: Literal["^24;6~"] = "^24;6~"
-        CTRL_ALT_F12: Literal["^24;7~"] = "^24;7~"
-        CTRL_ALT_SHIFT_F12: Literal["^24;8~"] = "^24;8~"
-        CTRL_A: Literal["\x01"] = "\x01"
-        CTRL_B: Literal["\x02"] = "\x02"
-        CTRL_C: Literal["\x03"] = "\x03"
-        CTRL_D: Literal["\x04"] = "\x04"
-        CTRL_E: Literal["\x05"] = "\x05"
-        CTRL_F: Literal["\x06"] = "\x06"
-        CTRL_G: Literal["\x07"] = "\x07"
-        CTRL_H: Literal["\x08"] = "\x08"
-        CTRL_I: Literal["\x09"] = "\x09"
-        CTRL_J: Literal["\x0a"] = "\x0a"
-        CTRL_K: Literal["\x0b"] = "\x0b"
-        CTRL_L: Literal["\x0c"] = "\x0c"
-        CTRL_M: Literal["\x0d"] = "\x0d"
-        CTRL_N: Literal["\x0e"] = "\x0e"
-        CTRL_O: Literal["\x0f"] = "\x0f"
-        CTRL_P: Literal["\x10"] = "\x10"
-        CTRL_Q: Literal["\x11"] = "\x11"
-        CTRL_R: Literal["\x12"] = "\x12"
-        CTRL_S: Literal["\x13"] = "\x13"
-        CTRL_T: Literal["\x14"] = "\x14"
-        CTRL_U: Literal["\x15"] = "\x15"
-        CTRL_V: Literal["\x16"] = "\x16"
-        CTRL_W: Literal["\x17"] = "\x17"
-        CTRL_X: Literal["\x18"] = "\x18"
-        CTRL_Y: Literal["\x19"] = "\x19"
-        CTRL_Z: Literal["\x1a"] = "\x1a"
-        CTRL_0: Literal["Undefined"] = "Undefined"
-        CTRL_1: Literal["Undefined"] = "Undefined"
-        CTRL_2: Literal["Undefined"] = "Undefined"
-        CTRL_3: Literal["Undefined"] = "Undefined"
-        CTRL_4: Literal["Undefined"] = "Undefined"
-        CTRL_5: Literal["Undefined"] = "Undefined"
-        CTRL_6: Literal["Undefined"] = "Undefined"
-        CTRL_7: Literal["Undefined"] = "Undefined"
-        CTRL_8: Literal["Undefined"] = "Undefined"
-        CTRL_9: Literal["Undefined"] = "Undefined"
+
+        PRNT_SCR:       Literal["^\x37"] = "^\x37"
+        F1:             Literal["^\x3b"] = "^\x3b"
+        F2:             Literal["^\x3c"] = "^\x3c"
+        F3:             Literal["^\x3d"] = "^\x3d"
+        F4:             Literal["^\x3e"] = "^\x3e"
+        F5:             Literal["^\x3f"] = "^\x3f"
+        F6:             Literal["^\x40"] = "^\x40"
+        F7:             Literal["^\x41"] = "^\x41"
+        F8:             Literal["^\x42"] = "^\x42"
+        F9:             Literal["^\x43"] = "^\x43"
+        F10:            Literal["^\x44"] = "^\x44"
+        HOME:           Literal["^\x47"] = "^\x47"
+        UP:             Literal["^\x48"] = "^\x48"
+        PAGE_UP:        Literal["^\x49"] = "^\x49"
+        LEFT:           Literal["^\x4b"] = "^\x4b"
+        NUM_PAD_5:      Literal["^\x4c"] = "^\x4c"
+        RIGHT:          Literal["^\x4d"] = "^\x4d"
+        END:            Literal["^\x4f"] = "^\x4f"
+        DOWN:           Literal["^\x50"] = "^\x50"
+        PAGE_DOWN:      Literal["^\x51"] = "^\x51"
+        INS:            Literal["^\x52"] = "^\x52"
+        DEL:            Literal["^\x53"] = "^\x53"
+        SHIFT_F1:       Literal["^\x54"] = "^\x54"
+        SHIFT_F2:       Literal["^\x55"] = "^\x55"
+        SHIFT_F3:       Literal["^\x56"] = "^\x56"
+        SHIFT_F4:       Literal["^\x57"] = "^\x57"
+        SHIFT_F5:       Literal["^\x58"] = "^\x58"
+        SHIFT_F6:       Literal["^\x59"] = "^\x59"
+        SHIFT_F7:       Literal["^\x5a"] = "^\x5a"
+        SHIFT_F8:       Literal["^\x5b"] = "^\x5b"
+        SHIFT_F9:       Literal["^\x5c"] = "^\x5c"
+        SHIFT_F10:      Literal["^\x5d"] = "^\x5d"
+        CTRL_F1:        Literal["^\x5e"] = "^\x5e"
+        CTRL_F2:        Literal["^\x5f"] = "^\x5f"
+        CTRL_F3:        Literal["^\x60"] = "^\x60"
+        CTRL_F4:        Literal["^\x61"] = "^\x61"
+        CTRL_F5:        Literal["^\x62"] = "^\x62"
+        CTRL_F6:        Literal["^\x63"] = "^\x63"
+        CTRL_F7:        Literal["^\x64"] = "^\x64"
+        CTRL_F8:        Literal["^\x65"] = "^\x65"
+        CTRL_F9:        Literal["^\x66"] = "^\x66"
+        CTRL_F10:       Literal["^\x67"] = "^\x67"
+        ALT_F1:         Literal["^\x68"] = "^\x68"
+        ALT_F2:         Literal["^\x69"] = "^\x69"
+        ALT_F3:         Literal["^\x6a"] = "^\x6a"
+        ALT_F4:         Literal["^\x6b"] = "^\x6b"
+        ALT_F5:         Literal["^\x6c"] = "^\x6c"
+        ALT_F6:         Literal["^\x6d"] = "^\x6d"
+        ALT_F7:         Literal["^\x6e"] = "^\x6e"
+        ALT_F8:         Literal["^\x6f"] = "^\x6f"
+        ALT_F9:         Literal["^\x70"] = "^\x70"
+        ALT_F10:        Literal["^\x71"] = "^\x71"
+        CTRL_PRNT_SCR:  Literal["^\x72"] = "^\x72"
+        CTRL_LEFT:      Literal["^\x73"] = "^\x73"
+        CTRL_RIGHT:     Literal["^\x74"] = "^\x74"
+        CTRL_END:       Literal["^\x75"] = "^\x75"
+        CTRL_PAGE_DOWN: Literal["^\x76"] = "^\x76"
+        CTRL_HOME:      Literal["^\x77"] = "^\x77"
+
+        ALT_1:          Literal["^\x78"] = "^\x78"
+        ALT_2:          Literal["^\x79"] = "^\x79"
+        ALT_3:          Literal["^\x7a"] = "^\x7a"
+        ALT_4:          Literal["^\x7b"] = "^\x7b"
+        ALT_5:          Literal["^\x7c"] = "^\x7c"
+        ALT_6:          Literal["^\x7d"] = "^\x7d"
+        ALT_7:          Literal["^\x7e"] = "^\x7e"
+        ALT_8:          Literal["^\x7f"] = "^\x7f"
+        ALT_9:          Literal["^\x80"] = "^\x80"
+        ALT_0:          Literal["^\x81"] = "^\x81"
+        ALT_MINUS:      Literal["^\x82"] = "^\x82"
+        ALT_EQUALS:     Literal["^\x83"] = "^\x83"
+
+        CTRL_PAGE_UP:   Literal["^\x84"] = "^\x84"
+        F11:            Literal["^\x85"] = "^\x85"
+        F12:            Literal["^\x86"] = "^\x86"
+        SHIFT_F11:      Literal["^\x87"] = "^\x87"
+        SHIFT_F12:      Literal["^\x88"] = "^\x88"
+        CTRL_F11:       Literal["^\x89"] = "^\x89"
+        CTRL_F12:       Literal["^\x8a"] = "^\x8a"
+        ALT_F11:        Literal["^\x8b"] = "^\x8b"
+        ALT_F12:        Literal["^\x8c"] = "^\x8c"
+        CTRL_UP:        Literal["^\x8d"] = "^\x8d"
+        CTRL_MINUS:     Literal["^\x8e"] = "^\x8e"
+        CTRL_5:         Literal["^\x8f"] = "^\x8f"
+        CTRL_PLUS:      Literal["^\x90"] = "^\x90"
+        CTRL_DOWN:      Literal["^\x91"] = "^\x91"
+        CTRL_INS:       Literal["^\x92"] = "^\x92"
+        CTRL_DEL:       Literal["^\x93"] = "^\x93"
+        CTRL_TAB:       Literal["^\x94"] = "^\x94"
+        CTRL_SLASH:     Literal["^\x95"] = "^\x95"
+        CTRL_START:     Literal["^\x96"] = "^\x96"
+        ALT_HOME:       Literal["^\x97"] = "^\x97"
+        ALT_UP:         Literal["^\x98"] = "^\x98"
+        ALT_PAGE_UP:    Literal["^\x99"] = "^\x99"
+        ALT_LEFT:       Literal["^\x9b"] = "^\x9b"
+        ALT_RIGHT:      Literal["^\x9d"] = "^\x9d"
+        ALT_END:        Literal["^\x9f"] = "^\x9f"
+        ALT_DOWN:       Literal["^\xa0"] = "^\xa0"
+        ALT_PAGE_DOWN:  Literal["^\xa1"] = "^\xa1"
+        ALT_INS:        Literal["^\xa2"] = "^\xa2"
+        ALT_DEL:        Literal["^\xa3"] = "^\xa3"
+        ALT_SLASH:      Literal["^\xa4"] = "^\xa4"
+        ALT_TAB:        Literal["^\xa5"] = "^\xa5"
+        ALT_ENTER:      Literal["^\xa6"] = "^\xa6"
 
         __key_names: dict[str, str] = {
+            NUM_PAD_5: "NUMERIC PAD 5",
             UP: "UP",
-            SHIFT_UP: "SHIFT+UP",
-            ALT_UP: "ALT+UP",
-            ALT_SHIFT_UP: "ALT+SHIFT+UP",
-            CTRL_UP: "CTRL+UP",
-            CTRL_SHIFT_UP: "CTRL+SHIFT+UP",
-            CTRL_ALT_UP: "CTRL+ALT+UP",
-            CTRL_ALT_SHIFT_UP: "CTRL+ALT+SHIFT+UP",
+            ALT_UP: "ALT UP",
+            CTRL_UP: "CTRL UP",
             DOWN: "DOWN",
-            SHIFT_DOWN: "SHIFT+DOWN",
-            ALT_DOWN: "ALT+DOWN",
-            ALT_SHIFT_DOWN: "ALT+SHIFT+DOWN",
-            CTRL_DOWN: "CTRL+DOWN",
-            CTRL_SHIFT_DOWN: "CTRL+SHIFT+DOWN",
-            CTRL_ALT_DOWN: "CTRL+ALT+DOWN",
-            CTRL_ALT_SHIFT_DOWN: "CTRL+ALT+SHIFT+DOWN",
+            ALT_DOWN: "ALT DOWN",
+            CTRL_DOWN: "CTRL DOWN",
             RIGHT: "RIGHT",
-            SHIFT_RIGHT: "SHIFT+RIGHT",
-            ALT_RIGHT: "ALT+RIGHT",
-            ALT_SHIFT_RIGHT: "ALT+SHIFT+RIGHT",
-            CTRL_RIGHT: "CTRL+RIGHT",
-            CTRL_SHIFT_RIGHT: "CTRL+SHIFT+RIGHT",
-            CTRL_ALT_RIGHT: "CTRL+ALT+RIGHT",
-            CTRL_ALT_SHIFT_RIGHT: "CTRL+ALT+SHIFT+RIGHT",
+            ALT_RIGHT: "ALT RIGHT",
+            CTRL_RIGHT: "CTRL RIGHT",
             LEFT: "LEFT",
-            SHIFT_LEFT: "SHIFT+LEFT",
-            ALT_LEFT: "ALT+LEFT",
-            ALT_SHIFT_LEFT: "ALT+SHIFT+LEFT",
-            CTRL_LEFT: "CTRL+LEFT",
-            CTRL_SHIFT_LEFT: "CTRL+SHIFT+LEFT",
-            CTRL_ALT_LEFT: "CTRL+ALT+LEFT",
-            CTRL_ALT_SHIFT_LEFT: "CTRL+ALT+SHIFT+LEFT",
+            ALT_LEFT: "ALT LEFT",
+            CTRL_LEFT: "CTRL LEFT",
             END: "END",
-            SHIFT_END: "SHIFT+END",
-            ALT_END: "ALT+END",
-            ALT_SHIFT_END: "ALT+SHIFT+END",
-            CTRL_END: "CTRL+END",
-            CTRL_SHIFT_END: "CTRL+SHIFT+END",
-            CTRL_ALT_END: "CTRL+ALT+END",
-            CTRL_ALT_SHIFT_END: "CTRL+ALT+SHIFT+END",
+            ALT_END: "ALT END",
+            CTRL_END: "CTRL END",
             HOME: "HOME",
-            SHIFT_HOME: "SHIFT+HOME",
-            ALT_HOME: "ALT+HOME",
-            ALT_SHIFT_HOME: "ALT+SHIFT+HOME",
-            CTRL_HOME: "CTRL+HOME",
-            CTRL_SHIFT_HOME: "CTRL+SHIFT+HOME",
-            CTRL_ALT_HOME: "CTRL+ALT+HOME",
-            CTRL_ALT_SHIFT_HOME: "CTRL+ALT+SHIFT+HOME",
-            INSERT: "INSERT",
-            SHIFT_INSERT: "SHIFT+INSERT",
-            ALT_INSERT: "ALT+INSERT",
-            ALT_SHIFT_INSERT: "ALT+SHIFT+INSERT",
-            CTRL_INSERT: "CTRL+INSERT",
-            CTRL_SHIFT_INSERT: "CTRL+SHIFT+INSERT",
-            CTRL_ALT_INSERT: "CTRL+ALT+INSERT",
-            CTRL_ALT_SHIFT_INSERT: "CTRL+ALT+SHIFT+INSERT",
+            ALT_HOME: "ALT HOME",
+            CTRL_HOME: "CTRL HOME",
+            INS: "INSERT",
+            ALT_INS: "ALT INSERT",
+            CTRL_INS: "CTRL INSERT",
             DEL: "DEL",
-            SHIFT_DEL: "SHIFT+DEL",
-            ALT_DEL: "ALT+DEL",
-            ALT_SHIFT_DEL: "ALT+SHIFT+DEL",
-            CTRL_DEL: "CTRL+DEL",
-            CTRL_SHIFT_DEL: "CTRL+SHIFT+DEL",
-            CTRL_ALT_DEL: "CTRL+ALT+DEL",
-            CTRL_ALT_SHIFT_DEL: "CTRL+ALT+SHIFT+DEL",
-            PG_UP: "PG_UP",
-            SHIFT_UP: "SHIFT+UP",
-            ALT_UP: "ALT+UP",
-            ALT_SHIFT_UP: "ALT+SHIFT+UP",
-            CTRL_PG_UP: "CTRL+PG_UP",
-            CTRL_SHIFT_UP: "CTRL+SHIFT+UP",
-            CTRL_ALT_UP: "CTRL+ALT+UP",
-            CTRL_ALT_SHIFT_UP: "CTRL+ALT+SHIFT+UP",
-            PG_DOWN: "PG_DOWN",
-            SHIFT_DOWN: "SHIFT+DOWN",
-            ALT_DOWN: "ALT+DOWN",
-            ALT_SHIFT_DOWN: "ALT+SHIFT+DOWN",
-            CTRL_PG_DOWN: "CTRL+PG_DOWN",
-            CTRL_SHIFT_DOWN: "CTRL+SHIFT+DOWN",
-            CTRL_ALT_DOWN: "CTRL+ALT+DOWN",
-            CTRL_ALT_SHIFT_DOWN: "CTRL+ALT+SHIFT+DOWN",
+            ALT_DEL: "ALT DEL",
+            CTRL_DEL: "CTRL DEL",
+            PAGE_UP: "PAGE UP",
+            ALT_PAGE_UP: "ALT PAGE UP",
+            CTRL_PAGE_UP: "CTRL PAGE UP",
+            PAGE_DOWN: "PAGE DOWN",
+            ALT_PAGE_DOWN: "ALT PAGE DOWN",
+            CTRL_PAGE_DOWN: "CTRL PAGE DOWN",
             F1: "F1",
-            SHIFT_F1: "SHIFT+F1",
-            ALT_F1: "ALT+F1",
-            ALT_SHIFT_F1: "ALT+SHIFT+F1",
-            CTRL_F1: "CTRL+F1",
-            CTRL_SHIFT_F1: "CTRL+SHIFT+F1",
-            CTRL_ALT_F1: "CTRL+ALT+F1",
-            CTRL_ALT_SHIFT_F1: "CTRL+ALT+SHIFT+F1",
+            SHIFT_F1: "SHIFT F1",
+            ALT_F1: "ALT F1",
+            CTRL_F1: "CTRL F1",
             F2: "F2",
-            SHIFT_F2: "SHIFT+F2",
-            ALT_F2: "ALT+F2",
-            ALT_SHIFT_F2: "ALT+SHIFT+F2",
-            CTRL_F2: "CTRL+F2",
-            CTRL_SHIFT_F2: "CTRL+SHIFT+F2",
-            CTRL_ALT_F2: "CTRL+ALT+F2",
-            CTRL_ALT_SHIFT_F2: "CTRL+ALT+SHIFT+F2",
+            SHIFT_F2: "SHIFT F2",
+            ALT_F2: "ALT F2",
+            CTRL_F2: "CTRL F2",
             F3: "F3",
-            SHIFT_F3: "SHIFT+F3",
-            ALT_F3: "ALT+F3",
-            ALT_SHIFT_F3: "ALT+SHIFT+F3",
-            CTRL_F3: "CTRL+F3",
-            CTRL_SHIFT_F3: "CTRL+SHIFT+F3",
-            CTRL_ALT_F3: "CTRL+ALT+F3",
-            CTRL_ALT_SHIFT_F3: "CTRL+ALT+SHIFT+F3",
+            SHIFT_F3: "SHIFT F3",
+            ALT_F3: "ALT F3",
+            CTRL_F3: "CTRL F3",
             F4: "F4",
-            SHIFT_F4: "SHIFT+F4",
-            ALT_F4: "ALT+F4",
-            ALT_SHIFT_F4: "ALT+SHIFT+F4",
-            CTRL_F4: "CTRL+F4",
-            CTRL_SHIFT_F4: "CTRL+SHIFT+F4",
-            CTRL_ALT_F4: "CTRL+ALT+F4",
-            CTRL_ALT_SHIFT_F4: "CTRL+ALT+SHIFT+F4",
+            SHIFT_F4: "SHIFT F4",
+            ALT_F4: "ALT F4",
+            CTRL_F4: "CTRL F4",
             F5: "F5",
-            SHIFT_F5: "SHIFT+F5",
-            ALT_F5: "ALT+F5",
-            ALT_SHIFT_F5: "ALT+SHIFT+F5",
-            CTRL_F5: "CTRL+F5",
-            CTRL_SHIFT_F5: "CTRL+SHIFT+F5",
-            CTRL_ALT_F5: "CTRL+ALT+F5",
-            CTRL_ALT_SHIFT_F5: "CTRL+ALT+SHIFT+F5",
+            SHIFT_F5: "SHIFT F5",
+            ALT_F5: "ALT F5",
+            CTRL_F5: "CTRL F5",
             F6: "F6",
-            SHIFT_F6: "SHIFT+F6",
-            ALT_F6: "ALT+F6",
-            ALT_SHIFT_F6: "ALT+SHIFT+F6",
-            CTRL_F6: "CTRL+F6",
-            CTRL_SHIFT_F6: "CTRL+SHIFT+F6",
-            CTRL_ALT_F6: "CTRL+ALT+F6",
-            CTRL_ALT_SHIFT_F6: "CTRL+ALT+SHIFT+F6",
+            SHIFT_F6: "SHIFT F6",
+            ALT_F6: "ALT F6",
+            CTRL_F6: "CTRL F6",
             F7: "F7",
-            SHIFT_F7: "SHIFT+F7",
-            ALT_F7: "ALT+F7",
-            ALT_SHIFT_F7: "ALT+SHIFT+F7",
-            CTRL_F7: "CTRL+F7",
-            CTRL_SHIFT_F7: "CTRL+SHIFT+F7",
-            CTRL_ALT_F7: "CTRL+ALT+F7",
-            CTRL_ALT_SHIFT_F7: "CTRL+ALT+SHIFT+F7",
+            SHIFT_F7: "SHIFT F7",
+            ALT_F7: "ALT F7",
+            CTRL_F7: "CTRL F7",
             F8: "F8",
-            SHIFT_F8: "SHIFT+F8",
-            ALT_F8: "ALT+F8",
-            ALT_SHIFT_F8: "ALT+SHIFT+F8",
-            CTRL_F8: "CTRL+F8",
-            CTRL_SHIFT_F8: "CTRL+SHIFT+F8",
-            CTRL_ALT_F8: "CTRL+ALT+F8",
-            CTRL_ALT_SHIFT_F8: "CTRL+ALT+SHIFT+F8",
+            SHIFT_F8: "SHIFT F8",
+            ALT_F8: "ALT F8",
+            CTRL_F8: "CTRL F8",
             F9: "F9",
-            SHIFT_F9: "SHIFT+F9",
-            ALT_F9: "ALT+F9",
-            ALT_SHIFT_F9: "ALT+SHIFT+F9",
-            CTRL_F9: "CTRL+F9",
-            CTRL_SHIFT_F9: "CTRL+SHIFT+F9",
-            CTRL_ALT_F9: "CTRL+ALT+F9",
-            CTRL_ALT_SHIFT_F9: "CTRL+ALT+SHIFT+F9",
+            SHIFT_F9: "SHIFT F9",
+            ALT_F9: "ALT F9",
+            CTRL_F9: "CTRL F9",
             F10: "F10",
-            SHIFT_F10: "SHIFT+F10",
-            ALT_F10: "ALT+F10",
-            ALT_SHIFT_F10: "ALT+SHIFT+F10",
-            CTRL_F10: "CTRL+F10",
-            CTRL_SHIFT_F10: "CTRL+SHIFT+F10",
-            CTRL_ALT_F10: "CTRL+ALT+F10",
-            CTRL_ALT_SHIFT_F10: "CTRL+ALT+SHIFT+F10",
+            SHIFT_F10: "SHIFT F10",
+            ALT_F10: "ALT F10",
+            CTRL_F10: "CTRL F10",
             F11: "F11",
-            SHIFT_F11: "SHIFT+F11",
-            ALT_F11: "ALT+F11",
-            ALT_SHIFT_F11: "ALT+SHIFT+F11",
-            CTRL_F11: "CTRL+F11",
-            CTRL_SHIFT_F11: "CTRL+SHIFT+F11",
-            CTRL_ALT_F11: "CTRL+ALT+F11",
-            CTRL_ALT_SHIFT_F11: "CTRL+ALT+SHIFT+F11",
+            SHIFT_F11: "SHIFT F11",
+            ALT_F11: "ALT F11",
+            CTRL_F11: "CTRL F11",
             F12: "F12",
-            SHIFT_F12: "SHIFT+F12",
-            ALT_F12: "ALT+F12",
-            ALT_SHIFT_F12: "ALT+SHIFT+F12",
-            CTRL_F12: "CTRL+F12",
-            CTRL_SHIFT_F12: "CTRL+SHIFT+F12",
-            CTRL_ALT_F12: "CTRL+ALT+F12",
-            CTRL_ALT_SHIFT_F12: "CTRL+ALT+SHIFT+F12",
+            SHIFT_F12: "SHIFT F12",
+            ALT_F12: "ALT F12",
+            CTRL_F12: "CTRL F12",
             BACKSPACE: "BACKSPACE",
             TAB: "TAB",
             ENTER: "ENTER",
             ESC: "ESC",
-            CTRL_BACKSPACE: "CTRL+BACKSPACE",
-            CTRL_TAB: "CTRL+TAB",
-            CTRL_ENTER: "CTRL+ENTER",
-            CTRL_A: "CTRL+A",
-            CTRL_B: "CTRL+B",
-            CTRL_C: "CTRL+C",
-            CTRL_D: "CTRL+D",
-            CTRL_E: "CTRL+E",
-            CTRL_F: "CTRL+F",
-            CTRL_G: "CTRL+G",
+            CTRL_PLUS: "CTRL +",
+            CTRL_MINUS: "CTRL -",
+            CTRL_SLASH: "CTRL /",
+            CTRL_START: "CTRL *",
+            ALT_MINUS: "ALT -",
+            ALT_EQUALS: "ALT =",
+            ALT_SLASH: "ALT /",
+            ALT_TAB: "ALT TAB",
+            ALT_ENTER: "ALT ENTER",
+            PRNT_SCR: "PRINT SCREEN",
+            CTRL_PRNT_SCR: "CTRL PRINT SCREEN",
+            CTRL_BACKSPACE: "CTRL BACKSPACE",
+            CTRL_TAB: "CTRL TAB",
+            CTRL_ENTER: "CTRL ENTER",
+            CTRL_A: "CTRL A",
+            CTRL_B: "CTRL B",
+            CTRL_C: "CTRL C",
+            CTRL_D: "CTRL D",
+            CTRL_E: "CTRL E",
+            CTRL_F: "CTRL F",
+            CTRL_G: "CTRL G",
             CTRL_H: "BACKSPACE",
             CTRL_I: "TAB",
-            CTRL_J: "CTRL+ENTER",
-            CTRL_K: "CTRL+K",
-            CTRL_L: "CTRL+L",
+            CTRL_J: "CTRL ENTER",
+            CTRL_K: "CTRL K",
+            CTRL_L: "CTRL L",
             CTRL_M: "ENTER",
-            CTRL_N: "CTRL+N",
-            CTRL_O: "CTRL+O",
-            CTRL_P: "CTRL+P",
-            CTRL_Q: "CTRL+Q",
-            CTRL_R: "CTRL+R",
-            CTRL_S: "CTRL+S",
-            CTRL_T: "CTRL+T",
-            CTRL_U: "CTRL+U",
-            CTRL_V: "CTRL+V",
-            CTRL_W: "CTRL+W",
-            CTRL_X: "CTRL+X",
-            CTRL_Y: "CTRL+Y",
-            CTRL_Z: "CTRL+Z",
-            CTRL_0: "CTRL+0",
-            CTRL_1: "CTRL+1",
-            CTRL_2: "CTRL+2",
-            CTRL_3: "CTRL+3",
-            CTRL_4: "CTRL+4",
-            CTRL_5: "CTRL+5",
-            CTRL_6: "CTRL+6",
-            CTRL_7: "CTRL+7",
-            CTRL_8: "CTRL+8",
-            CTRL_9: "CTRL+9",
+            CTRL_N: "CTRL N",
+            CTRL_O: "CTRL O",
+            CTRL_P: "CTRL P",
+            CTRL_Q: "CTRL Q",
+            CTRL_R: "CTRL R",
+            CTRL_S: "CTRL S",
+            CTRL_T: "CTRL T",
+            CTRL_U: "CTRL U",
+            CTRL_V: "CTRL V",
+            CTRL_W: "CTRL W",
+            CTRL_X: "CTRL X",
+            CTRL_Y: "CTRL Y",
+            CTRL_Z: "CTRL Z",
+            CTRL_0: "CTRL 0",
+            CTRL_1: "CTRL 1",
+            CTRL_2: "CTRL 2",
+            CTRL_3: "CTRL 3",
+            CTRL_4: "CTRL 4",
+            CTRL_5: "CTRL 5",
+            CTRL_6: "CTRL 6",
+            CTRL_7: "CTRL 7",
+            CTRL_8: "CTRL 8",
+            CTRL_9: "CTRL 9",
+            ALT_0: "ALT 0",
+            ALT_1: "ALT 1",
+            ALT_2: "ALT 2",
+            ALT_3: "ALT 3",
+            ALT_4: "ALT 4",
+            ALT_5: "ALT 5",
+            ALT_6: "ALT 6",
+            ALT_7: "ALT 7",
+            ALT_8: "ALT 8",
+            ALT_9: "ALT 9",
         }
 
         @staticmethod
@@ -473,9 +327,9 @@ if os.name == "nt":
 
             Examples:
                 >>> Key.nameof("\x01")
-                "CTRL+A"
+                "CTRL A"
                 >>> Key.nameof(Key.CTRL_A)
-                "CTRL+A"
+                "CTRL A"
                 >>> Key.nameof"\r")
                 "ENTER"
                 >>> Key.nameof("A")
@@ -510,8 +364,8 @@ if os.name == "nt":
         multiline = list[str]()
         line = ""
         while True:
-            key = read_key()
-            if key == (Key.CTRL_D, Key.CTRL_ENTER):
+            key = readchar()
+            if key in (Key.CTRL_ENTER):
                 break
             # TODO: Handle arrow keys
             if key in (Key.ENTER):
@@ -532,7 +386,7 @@ if os.name == "nt":
         """
         line = ""
         while True:
-            key = read_key()
+            key = readchar()
             # TODO: Handle arrow keys (left and right only)
             if key in (Key.CTRL_D, Key.ENTER, Key.CTRL_ENTER):
                 break
@@ -548,12 +402,13 @@ if os.name == "nt":
             str: The key pressed by the user.
         """
         ch = msvcrt.getwch()
+        print(f"\\x{'%0.2x' % ord(ch)}", end="")
+        if ord(ch) in (0, 224) :
+            code = msvcrt.getwch()
+            print(f"+\\x{'%0.2x' % ord(code)}", end="")
+            ch = f"^{code}"
         if ch == Key.CTRL_C:
             raise KeyboardInterrupt
-        if ord(ch) == 0 :
-            ch = "^(" + msvcrt.getwch() + ")"
-        elif ord(ch) == 224 :
-            ch = "^" + msvcrt.getwch()
         return ch
 
     def read_key_name() -> str:
