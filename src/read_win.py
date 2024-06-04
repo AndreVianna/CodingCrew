@@ -402,10 +402,8 @@ if os.name == "nt":
             str: The key pressed by the user.
         """
         ch = msvcrt.getwch()
-        print(f"\\x{'%0.2x' % ord(ch)}", end="")
         if ord(ch) in (0, 224) :
             code = msvcrt.getwch()
-            print(f"+\\x{'%0.2x' % ord(code)}", end="")
             ch = f"^{code}"
         if ch == Key.CTRL_C:
             raise KeyboardInterrupt
