@@ -3,12 +3,11 @@ Represents utility functions used throughout the application.
 """
 
 import os
-from typing import Any, Literal
-
 if os.name != "nt":
     import sys
     import tty
     import termios
+    from typing import Any, Literal
 
     class Key:
         """
@@ -536,7 +535,7 @@ if os.name != "nt":
             result = key if key else char
             return result
 
-    def readlines() -> list[str]:
+    def readlines(allow_ctrl_c: bool = False) -> list[str]:
         """
         Read multiple lines of input from the user.
 
@@ -547,23 +546,21 @@ if os.name != "nt":
         multiline = list[str]()
         line = ""
         try:
-            while True:
-                key = __read_key()
-                if key in (Key.CTRL_D, Key.CTRL_ENTER):
-                    break
-                # TODO: Handle arrow keys
+            key = __read_key(allow_ctrl_c)
+            while key not in (Key.CTRL_D, Key.CTRL_ENTER):
+                # TODO: Handle special keys
                 if key in (Key.ENTER):
-                    print("\r")
                     multiline.append(line)
                     line = ""
-                    continue
-                line += key
+                else:
+                    line += key
                 print(key, end="", flush=True)
+                key = __read_key(allow_ctrl_c)
         finally:
             __end_read(fd, old_settings)
         return multiline
 
-    def readline() -> str:
+    def readline(allow_ctrl_c: bool = False) -> str:
         """
         Reads a line of input from the user.
 
@@ -573,18 +570,17 @@ if os.name != "nt":
         fd, old_settings = __start_read()
         line = ""
         try:
-            while True:
-                key = __read_key()
+            key = __read_key(allow_ctrl_c)
+            while key not in (Key.CTRL_D, Key.ENTER, Key.CTRL_ENTER):
                 # TODO: Handle arrow keys (left and right only)
-                if key in (Key.CTRL_D, Key.ENTER, Key.CTRL_ENTER):
-                    break
                 line += key
                 print(key, end="", flush=True)
+                key = __read_key(allow_ctrl_c)
         finally:
             __end_read(fd, old_settings)
         return line
 
-    def readchar() -> str:
+    def readchar(allow_ctrl_c: bool = False) -> str:
         """
         Reads a single key press from the user.
 
@@ -593,7 +589,7 @@ if os.name != "nt":
         """
         fd, old_settings = __start_read()
         try :
-            return __read_key()
+            return __read_key(allow_ctrl_c)
         finally :
             __end_read(fd, old_settings)
 
@@ -607,13 +603,13 @@ if os.name != "nt":
     def __end_read(fd: int, old_settings: list[Any]) -> None:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
-    def __read_key() -> str:
+    def __read_key(allow_ctrl_c: bool) -> str:
         ch = sys.stdin.read(1)
         if ord(ch) == 27:
             ch = "^"
             code = sys.stdin.read(1)
             if code == "[" :
-                code = ''
+                code = ""
             ch += code
 
             code = sys.stdin.read(1)
@@ -621,11 +617,11 @@ if os.name != "nt":
             while code.isnumeric() or code == ";":
                 code = sys.stdin.read(1)
                 ch += code
-        if ch in Key.CTRL_C:
+        if ch in Key.CTRL_C and not allow_ctrl_c:
             raise KeyboardInterrupt
         return ch
 
-    def read_key_name() -> str:
+    def get_key_name() -> str:
         """
         Reads a single key press from the user.
 

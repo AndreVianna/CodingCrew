@@ -3,10 +3,9 @@ Represents utility functions used throughout the application.
 """
 
 import os
-from typing import Literal
-
 if os.name == "nt":
     import msvcrt
+    from typing import Literal
     import sys
 
     class Key:
@@ -354,7 +353,7 @@ if os.name == "nt":
             ch = "^" + msvcrt.getwch()
         return ch
 
-    def readlines() -> list[str]:
+    def readlines(allow_ctrl_c: bool = False) -> list[str]:
         """
         Read multiple lines of input from the user.
 
@@ -363,21 +362,19 @@ if os.name == "nt":
         """
         multiline = list[str]()
         line = ""
-        while True:
-            key = readchar()
-            if key in (Key.CTRL_ENTER):
-                break
-            # TODO: Handle arrow keys
+        key = readchar(allow_ctrl_c)
+        while key not in (Key.CTRL_ENTER):
+            # TODO: Handle special keys
             if key in (Key.ENTER):
                 multiline.append(line)
-                print(flush=True)
                 line = ""
-                continue
-            line += key
+            else:
+                line += key
             print(key, end="", flush=True)
+            key = readchar(allow_ctrl_c)
         return multiline
 
-    def readline() -> str:
+    def readline(allow_ctrl_c: bool = False) -> str:
         """
         Reads a line of input from the user.
 
@@ -385,16 +382,15 @@ if os.name == "nt":
             str: The line of input entered by the user.
         """
         line = ""
-        while True:
-            key = readchar()
-            # TODO: Handle arrow keys (left and right only)
-            if key in (Key.CTRL_D, Key.ENTER, Key.CTRL_ENTER):
-                break
+        key = readchar(allow_ctrl_c)
+        while key not in (Key.CTRL_D, Key.ENTER, Key.CTRL_ENTER):
+            # TODO: Handle speacil keys (left and right only)
             line += key
             print(key, end="", flush=True)
+            key = readchar(allow_ctrl_c)
         return line
 
-    def readchar() -> str:
+    def readchar(allow_ctrl_c: bool = False) -> str:
         """
         Reads a single key press from the user.
 
@@ -405,11 +401,11 @@ if os.name == "nt":
         if ord(ch) in (0, 224) :
             code = msvcrt.getwch()
             ch = f"^{code}"
-        if ch == Key.CTRL_C:
+        if ch == Key.CTRL_C and not allow_ctrl_c:
             raise KeyboardInterrupt
         return ch
 
-    def read_key_name() -> str:
+    def get_key_name() -> str:
         """
         Reads a single key press from the user.
 

@@ -1,17 +1,16 @@
 """Entry point."""
 
 import sys
+from langgraph.graph.graph import CompiledGraph
+import workflow
 
 import utils
 if "--dev" in sys.argv:
-    key=""
+    key = utils.read_char()
     while key !=  utils.Key.CTRL_ENTER:
-        key = utils.read_char()
         print(f"{key}: {utils.Key.nameof(key)}")
+        key = utils.read_char()
     sys.exit()
-
-from langgraph.graph.graph import CompiledGraph
-import workflow
 
 is_debugging = "--debug" in sys.argv or "-d" in sys.argv
 wkf: CompiledGraph = workflow.build(is_debugging)
