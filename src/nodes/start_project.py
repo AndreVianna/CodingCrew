@@ -12,7 +12,7 @@ import os
 import sys
 from os.path import expanduser
 from models.workflow import AnalysisState
-from utils import clear, read_lines, paint, write_line, to_snake_case
+from utils import clear, read_text, paint, write_line, to_snake_case
 
 def create(state: AnalysisState) -> AnalysisState:
     """
@@ -64,7 +64,7 @@ def create(state: AnalysisState) -> AnalysisState:
         yes_no = ""
 
         write_line(f"You can add multiple lines. Press '{submit_key}' to submit.", styles=["dim"])
-        lines += read_lines()
+        lines += read_text()
 
         write_line()
         write_line("Can we proceed to the analysis of the project description? ([Yes]/no/eXit): ")

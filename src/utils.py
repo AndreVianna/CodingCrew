@@ -6,9 +6,9 @@ import re
 from typing import Iterable, Literal
 import os
 if os.name == "nt":
-    from read_win import readchar, readline, readlines, Key
+    from read_win import read_key as _read_key, read_line as _read_line, read_lines as _read_lines, read_text as _read_text, IndentationMode
 else:
-    from read_linux import readchar, readline, readlines, Key
+    from read_linux import read_key as _read_key, read_line as _read_line, read_lines as _read_lines, read_text as _read_text, IndentationMode
 
 Style = Literal[
     "bold",
@@ -184,17 +184,6 @@ def write_raw(text: str | None = None, foreground: Color | None = None, backgrou
     if text:
         write(outdent(text), foreground, background, styles)
 
-def read_char() -> str:
-    """
-    Allows the user to enter a single string.
-
-    Returns:
-        str: The multiline string entered by the user.
-    """
-    return readchar()
-
-Key = Key
-
 def read_line() -> str:
     """
     Allows the user to enter a single string.
@@ -202,16 +191,16 @@ def read_line() -> str:
     Returns:
         str: The multiline string entered by the user.
     """
-    return readline()
+    return _read_line(trim_line=True)
 
-def read_lines() -> list[str]:
+def read_text() -> str:
     """
     Allows the user to enter a multiline string ending by pressing Shift+Enter.
 
         Returns:
-        list[str]: The multiline string entered by the user.
+        str: The text entered by the user.
     """
-    return readlines()
+    return _read_text(remove_empty_lines=True, trim_line_ends = True, indentation_mode=IndentationMode.NORMALIZE)
 
 symbols = re.compile(r"\W")
 alpha_before_digit = re.compile(r"([A-Za-z])([0-9])")

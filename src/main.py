@@ -6,10 +6,10 @@ import workflow
 
 import utils
 if "--dev" in sys.argv:
-    key = utils.read_char()
-    while key !=  utils.Key.CTRL_ENTER:
-        print(f"{key}: {utils.Key.nameof(key)}")
-        key = utils.read_char()
+    TEXT: str = utils.read_text()
+    print()
+    print("Result:")
+    print(TEXT)
     sys.exit()
 
 is_debugging = "--debug" in sys.argv or "-d" in sys.argv
