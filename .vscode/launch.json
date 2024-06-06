@@ -19,7 +19,7 @@
             "request": "launch",
             "program": "src/main.py",
             "console": "integratedTerminal",
-            "args": "-k",
+            "args": "-s",
             "justMyCode": true
         }
     ]

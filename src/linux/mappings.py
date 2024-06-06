@@ -20,7 +20,7 @@ class KeyMapping:
     def static_init(cls):
         members = [attr for attr in dir(cls) if not callable(getattr(cls, attr)) and not attr.startswith("_")]
         for member in members:
-            name = member.replace("CTRL_", "CTRL+").replace("ALT_", "ALT+").replace("SHIFT_", "SHIFT+").replace("_", " ").replace("_", " ")
+            name = member.replace("CTRL_", "CTRL+").replace("ALT_", "ALT+").replace("SHIFT_", "SHIFT+").replace("_", "")
             value :str = getattr(cls, member)
             if value not in cls._name_of.keys():
                 cls._name_of[value] = name
@@ -46,21 +46,10 @@ class KeyMapping:
     def code_of(char: str) -> str:
         if char == "???":
             return char
-        if char.startswith("\x1b"):
-            return char.replace("\x1b", "\\x1b")
         return "".join([f"\\x{ord(c):02x}" for c in char])
 
-    CTRL_TAB = "???" # Need to find out the value
-    CTRL_0 = "???" # Need to find out the value
-    CTRL_1 = "???" # Need to find out the value
-    CTRL_2 = "???" # Need to find out the value
-    CTRL_3 = "???" # Need to find out the value
-    CTRL_4 = "???" # Need to find out the value
-    CTRL_5 = "???" # Need to find out the value
-    CTRL_6 = "???" # Need to find out the value
-    CTRL_7 = "???" # Need to find out the value
-    CTRL_8 = "???" # Need to find out the value
-    CTRL_9 = "???" # Need to find out the value
+    CTRL_2 = "\x00" # Need to find out the value
+    CTRL_6 = "\x1e"
 
     CTRL_A = "\x01"
     CTRL_B = "\x02"
@@ -96,36 +85,48 @@ class KeyMapping:
 
     ESC          = "\x1b"
     CTRL_BKSLASH = "\x1c"
-    UNKNOWN_1    = "\x1d"
-    UNKNOWN_2    = "\x1e"
+    CTRL_MINUS   = "\x1d"
     CTRL_SLASH   = "\x1f"
 
     BACKSPACE    = "\x7f"
+
+    GET_CURSOR_POS      = "\x1b[6n" # reports as \x1b[#l;#cR
+    CURSOR_UP           = "\x1b[#nA"
+    CURSOR_DOWN         = "\x1b[#nB"
+    CURSOR_RIGHT        = "\x1b[#nC"
+    CURSOR_LEFT         = "\x1b[#nD"
+    CURSOR_DOWN_BOL     = "\x1b[#nE"
+    CURSOR_UP_BOL       = "\x1b[#nF"
+    CURSOR_TO_COL       = "\x1b[#nG"
+    CURSOR_HOME         = "\x1b[H"
+    CURSOR_MOVE         = "\x1b[#l;#cH"
+
+    CLEAR_TO_SCR_END    = "\x1b[J"
+    CLEAR_TO_SCR_BEGIN  = "\x1b[1J"
+    CLEAR_SCREN         = "\x1b[2J"
+    CLEAR_TO_LINE_END   = "\x1b[K"
+    CLEAR_TO_LINE_BEGIN = "\x1b[1K"
+    CLEAR_LINE          = "\x1b[2K"
 
     UP                  = "\x1b[A"
     DOWN                = "\x1b[B"
     RIGHT               = "\x1b[C"
     LEFT                = "\x1b[D"
-    BEGIN               = "\x1b[E"
-    UNKNOWN_3           = "\x1b[F"
     END                 = "\x1b[G"
-    UNKNOWN_4           = "\x1b[H"
     HOME                = "\x1b[I"
-    CLEAR_SCREEN_AHEAD  = "\x1b[J"
-    CLEAR_SCREEN_BEHIND = "\x1b[1J"
-    CLEAR_LINE_AHEAD    = "\x1b[K"
-    CLEAR_LINE_BEHIND   = "\x1b[1K"
     F1                  = "\x1b[P"
     F2                  = "\x1b[Q"
     F3                  = "\x1b[R"
     F4                  = "\x1b[S"
-    UNKNOWN_5           = "\x1b[T"
-    UNKNOWN_6           = "\x1b[U"
-    UNKNOWN_7           = "\x1b[V"
-    UNKNOWN_8           = "\x1b[W"
-    UNKNOWN_9           = "\x1b[X"
-    UNKNOWN_10          = "\x1b[Y"
+
     SHIFT_TAB           = "\x1b[Z"
+    ALT_TAB             = "\x1b[27;3~"
+    ALT_SHIFT_TAB       = "\x1b[27;4~"
+    CTRL_TAB            = "\x1b[27;5~"
+    CTRL_SHIFT_TAB      = "\x1b[27;6~"
+    CTRL_ALT_TAB        = "\x1b[27;7~"
+    CTRL_ALT_SHIFT_TAB  = "\x1b[27;8~"
+
 
     SHIFT_UP                   = "\x1b[1;2A"
     SHIFT_DOWN                 = "\x1b[1;2B"

@@ -5,9 +5,10 @@ Represents utility functions used throughout the application.
 import re
 import sys
 import os
+import curses
 from typing import Iterable, Literal
 
-if sys.platform.startswith("windows"):
+if sys.platform.startswith("win32"):
     from windows.read import read_key as _read_key, read_line as _read_line, read_lines as _read_lines, read_text as _read_text, IndentationMode, KeyMapping
 elif sys.platform.startswith("linux"):
     from linux.read import read_key as _read_key, read_line as _read_line, read_lines as _read_lines, read_text as _read_text, IndentationMode, KeyMapping
@@ -184,12 +185,25 @@ def outdent(text: object) -> str:
     return os.linesep.join(new_lines)
 
 
-def write_raw(text: str | None = None, foreground: Color | None = None, background: Color | None = None, styles: Iterable[Style] | None = None) -> None:
+def write_raw(text: str) -> None:
     """
     Prints a colored prompt.
     """
     if text:
-        write(outdent(text), foreground, background, styles)
+        print(text, end = "", flush = True)
+
+def get_cursor_position():
+    """
+    Returns the current cursor position and the text at the cursor position.
+    """
+    curses.filter()
+    scr = curses.initscr()
+    try:
+        y, x = scr.getyx()
+        char = chr(scr.inch(y, x))
+    finally:
+        curses.endwin()
+    return (y, x, char)
 
 def read_key() -> str:
     """
