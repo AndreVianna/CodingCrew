@@ -3,12 +3,18 @@ Represents utility functions used throughout the application.
 """
 
 import re
-from typing import Iterable, Literal
+import sys
 import os
-if os.name == "nt":
-    from read_win import read_key as _read_key, read_line as _read_line, read_lines as _read_lines, read_text as _read_text, IndentationMode, Key as __Key
+from typing import Iterable, Literal
+
+if sys.platform.startswith("windows"):
+    from windows.read import read_key as _read_key, read_line as _read_line, read_lines as _read_lines, read_text as _read_text, IndentationMode, KeyMapping
+elif sys.platform.startswith("linux"):
+    from linux.read import read_key as _read_key, read_line as _read_line, read_lines as _read_lines, read_text as _read_text, IndentationMode, KeyMapping
 else:
-    from read_linux import read_key as _read_key, read_line as _read_line, read_lines as _read_lines, read_text as _read_text, IndentationMode, Key as __Key
+    raise OSError(f"{sys.platform} is not supported.")
+
+__is_linux = sys.platform.startswith("linux")
 
 Style = Literal[
     "bold",
@@ -71,8 +77,9 @@ COLORS: dict[Color, int] = {
     "white": 97,
 }
 
-
 RESET = "\x1b[0m"
+
+Key = KeyMapping
 
 def clear():
     """
@@ -80,10 +87,10 @@ def clear():
 
     This function clears the terminal screen by executing the appropriate operating system's command
     """
-    if os.name == "nt":
-        os.system("cls")
-    else:
+    if __is_linux:
         os.system("clear")
+    else:
+        os.system("cls")
 
 def paint(text: object, foreground: Color | None = None, background: Color | None = None, styles: Iterable[Style] | None = None) -> str:
     """
@@ -136,8 +143,6 @@ def write(text: str, foreground: Color | None = None, background: Color | None =
     if text:
         print(paint(text, foreground, background, styles), end = None)
 
-Key = __Key
-
 def write_line(text: str | None = None, foreground: Color | None = None, background: Color | None = None, styles: Iterable[Style] | None = None) -> None:
     """
     Prints a formated text with the operating system's line separator character at the end.
@@ -185,6 +190,15 @@ def write_raw(text: str | None = None, foreground: Color | None = None, backgrou
     """
     if text:
         write(outdent(text), foreground, background, styles)
+
+def read_key() -> str:
+    """
+    Allows the user to enter a single string.
+
+    Returns:
+        str: The multiline string entered by the user.
+    """
+    return _read_key()
 
 def read_line() -> str:
     """
