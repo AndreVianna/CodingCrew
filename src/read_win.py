@@ -478,16 +478,3 @@ if os.name == "nt":
         if ch == Key.CTRL_C and interrupt:
             raise KeyboardInterrupt
         return ch
-
-    def get_key_name() -> str:
-        """
-        Gets the key scan code and returns a human redable name for it.
-        If the code represents a printable character it returns the character.
-
-        Args:
-            key_code (str): The scan code of the key.
-
-        Returns:
-            str: The name of key pressed by the user.
-        """
-        return Key.nameof(read_key())

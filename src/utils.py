@@ -6,9 +6,9 @@ import re
 from typing import Iterable, Literal
 import os
 if os.name == "nt":
-    from read_win import read_key as _read_key, read_line as _read_line, read_lines as _read_lines, read_text as _read_text, IndentationMode
+    from read_win import read_key as _read_key, read_line as _read_line, read_lines as _read_lines, read_text as _read_text, IndentationMode, Key as __Key
 else:
-    from read_linux import read_key as _read_key, read_line as _read_line, read_lines as _read_lines, read_text as _read_text, IndentationMode
+    from read_linux import read_key as _read_key, read_line as _read_line, read_lines as _read_lines, read_text as _read_text, IndentationMode, Key as __Key
 
 Style = Literal[
     "bold",
@@ -135,6 +135,8 @@ def write(text: str, foreground: Color | None = None, background: Color | None =
         """
     if text:
         print(paint(text, foreground, background, styles), end = None)
+
+Key = __Key
 
 def write_line(text: str | None = None, foreground: Color | None = None, background: Color | None = None, styles: Iterable[Style] | None = None) -> None:
     """

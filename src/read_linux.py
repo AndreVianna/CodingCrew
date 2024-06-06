@@ -73,6 +73,12 @@ if os.name != "nt":
         NUM_PAD_5:                Literal["^E"] = "^E"
         END:                      Literal["^F"] = "^F"
         HOME:                     Literal["^H"] = "^H"
+
+        CLEAR_EOL:                Literal["^K"] = "^K"
+        EOL:                      Literal["\033[K"] = "\033[K"
+        CURSOR_UP:                Literal["\033[A"] = "\033[A"
+        CURSOR_HOME:              Literal["\033[H"] = "\033[H"
+
         SHIFT_TAB:                Literal["^Z"] = "^Z"
         CTRL_TAB:                 Literal["Undefined"] = "Undefined"
         F1:                       Literal["^OP"] = "^OP"
@@ -606,19 +612,26 @@ if os.name != "nt":
             key = __read_key(interrupt)
             while key not in exit_keys:
                 # TODO: Handle special keys
-                if key in linebreak_keys or key in exit_keys:
+                if key == Key.BACKSPACE:
+                    if line:
+                        line = line[:-1]
+                        __write_char("\b")
+                    elif multiline:
+                        line = multiline.pop()
+                        __write_char(Key.UP + Key.CLEAR_EOL + line)
+                elif key in linebreak_keys or key in exit_keys:
                     multiline.append(line)
                     line = ""
-                    print(flush=True)
+                    __write_char("\n")
                 else:
                     line += key
-                print(key, end="", flush=True)
+                __write_char(key)
                 key = __read_key(interrupt)
         finally:
             __end_read(fd, old_settings)
 
         multiline.append(line)
-        print(flush=True)
+        __write_char("\n")
         if indentation_mode == IndentationMode.REMOVE_ALL:
             multiline = [line.lstrip() for line in multiline]
         elif indentation_mode in (IndentationMode.DEDENT, IndentationMode.NORMALIZE) and len(multiline) > 0:
@@ -661,8 +674,13 @@ if os.name != "nt":
             key = __read_key(interrupt)
             while key not in exit_keys:
                 # TODO: Handle arrow keys (left and right only)
-                line += key
-                print(key, end="", flush=True)
+                if key == Key.BACKSPACE:
+                    if line:
+                        line = line[:-1]
+                        print("\b \b", end="", flush=True)
+                else:
+                    line += key
+                    print(key, end="", flush=True)
                 key = __read_key(interrupt)
         finally:
             __end_read(fd, old_settings)
@@ -695,6 +713,10 @@ if os.name != "nt":
     def __end_read(fd: int, old_settings: list[Any]) -> None:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
+    def __write_char(char: str) -> None:
+        sys.stdout.write(char)
+        sys.stdout.flush()
+
     def __read_key(interrupt: bool) -> str:
         ch = sys.stdin.read(1)
         if ord(ch) == 27:
@@ -712,16 +734,3 @@ if os.name != "nt":
         if ch in Key.CTRL_C and interrupt:
             raise KeyboardInterrupt
         return ch
-
-    def get_key_name() -> str:
-        """
-        Gets the key scan code and returns a human redable name for it.
-        If the code represents a printable character it returns the character.
-
-        Args:
-            key_code (str): The scan code of the key.
-
-        Returns:
-            str: The name of key pressed by the user.
-        """
-        return Key.nameof(read_key())

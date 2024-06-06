@@ -6,6 +6,10 @@ import workflow
 
 import utils
 if "--dev" in sys.argv:
+    print("Start:")
+
+    print(utils.Key.nameof("^1A"))
+    print(utils.Key.nameof("^K"))
     TEXT: str = utils.read_text()
     print()
     print("Result:")
