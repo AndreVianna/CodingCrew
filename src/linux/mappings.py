@@ -90,24 +90,6 @@ class KeyMapping:
 
     BACKSPACE    = "\x7f"
 
-    GET_CURSOR_POS      = "\x1b[6n" # reports as \x1b[#l;#cR
-    CURSOR_UP           = "\x1b[#nA"
-    CURSOR_DOWN         = "\x1b[#nB"
-    CURSOR_RIGHT        = "\x1b[#nC"
-    CURSOR_LEFT         = "\x1b[#nD"
-    CURSOR_DOWN_BOL     = "\x1b[#nE"
-    CURSOR_UP_BOL       = "\x1b[#nF"
-    CURSOR_TO_COL       = "\x1b[#nG"
-    CURSOR_HOME         = "\x1b[H"
-    CURSOR_MOVE         = "\x1b[#l;#cH"
-
-    CLEAR_TO_SCR_END    = "\x1b[J"
-    CLEAR_TO_SCR_BEGIN  = "\x1b[1J"
-    CLEAR_SCREN         = "\x1b[2J"
-    CLEAR_TO_LINE_END   = "\x1b[K"
-    CLEAR_TO_LINE_BEGIN = "\x1b[1K"
-    CLEAR_LINE          = "\x1b[2K"
-
     UP                  = "\x1b[A"
     DOWN                = "\x1b[B"
     RIGHT               = "\x1b[C"

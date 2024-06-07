@@ -1,6 +1,5 @@
 """Entry point."""
 
-from ctypes import util
 import sys
 from langgraph.graph.graph import CompiledGraph
 import workflow
@@ -32,16 +31,7 @@ if "--key" in sys.argv or "-k" in sys.argv:
     sys.exit()
 
 if "--simulate" in sys.argv or "-s" in sys.argv:
-    utils.write_raw("dsdfdskfsdkfsdl" + utils.Key.CTRL_ENTER)
-    utils.write_raw("fjhknvn" + utils.Key.CTRL_ENTER)
-    utils.write_raw("jshdfghg")
-    utils.read_key()
-    utils.write_raw(utils.Key.CURSOR_LEFT.replace("#n", "5"))
-    utils.read_key()
-    pos = utils.get_cursor_position()
-    print()
-    print(pos)
-    utils.read_key()
+    utils.read_text()
     sys.exit()
 
 is_debugging = "--debug" in sys.argv or "-d" in sys.argv

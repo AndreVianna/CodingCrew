@@ -9,9 +9,9 @@ import curses
 from typing import Iterable, Literal
 
 if sys.platform.startswith("win32"):
-    from windows.read import read_key as _read_key, read_line as _read_line, read_lines as _read_lines, read_text as _read_text, IndentationMode, KeyMapping
+    from windows.read import read_key as _read_key, read_line as _read_line, read_lines as _read_lines, read_text as _read_text, IndentationMode, Key as Mappings
 elif sys.platform.startswith("linux"):
-    from linux.read import read_key as _read_key, read_line as _read_line, read_lines as _read_lines, read_text as _read_text, IndentationMode, KeyMapping
+    from linux.read import read_key as _read_key, read_line as _read_line, read_lines as _read_lines, read_text as _read_text, IndentationMode, Key as Mappings
 else:
     raise OSError(f"{sys.platform} is not supported.")
 
@@ -80,7 +80,7 @@ COLORS: dict[Color, int] = {
 
 RESET = "\x1b[0m"
 
-Key = KeyMapping
+Key = Mappings
 
 def clear():
     """

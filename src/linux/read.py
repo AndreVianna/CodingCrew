@@ -5,9 +5,12 @@ Tools that helps reading the console input from the user in LINUX.
 import sys
 import tty
 import termios
+import curses
+
 from enum import IntEnum
 from typing import Any, Iterable
-from linux.mappings import KeyMapping
+from linux.mappings import KeyMapping as Key
+from linux.actions import TerminalActions as Action
 
 class IndentationMode(IntEnum):
     """
@@ -47,6 +50,18 @@ def read_text(interrupt: bool = True,
     """
     return "\n".join(read_lines(interrupt, linebreak_keys, exit_keys, remove_empty_lines, trim_line_ends, indentation_mode, indent_size, indent_str))+"\n"
 
+def __get_screen_size():
+    """
+    Returns the size of the terminal screen.
+    """
+    curses.filter()
+    scr = curses.initscr()
+    try:
+        y, x = scr.getmaxyx()
+    finally:
+        curses.endwin()
+    return y, x
+
 def read_lines(interrupt: bool = True,
                 linebreak_keys: Iterable[str] = None,
                 exit_keys: Iterable[str] = None,
@@ -69,24 +84,33 @@ def read_lines(interrupt: bool = True,
         list[str]: The lines entered by the user.
     """
     indentation_mode = IndentationMode(indentation_mode)
-    linebreak_keys = linebreak_keys if linebreak_keys else [KeyMapping.ENTER]
-    exit_keys = exit_keys if exit_keys else [KeyMapping.CTRL_ENTER, KeyMapping.CTRL_D]
+    linebreak_keys = linebreak_keys if linebreak_keys else [Key.ENTER]
+    exit_keys = exit_keys if exit_keys else [Key.CTRL_ENTER, Key.CTRL_D]
+    max_y, max_x = __get_screen_size()
     multiline = list[str]()
     line = ""
+
+    print(f"Width: {max_x}; Height: {max_y}")
 
     fd, old_settings = __start_read()
     try:
         key = __read_key(interrupt)
         while key not in exit_keys:
             # TODO: Handle special keys
-            if key == KeyMapping.BACKSPACE:
-                if line:
-                    line = line[:-1]
-                    __write("\b \b")
-                elif multiline:
+            if key == Key.BACKSPACE:
+                if not line and multiline:
                     line = multiline.pop()
-                    __write(KeyMapping.UP)
-                    __write(KeyMapping.END)
+                    __write(Action.MOVE_UP)
+                if line:
+                    offset = len(line) % max_x
+                    line = line[:-1]
+                    line_count = len(line) // max_x
+                    if offset < max_x:
+                        __write("\b")
+                    __write(Action.CLEAR_TO_END_OF_LINE)
+                    if line_count:
+                        __write(Action.MOVE_UP_N.replace("#n", str(line_count)))
+                    __write(Action.MOVE_TO_BEGIN_OF_LINE + line)
             elif key in linebreak_keys or key in exit_keys:
                 multiline.append(line)
                 line = ""
@@ -134,7 +158,7 @@ def read_line(interrupt: bool = True,
     Returns:
         str: The line entered by the user.
     """
-    exit_keys = exit_keys if exit_keys else [KeyMapping.ENTER, KeyMapping.CTRL_ENTER, KeyMapping.CTRL_D]
+    exit_keys = exit_keys if exit_keys else [Key.ENTER, Key.CTRL_ENTER, Key.CTRL_D]
     line = ""
 
     fd, old_settings = __start_read()
@@ -142,7 +166,7 @@ def read_line(interrupt: bool = True,
         key = __read_key(interrupt)
         while key not in exit_keys:
             # TODO: Handle arrow keys (left and right only)
-            if key == KeyMapping.BACKSPACE:
+            if key == Key.BACKSPACE:
                 if line:
                     line = line[:-1]
                     __write("\b \b")
@@ -195,6 +219,6 @@ def __read_key(interrupt: bool) -> str:
         while code.isnumeric() or code == ";":
             code = sys.stdin.read(1)
             ch += code
-    if ch in KeyMapping.CTRL_C and interrupt:
+    if ch in Key.CTRL_C and interrupt:
         raise KeyboardInterrupt
     return ch
