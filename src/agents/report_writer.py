@@ -11,7 +11,11 @@ Methods:
 from crewai import Agent
 from langchain_openai import ChatOpenAI
 
-from utils import outdent
+# pylint: disable=import-error
+from utils.general import outdent
+
+# pylint: enable=import-error
+
 
 def create(is_debugging: bool) -> Agent:
     """
@@ -24,7 +28,8 @@ def create(is_debugging: bool) -> Agent:
     return Agent(
         role="Senior Project Summary Report Writer",
         goal="Generate the final project summary report based on the information contained in the detailed project description.",
-        backstory=outdent("""\
+        backstory=outdent(
+            """\
                             You are an expert in writing project summary reports.
                             You are able to generate clear, concise, and informative reports that capture all the essential details of a project.
                             You will consider both the project description and the questions answered by the user to generate the final project summary report.
@@ -44,9 +49,10 @@ def create(is_debugging: bool) -> Agent:
                             - data requirements, like data sources, data formats, data storage, data access;
                             - design preferences, like colors, fonts, themes, layouts, navigation;
                             IMPORTANT: You are not responsible for the technical implementation or UI design of the project, only for generating the final project summary report.
-                            """),
+                            """
+        ),
         memory=True,
         verbose=is_debugging,
         llm=ChatOpenAI(model_name="gpt-4o", temperature=0),
-        allow_delegation=False
+        allow_delegation=False,
     )

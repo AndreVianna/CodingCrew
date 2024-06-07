@@ -5,7 +5,12 @@ Represents a task to analyze the initial information about the project and ask t
 from crewai import Task
 
 from models.crew import CrewInput, CrewOutput
-from utils import outdent
+
+# pylint: disable=import-error
+from utils.general import outdent
+
+# pylint: enable=import-error
+
 
 def create(agent, data: CrewInput) -> Task:
     """
@@ -26,7 +31,8 @@ def create(agent, data: CrewInput) -> Task:
             answer: str = query["answer"]
             queries_output += f"{i+1}. {question}\n{answer}\n\n"
 
-    analysis_description = outdent(f"""\
+    analysis_description = outdent(
+        f"""\
                                 The objective is to analyze the all the information provided about the project, including the current description and the answers to the existing questions and generate an updated description of the project.
                                 Use all your expertise in system analysis to identify patterns, trends, and gaps in the information provided.
                                 Assess the validity and reliability of the information.
@@ -59,9 +65,11 @@ def create(agent, data: CrewInput) -> Task:
                                 -----------------------------------------------------------
 
                                 User Rquested to Finish Analysis: {data["finish"]}
-                                """)
+                                """
+    )
 
-    questions_description = outdent(f"""\
+    questions_description = outdent(
+        f"""\
                                 The objective is to identify the gaps in the information provided about the project and ask for more details if needed.
                                 Analyze the current information about the project including the description and the answers provided by the user.
                                 Use your expertise in system analysis to identify patterns, trends, and GAPS in the information provided.
@@ -102,8 +110,10 @@ def create(agent, data: CrewInput) -> Task:
                                 -----------------------------------------------------------
 
                                 Finish: {data["finish"]}
-                                """)
-    analysis_output = outdent("""\
+                                """
+    )
+    analysis_output = outdent(
+        """\
                                 Your final answer MUST be a text containing the updated description of the project.
                                 The description MUST be contain the original description enriched with the answers provided by analysts and the user.
                                 The description MUST contain ALL the information relevant to the project in a clear, detailed, and concise way.
@@ -111,9 +121,11 @@ def create(agent, data: CrewInput) -> Task:
                                 The description MUST NOT contain unanswered questions, it MUST be an assertive and thoughtful overview of the project.
                                 IMPORTANT! You MUST NOT add any information that is not in the previous description or in the answers provided by the user.
                                 You MUST NOT make assumptions or add information that was not yet provided.
-                                """)
+                                """
+    )
 
-    questions_output = outdent("""\
+    questions_output = outdent(
+        """\
                                 Your final answer MUST be a json containing:
                                  - a string parameter named "description" containing an UPDATED DESCRIPTION of the project based on the PROJECT DESCRIPTION and answers to the PENDING QUESTION.
                                  - an object array parameter named "questions" containing the ADDITIONAL QUESTIONS you want to ask the user to improva and refine the project description.
@@ -137,7 +149,8 @@ def create(agent, data: CrewInput) -> Task:
                                 }
                                 IMPORTANT! If the user asks you to finish (Finish: True), you MUST return only the updated project description and an empty array of ADDITIONAL QUESTIONS.
                                 IMPORTANT! If you DO NOT HAVE any ADDITIONAL QUESTIONS to ask, you MUST return only the updated project description and an empty array of questions.
-                                """)
+                                """
+    )
     return Task(
         description=questions_description,
         expected_output=questions_output,

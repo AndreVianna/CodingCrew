@@ -5,7 +5,12 @@ Represents the task to generate a Project Summary Report.
 from crewai import Task
 
 from models.crew import CrewInput
-from utils import outdent
+
+# pylint: disable=import-error
+from utils.general import outdent
+
+# pylint: enable=import-error
+
 
 def create(agent, data: CrewInput) -> Task:
     """
@@ -28,15 +33,18 @@ def create(agent, data: CrewInput) -> Task:
         for i, query in enumerate(data["queries"]):
             question: str = query["question"]
             answer: str = query["answer"]
-            queries_output += outdent(f"""
+            queries_output += outdent(
+                f"""
 
                 Question {i+1} of {total}:
                 {question}
                 Answer:
                 {answer}
-                """)
+                """
+            )
 
-    description = outdent(f"""\
+    description = outdent(
+        f"""\
                             The objective is analyze the current information about the project including the queries submited to the user to generate a Project Summary Report.
                             The report in markdown format should contain all the information required to properly define the project.
                             You will base your analysis on the following information:
@@ -126,10 +134,13 @@ def create(agent, data: CrewInput) -> Task:
                             ## Additional Information
                             [[add here any additional or specific information that is relevant to the project]]
                             -----------------------
-                            """)
-    expected_output = outdent("""\
+                            """
+    )
+    expected_output = outdent(
+        """\
                             Your final answer MUST be a markdown document containing the Project Summary Report.
-                            """)
+                            """
+    )
     return Task(
         description=description,
         expected_output=expected_output,

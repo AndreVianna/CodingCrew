@@ -11,8 +11,15 @@ Returns:
 import os
 import sys
 from os.path import expanduser
+
 from models.workflow import AnalysisState
-from utils import clear, read_text, paint, write_line, to_snake_case
+
+# pylint: disable=import-error
+from utils.terminal import clear, read_text, paint, write_line
+from utils.general import to_snake_case
+
+# pylint: enable=import-error
+
 
 def create(state: AnalysisState) -> AnalysisState:
     """
@@ -32,18 +39,24 @@ def create(state: AnalysisState) -> AnalysisState:
         write_line(f"Welcome to {name}.", styles=["bold"])
         write_line()
         write_line("Let's start by getting some basic information about the project.")
-        user_folder =expanduser("~")
-        default_folder = f"{user_folder}/projects" if os.name != "nt" else "%USERPROFILE%\\Projects"
+        user_folder = expanduser("~")
+        default_folder = (
+            f"{user_folder}/projects" if os.name != "nt" else "%USERPROFILE%\\Projects"
+        )
         folder_separator = "/" if os.name != "nt" else "\\"
 
         project_name = input("Please, enter the project name: ")
         write_line()
 
         default_folder_color = paint(default_folder, "cyan")
-        base_folder = input(f"Please, enter the full path of the project location (default: '{default_folder_color}'): ")
+        base_folder = input(
+            f"Please, enter the full path of the project location (default: '{default_folder_color}'): "
+        )
         if not base_folder:
             base_folder = default_folder
-        project_root_folder = f"{base_folder}{folder_separator}{to_snake_case(project_name)}"
+        project_root_folder = (
+            f"{base_folder}{folder_separator}{to_snake_case(project_name)}"
+        )
         write_line()
 
         project_root_folder_color = paint(project_root_folder, "cyan")
@@ -63,11 +76,16 @@ def create(state: AnalysisState) -> AnalysisState:
     while yes_no != "yes" and yes_no != "y":
         yes_no = ""
 
-        write_line(f"You can add multiple lines. Press '{submit_key}' to submit.", styles=["dim"])
+        write_line(
+            f"You can add multiple lines. Press '{submit_key}' to submit.",
+            styles=["dim"],
+        )
         lines += read_text()
 
         write_line()
-        write_line("Can we proceed to the analysis of the project description? ([Yes]/no/eXit): ")
+        write_line(
+            "Can we proceed to the analysis of the project description? ([Yes]/no/eXit): "
+        )
         yes_no = input().lower()
         if yes_no == "exit" or yes_no == "x":
             sys.exit(0)

@@ -11,7 +11,11 @@ Methods:
 from crewai import Agent
 from langchain_openai import ChatOpenAI
 
-from utils import outdent
+# pylint: disable=import-error
+from utils.general import outdent
+
+# pylint: enable=import-error
+
 
 def create(is_debugging: bool) -> Agent:
     """
@@ -24,7 +28,8 @@ def create(is_debugging: bool) -> Agent:
     return Agent(
         role="Senior System Analyst",
         goal="Improve the project description by getting more information from the user in order to generate a detailed project summary report.",
-        backstory=outdent("""\
+        backstory=outdent(
+            """\
                             You are an expert in system analysis.
                             You are able to communicate effectively with both technical and non-technical stakeholders.
                             This includes active listening, asking questions, and explaining technical concepts in simple terms.
@@ -48,9 +53,10 @@ def create(is_debugging: bool) -> Agent:
                             IMPORTANT: If the user indicates that the analyst is responsible to provide the information about a topic, you should not ask the user for that information and should provide it yourself with the best of your knowledge.
                             IMPORTANT: You should not ask questions that are already answered in the project description and the previous answers or that can be cleared inferred from them.
                             IMPORTANT: You are not responsible for the technical implementation or UI design of the project, only for gathering information and defining the project requirements.
-                            """),
+                            """
+        ),
         memory=True,
         verbose=is_debugging,
         llm=ChatOpenAI(model_name="gpt-4o", temperature=0),
-        allow_delegation=False
+        allow_delegation=False,
     )
