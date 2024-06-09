@@ -3,14 +3,12 @@
 Tools that helps reading the console input from the user in Windows.
 """
 
-from typing import Iterable
-
 # pylint: disable=import-error
 import msvcrt
 
 # pylint: enable=import-error
-from utils.general import IndentationMode, static_init
-from utils.terminal_common import TerminalAction as Action, TerminalBase
+from utils.general import static_init
+from utils.terminal_common import TerminalBase
 
 
 @static_init
@@ -270,19 +268,11 @@ class KeyMapping:
 
 
 class Terminal(TerminalBase):
-    # pylint: disable=too-many-arguments
+    __exit_keys: list[str] = [KeyMapping.CTRL_ENTER]
+    __linebreak_keys: list[KeyMapping] = [KeyMapping.ENTER]
+    __backspace_keys: list[KeyMapping] = [KeyMapping.BACKSPACE]
 
-    def read_lines(
-        self,
-        interrupt: bool = True,
-        linebreak_keys: Iterable[str] = None,
-        exit_keys: Iterable[str] = None,
-        remove_empty_lines: bool = False,
-        trim_line_ends: bool = False,
-        indentation_mode: IndentationMode = IndentationMode.KEEP,
-        indent_size: int = 4,
-        indent_str: str = " ",
-    ) -> list[str]:
+    def read_lines(self) -> list[str]:
         """
         Reads a multipe lines from the user's input.
         If one of the linebreak keys is pressed it ends a line (default: [ ENTER ]).
@@ -296,77 +286,29 @@ class Terminal(TerminalBase):
         Returns:
             list[str]: The lines entered by the user.
         """
-        indentation_mode = IndentationMode(indentation_mode)
-        linebreak_keys = linebreak_keys if linebreak_keys else [KeyMapping.ENTER]
-        exit_keys = (
-            exit_keys if exit_keys else [KeyMapping.CTRL_ENTER, KeyMapping.CTRL_D]
-        )
-        max_y, max_x = self._get_line_size()
-        multiline = list[str]()
+        max_line_size = self._get_line_size()
+        lines = list[str]()
         line = ""
 
-        print(f"Width: {max_x}; Height: {max_y}")
+        print(f"Width: {max_line_size}")
 
-        key = self.read_key(interrupt)
-        while key not in exit_keys:
-            # TODO: Handle special keys
-            if key == KeyMapping.BACKSPACE:
-                if not line and multiline:
-                    line = multiline.pop()
-                    self._write(Action.MOVE_UP)
-                if line:
-                    offset = len(line) % max_x
-                    line = line[:-1]
-                    line_count = len(line) // max_x
-                    if offset < max_x:
-                        self._write(Action.MOVE_LEFT)
-                    self._write(Action.CLEAR_TO_END_OF_LINE)
-                    if line_count:
-                        self._write(Action.MOVE_UP_N.replace("#n", str(line_count)))
-                    self._write(Action.MOVE_TO_BEGIN_OF_LINE)
-                    self._write(line)
-            elif key in linebreak_keys or key in exit_keys:
-                multiline.append(line)
-                line = ""
-                self._write("\n")
-            else:
-                line += key
-            self._write(key)
-            key = self.read_key(interrupt)
+        while True:
+            key = self.read_key()
+            if key in self.__exit_keys:
+                self._handle_linebreak(lines, line)
+                break
+            if key in self.__linebreak_keys or key:
+                line = self._handle_linebreak(lines, line)
+            elif key in self.__backspace_keys:
+                line = self._handle_backspace(lines, line, max_line_size)
+            elif key.isprintable():
+                line = self._handle_character(line, key, max_line_size)
 
-        multiline.append(line)
+        lines.append(line)
         self._write("\n")
-        if indentation_mode == IndentationMode.REMOVE_ALL:
-            multiline = [line.lstrip() for line in multiline]
-        elif (
-            indentation_mode in (IndentationMode.DEDENT, IndentationMode.NORMALIZE)
-            and len(multiline) > 0
-        ):
-            offset = min([len(line) - len(line.lstrip()) for line in multiline])
-            result = list[str]()
-            for line in multiline:
-                offset_line = line[offset:]
-                if indentation_mode == IndentationMode.NORMALIZE:
-                    extra_spaces = len(offset_line) - len(offset_line.lstrip())
-                    indent_level = (extra_spaces // indent_size) + (
-                        extra_spaces % indent_size >= indent_size // 2
-                    )
-                    indent = indent_str * (indent_size * indent_level)
-                    offset_line = indent + offset_line.lstrip()
-                result.append(offset_line)
-            multiline = result
-        if trim_line_ends:
-            multiline = [line.rstrip() for line in multiline]
-        if remove_empty_lines:
-            multiline = [line for line in multiline if line.strip()]
-        return multiline
+        return lines
 
-    def read_line(
-        self,
-        interrupt: bool = True,
-        exit_keys: Iterable[str] = None,
-        trim_line: bool = False,
-    ) -> str:
+    def read_line(self) -> str:
         """
         Reads a line from the from the user's input.
         If one of the exit keys is pressed it finishes the input (default: [ ENTER, CTRL+ENTER ]).
@@ -378,20 +320,20 @@ class Terminal(TerminalBase):
         Returns:
             str: The line entered by the user.
         """
-        exit_keys = (
-            exit_keys if exit_keys else [KeyMapping.ENTER, KeyMapping.CTRL_ENTER]
-        )
         line = ""
-        key = self.read_key(interrupt)
-        while key not in exit_keys:
-            # TODO: Handle speacil keys (left and right only)
-            line += key
-            print(key, end="", flush=True)
-            key = self.read_key(interrupt)
+        key = self.read_key()
+        while key not in self.__exit_keys:
+            if key == KeyMapping.BACKSPACE and line:
+                line = line[:-1]
+                self._write("\b \b")
+            elif key.isprintable():
+                line += key
+                self._write(key)
+            key = self.read_key()
 
-        return line.strip() if trim_line else line
+        return line.strip()
 
-    def read_key(self, interrupt: bool = True) -> str:
+    def read_key(self) -> str:
         """
         Reads a single key press from the user.
 
@@ -404,6 +346,6 @@ class Terminal(TerminalBase):
         ch: str = msvcrt.getwch()
         if ord(ch) in (0, 224):
             ch += msvcrt.getwch()
-        if interrupt and ch == KeyMapping.CTRL_C:
+        if ch == KeyMapping.CTRL_C:
             raise KeyboardInterrupt
         return ch

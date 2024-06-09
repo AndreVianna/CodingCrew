@@ -15,7 +15,7 @@ from models.workflow import AnalysisState
 
 # pylint: disable=import-error
 from utils.terminal import read_text, write_line
-from utils.general import outdent
+from utils.general import normalize_text
 
 # pylint: enable=import-error
 
@@ -38,7 +38,7 @@ def create(state: AnalysisState) -> AnalysisState:
     skip = False
     finish = False
     print(
-        outdent(
+        normalize_text(
             """
                 Here are some additional questions.
                 Please answer them to refine the project description.

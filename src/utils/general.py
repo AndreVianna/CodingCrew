@@ -3,10 +3,8 @@
 Represents utility functions used throughout the application.
 """
 
-import os
 import sys
 import re
-from enum import IntEnum
 
 is_linux = sys.platform.startswith("linux")
 is_win32 = sys.platform.startswith("win32")
@@ -18,55 +16,6 @@ def static_init(cls):
     if getattr(cls, "__static_init__", None):
         cls.__static_init__()
     return cls
-
-
-class IndentationMode(IntEnum):
-    """
-    Enumeration class representing different indentation modes.
-
-    Attributes:
-        Keep (int): Keep the original indentation.
-        RemoveAll (int): Remove all indentation.
-        Dedent (int): Dedent the code.
-        Normalize (int): Normalize the indentation.
-    """
-
-    KEEP = 0
-    REMOVE_ALL = 1
-    DEDENT = 2
-    NORMALIZE = 3
-
-
-def outdent(text: object) -> str:
-    """
-    Removes the leading whitespace from the text.
-
-    Args:
-        text (str): The text to remove the leading whitespace.
-
-    Returns:
-        str: The text without the leading whitespace.
-    """
-    lines = str(text).split(os.linesep)
-    if len(lines) == 0:
-        return ""
-    last_line = lines[-1]
-    is_line_all_whitespace = not last_line.strip()
-    if not is_line_all_whitespace:
-        return os.linesep.join(lines)
-    indent_size = len(last_line)
-    lines = lines[:-1]
-    new_lines = []
-    for line in lines:
-        if len(line) <= indent_size:
-            if not line.strip():
-                new_lines.append("")
-            else:
-                return os.linesep.join(lines)
-        if not line.startswith(last_line):
-            return os.linesep.join(lines)
-        new_lines.append(line[indent_size:])
-    return os.linesep.join(new_lines)
 
 
 symbols = re.compile(r"\W")
@@ -95,3 +44,43 @@ def to_snake_case(name):
         name = name.replace("__", "_")
     name = name.strip("_")
     return name.lower()
+
+def normalize_text(text: str | list[str]) -> str:
+    lines = text if isinstance(list[str]) else text.split("\n")
+    lines = normalize_lines(lines)
+    return "\n".join(lines)+"\n"
+
+def normalize_lines(lines: list[str]) -> list[str]:
+    if not lines:
+        return lines
+    while lines and not lines[0].strip():
+        lines.pop(0)
+    if not lines:
+        return lines
+    while lines and not lines[-1].strip():
+        lines.pop(-1)
+    if not lines:
+        return lines
+    min_offset = min(len(line) - len(line.lstrip()) for line in lines if line.strip())
+    if not min_offset:
+        return lines
+
+    result = list[str]()
+    previous_was_empty = False
+    for line in [line.rstrip() for line in lines]:
+        if not line:
+            if not previous_was_empty:
+                result.append(line)
+            previous_was_empty = True
+            continue
+        previous_was_empty = False
+        line = line[min_offset:]
+        trimmed = line.lstrip()
+        if trimmed == line:
+            result.append(trimmed)
+            continue
+        offset = len(line) - len(trimmed)
+        indent_level = (offset // 4) + (offset % 4 >= 2)
+        indent = " " * (4 * indent_level)
+        result.append(indent + trimmed)
+    return result

@@ -7,7 +7,7 @@ import sys
 import curses
 from typing import Iterable, Literal
 
-from utils.general import static_init, IndentationMode
+from utils.general import static_init, normalize_text
 
 is_linux = sys.platform.startswith("linux")
 is_win32 = sys.platform.startswith("win32")
@@ -68,7 +68,7 @@ class TerminalAction:
 
     GET_CURSOR_POS = "\x1b[6n"  # reports as \x1b[#l;#cR
 
-    ADD_NEW_LINE = "\x0a"
+    ADD_NEW_LINE = "\r\n"
 
     MOVE_UP = "\x1b[A"
     MOVE_UP_N = "\x1b[#nA"
@@ -158,20 +158,8 @@ COLORS: dict[Color, int] = {
 
 RESET = "\x1b[0m"
 
-
 class TerminalBase:
-    # pylint: disable=too-many-arguments
-    def read_text(
-        self,
-        interrupt: bool = True,
-        linebreak_keys: Iterable[str] = None,
-        exit_keys: Iterable[str] = None,
-        remove_empty_lines: bool = False,
-        trim_line_ends: bool = False,
-        indentation_mode: IndentationMode = IndentationMode.KEEP,
-        indent_size: int = 4,
-        indent_str: str = " ",
-    ) -> str:
+    def read_text(self) -> str:
         """
         Reads a text from the user's input.
         If one of the linebreak keys is pressed it ends a line (default: [ ENTER ]).
@@ -185,33 +173,10 @@ class TerminalBase:
         Returns:
             str: The text entered by the user.
         """
-        return (
-            "\n".join(
-                self.read_lines(
-                    interrupt,
-                    linebreak_keys,
-                    exit_keys,
-                    remove_empty_lines,
-                    trim_line_ends,
-                    indentation_mode,
-                    indent_size,
-                    indent_str,
-                )
-            )
-            + "\n"
-        )
+        lines = self.read_lines()
+        return normalize_text(lines)
 
-    def read_lines(
-        self,
-        interrupt: bool = True,
-        linebreak_keys: Iterable[str] = None,
-        exit_keys: Iterable[str] = None,
-        remove_empty_lines: bool = False,
-        trim_line_ends: bool = False,
-        indentation_mode: IndentationMode = IndentationMode.KEEP,
-        indent_size: int = 4,
-        indent_str: str = " ",
-    ) -> list[str]:
+    def read_lines(self) -> list[str]:
         """
         Reads a multipe lines from the user's input.
         If one of the linebreak keys is pressed it ends a line (default: [ ENTER ]).
@@ -225,15 +190,9 @@ class TerminalBase:
         Returns:
             list[str]: The lines entered by the user.
         """
+        return list[str]()
 
-    # pylint: enable=too-many-arguments
-
-    def read_line(
-        self,
-        interrupt: bool = True,
-        exit_keys: Iterable[str] = None,
-        trim_line: bool = False,
-    ) -> str:
+    def read_line(self) -> str:
         """
         Reads a line from the from the user's input.
         If one of the exit keys is pressed it finishes the input (default: [ ENTER, CTRL+ENTER, CTRL+D ]).
@@ -246,7 +205,7 @@ class TerminalBase:
             str: The line entered by the user.
         """
 
-    def read_key(self, interrupt: bool = True) -> str:
+    def read_key(self) -> str:
         """
         Reads a single key press from the user.
 
@@ -348,6 +307,10 @@ class TerminalBase:
         self.write(text, foreground, background, styles)
         self._write(TerminalAction.ADD_NEW_LINE)
 
+    def _write(self, char: str) -> None:
+        sys.stdout.write(char)
+        sys.stdout.flush()
+
     def _get_cursor_position(self):
         """
         Returns the current cursor position and the text at the cursor position.
@@ -361,22 +324,6 @@ class TerminalBase:
             curses.endwin()
         return (y, x, char)
 
-    def _write(self, char: str) -> None:
-        sys.stdout.write(char)
-        sys.stdout.flush()
-
-    def _get_position(self):
-        """
-        Returns the cursor position inside the terminal screen.
-        """
-        curses.filter()
-        scr = curses.initscr()
-        try:
-            y, x = scr.getparyx()
-        finally:
-            curses.endwin()
-        return y, x
-
     def _get_line_size(self):
         """
         Returns the size of the terminal line.
@@ -388,3 +335,29 @@ class TerminalBase:
         finally:
             curses.endwin()
         return x
+
+    def _handle_character(self, line: str, key: str, max_line_size: int) -> str:
+        line += key
+        self._write(key)
+        if len(line) % max_line_size == 0:
+            self._write(TerminalAction.ADD_NEW_LINE)
+        return line
+
+    def _handle_linebreak(self, lines: list[str], line: str) -> str:
+        lines.append(line)
+        self._write(TerminalAction.ADD_NEW_LINE)
+        return ""
+
+    def _handle_backspace(self, lines: list[str], line: str, max_line_size: int) -> str:
+        offset = len(line) % max_line_size if line else 0
+        if offset:
+            line = line[:-1]
+            self._write(TerminalAction.MOVE_LEFT)
+        elif not line and lines:
+            line = lines.pop()
+            self._write(TerminalAction.MOVE_UP)
+            offset = len(line) % max_line_size
+            if offset:
+                self._write(TerminalAction.MOVE_TO_COL_N.replace("#n", str(offset)))
+        self._write(TerminalAction.CLEAR_TO_END_OF_LINE)
+        return line
