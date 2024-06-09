@@ -31,7 +31,10 @@ if "--key" in sys.argv or "-k" in sys.argv:
     sys.exit()
 
 if "--simulate" in sys.argv or "-s" in sys.argv:
-    terminal.read_text()
+    text = terminal.read_text()
+    print()
+    print("Result:")
+    print(text)
     sys.exit()
 
 is_debugging = "--debug" in sys.argv or "-d" in sys.argv

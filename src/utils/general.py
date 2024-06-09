@@ -46,41 +46,63 @@ def to_snake_case(name):
     return name.lower()
 
 def normalize_text(text: str | list[str]) -> str:
-    lines = text if isinstance(list[str]) else text.split("\n")
-    lines = normalize_lines(lines)
+    lines = text.split("\n") if isinstance(text, str) else text
+    lines = remove_top_empty_lines(lines)
+    lines = remove_bottom_empty_lines(lines)
+    lines = merge_empty_lines(lines)
+    lines = align_left(lines)
+    lines = normalize_tabs(lines)
     return "\n".join(lines)+"\n"
 
-def normalize_lines(lines: list[str]) -> list[str]:
-    if not lines:
-        return lines
+def remove_top_empty_lines(lines: list[str]) -> list[str]:
     while lines and not lines[0].strip():
         lines.pop(0)
-    if not lines:
-        return lines
+    return lines
+
+def remove_bottom_empty_lines(lines: list[str]) -> list[str]:
     while lines and not lines[-1].strip():
-        lines.pop(-1)
+        lines.pop()
+    return lines
+
+def merge_empty_lines(lines: list[str]) -> list[str]:
     if not lines:
-        return lines
-    min_offset = min(len(line) - len(line.lstrip()) for line in lines if line.strip())
-    if not min_offset:
         return lines
 
     result = list[str]()
     previous_was_empty = False
-    for line in [line.rstrip() for line in lines]:
-        if not line:
-            if not previous_was_empty:
-                result.append(line)
+    for line in lines:
+        if line.strip():
+            result.append(line)
+            previous_was_empty = False
+        elif not previous_was_empty:
+            result.append(line)
             previous_was_empty = True
-            continue
-        previous_was_empty = False
-        line = line[min_offset:]
-        trimmed = line.lstrip()
-        if trimmed == line:
-            result.append(trimmed)
-            continue
-        offset = len(line) - len(trimmed)
-        indent_level = (offset // 4) + (offset % 4 >= 2)
-        indent = " " * (4 * indent_level)
-        result.append(indent + trimmed)
+    return result
+
+def align_left(lines: list[str]) -> list[str]:
+    if not lines:
+        return lines
+
+    offset = min(len(line) - len(line.lstrip()) for line in lines if line.strip())
+    if not offset:
+        return lines
+
+    result = list[str]()
+    for line in [line.rstrip() for line in lines]:
+        result.append(line[offset:])
+    return result
+
+def normalize_tabs(lines: list[str]) -> list[str]:
+    if not lines:
+        return lines
+
+    result = list[str]()
+    for line in lines:
+        indent = ""
+        text = line.lstrip()
+        if text:
+            offset = len(line) - len(text)
+            level = (offset // 4) + (1 if offset % 4 else 0)
+            indent = " " * (4 * level)
+        result.append(indent + text)
     return result

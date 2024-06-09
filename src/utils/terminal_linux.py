@@ -311,8 +311,9 @@ class KeyMapping:
 
 class Terminal(TerminalBase):
     __exit_keys: list[str] = [KeyMapping.CTRL_ENTER]
-    __linebreak_keys: list[KeyMapping] = [KeyMapping.ENTER]
+    __linebreak_keys: list[KeyMapping] = [KeyMapping.ENTER, KeyMapping.CTRL_ENTER]
     __backspace_keys: list[KeyMapping] = [KeyMapping.BACKSPACE]
+    __arrow_keys: list[KeyMapping] = [KeyMapping.UP, KeyMapping.DOWN, KeyMapping.RIGHT, KeyMapping.LEFT]
 
     def read_lines(self) -> list[str]:
         """
@@ -324,27 +325,35 @@ class Terminal(TerminalBase):
             list[str]: The lines entered by the user.
         """
         max_line_size = self._get_line_size()
-        lines = list[str]()
-        line = ""
+        buffer = list[str]([""])
 
-        print(f"Line size: {max_line_size};")
+        print(f"Line size: {max_line_size}")
 
         fd, old_settings = self.__start_read()
         try:
             while True:
                 key = self.__read_key()
-                if key in self.__exit_keys:
-                    self._handle_linebreak(lines, line)
-                    break
-                if key in self.__linebreak_keys:
-                    line = self._handle_linebreak(lines, line)
+                if key.isprintable():
+                    self._handle_printable(buffer, key, max_line_size)
                 elif key in self.__backspace_keys:
-                    line = self._handle_backspace(lines, line, max_line_size)
-                elif key.isprintable():
-                    line = self._handle_character(line, key, max_line_size)
+                    self._handle_backspace(buffer)
+                elif key in self.__arrow_keys:
+                    self._handle_cursor_movement(buffer, key)
+                elif key in self.__linebreak_keys:
+                    self._handle_linebreak(buffer)
+                if key in self.__exit_keys:
+                    break
         finally:
             self.__end_read(fd, old_settings)
 
+        lines = list[str]()
+        line = ""
+        for entry in buffer:
+            line += entry
+            if line.endswith("\n"):
+                line = line.rstrip("\n")
+                lines.append(line)
+                line = ""
         return lines
 
     def read_line(self) -> str:
@@ -359,22 +368,29 @@ class Terminal(TerminalBase):
         Returns:
             str: The line entered by the user.
         """
-        line = ""
+        max_line_size = self._get_line_size()
+        buffer = list[str]([""])
         fd, old_settings = self.__start_read()
         try:
-            key = self.__read_key()
-            while key not in self.__exit_keys:
-                if key == KeyMapping.BACKSPACE and line:
-                    line = line[:-1]
-                    self._write("\b \b")
-                elif key.isprintable():
-                    line += key
-                    self._write(key)
+            while True:
                 key = self.__read_key()
+                if key.isprintable():
+                    self._handle_printable(buffer, key, max_line_size)
+                elif key in self.__backspace_keys:
+                    self._handle_backspace(buffer)
+                elif key in self.__linebreak_keys:
+                    self._handle_linebreak(buffer)
+                    break
         finally:
             self.__end_read(fd, old_settings)
 
-        return line.strip()
+        line = ""
+        for entry in buffer:
+            line += entry
+            if line.endswith("\n"):
+                line = line.rstrip("\n")
+                break
+        return line
 
     def read_key(self) -> str:
         """

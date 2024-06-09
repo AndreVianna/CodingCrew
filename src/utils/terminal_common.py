@@ -336,28 +336,30 @@ class TerminalBase:
             curses.endwin()
         return x
 
-    def _handle_character(self, line: str, key: str, max_line_size: int) -> str:
-        line += key
+    def _handle_printable(self, buffer: list[str], key: str, max_line_size: int) -> None:
+        buffer[-1] += key
         self._write(key)
-        if len(line) % max_line_size == 0:
-            self._write(TerminalAction.ADD_NEW_LINE)
-        return line
+        if len(buffer[-1]) % max_line_size == 0:
+            self.__add_new_line(buffer)
 
-    def _handle_linebreak(self, lines: list[str], line: str) -> str:
-        lines.append(line)
-        self._write(TerminalAction.ADD_NEW_LINE)
-        return ""
+    def _handle_linebreak(self, buffer: list[str]) -> None:
+        buffer[-1] += "\n"
+        self.__add_new_line(buffer)
 
-    def _handle_backspace(self, lines: list[str], line: str, max_line_size: int) -> str:
-        offset = len(line) % max_line_size if line else 0
-        if offset:
-            line = line[:-1]
+    def _handle_backspace(self, buffer: list[str]) -> None:
+        if buffer[-1]:
+            buffer[-1] = buffer[-1][:-1]
             self._write(TerminalAction.MOVE_LEFT)
-        elif not line and lines:
-            line = lines.pop()
+        elif not buffer[-1] and len(buffer) > 1:
+            buffer.pop()
             self._write(TerminalAction.MOVE_UP)
-            offset = len(line) % max_line_size
-            if offset:
-                self._write(TerminalAction.MOVE_TO_COL_N.replace("#n", str(offset)))
+            if buffer[-1].endswith("\n"):
+                buffer[-1] = buffer[-1].rstrip("\n")
+            if buffer[-1]:
+                self._write(TerminalAction.MOVE_TO_COL_N.replace("#n", str(len(buffer[-1]))))
+                buffer[-1] = buffer[-1][:-1]
         self._write(TerminalAction.CLEAR_TO_END_OF_LINE)
-        return line
+
+    def __add_new_line(self, buffer: list[str]) -> None:
+        buffer.append("")
+        self._write(TerminalAction.ADD_NEW_LINE)
