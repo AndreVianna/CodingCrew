@@ -19,7 +19,7 @@ from crew import ProjectCrew
 
 load_dotenv()
 
-def build(is_debugging: bool) -> CompiledGraph:
+def build(is_debugging: bool = False) -> CompiledGraph:
     """
     Builds and returns a compiled workflow graph.
 
