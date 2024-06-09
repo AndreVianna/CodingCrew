@@ -337,8 +337,6 @@ class Terminal(TerminalBase):
                     self._handle_printable(buffer, key, max_line_size)
                 elif key in self.__backspace_keys:
                     self._handle_backspace(buffer)
-                elif key in self.__arrow_keys:
-                    self._handle_cursor_movement(buffer, key)
                 elif key in self.__linebreak_keys:
                     self._handle_linebreak(buffer)
                 if key in self.__exit_keys:
