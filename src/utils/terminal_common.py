@@ -223,6 +223,7 @@ class TerminalBase:
         This function clears the terminal screen by executing the appropriate operating system's command
         """
         self._write(TerminalAction.CLEAR_SCREEN)
+        self._write(TerminalAction.MOVE_TO_0_0)
 
     def paint(
         self,

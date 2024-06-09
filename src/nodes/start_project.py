@@ -11,6 +11,7 @@ Returns:
 import os
 import sys
 from os.path import expanduser
+from utils.general import is_linux, is_win32
 
 from models.workflow import AnalysisState
 
@@ -39,11 +40,9 @@ def create(state: AnalysisState) -> AnalysisState:
         write_line(f"Welcome to {name}.", styles=["bold"])
         write_line()
         write_line("Let's start by getting some basic information about the project.")
-        user_folder = expanduser("~")
-        default_folder = (
-            f"{user_folder}/projects" if os.name != "nt" else "%USERPROFILE%\\Projects"
-        )
-        folder_separator = "/" if os.name != "nt" else "\\"
+        user_folder = expanduser("~") if is_linux else os.environ.get("USERPROFILE")
+        folder_separator = "/" if is_linux else "\\"
+        default_folder = f"{user_folder}{folder_separator}projects"
 
         project_name = input("Please, enter the project name: ")
         write_line()

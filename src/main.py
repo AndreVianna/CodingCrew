@@ -1,15 +1,14 @@
 """Entry point."""
 
+print("Starting...")
+
+# pylint: disable=wrong-import-position
 import sys
-from langgraph.graph.graph import CompiledGraph
-import workflow
-import os
-import utils.terminal as terminal
+# pylint: enable=wrong-import-position
 
 if len(sys.argv) > 1:
-    print("Start:")
-
     if any(arg in sys.argv for arg in ["--text", "-t"]):
+        from utils import terminal
         print("Add a text input:")
         text: str = terminal.read_text()
         print()
@@ -18,6 +17,7 @@ if len(sys.argv) > 1:
         sys.exit()
 
     if any(arg in sys.argv for arg in ["--list", "-f"]):
+        from utils import terminal
         keys = terminal.Key.list()
         keys.sort(key=lambda x: x[1])
         for key in keys:
@@ -26,6 +26,7 @@ if len(sys.argv) > 1:
 
 
     if any(arg in sys.argv for arg in ["--key_press", "-k"]):
+        from utils import terminal
         print("Press a key to display its code and name (press 'q' to finish):")
         key = terminal.read_key()
         while key != "q":
@@ -38,14 +39,19 @@ if len(sys.argv) > 1:
         sys.exit()
 
     if any(arg in sys.argv for arg in ["--graph", "-g"]):
+        import os
+        import workflow
         print("Generating graph...")
-        temp: CompiledGraph = workflow.build()
+        temp = workflow.build()
         absolute_path = os.path.abspath("../docs/graph.png")
         temp.get_graph().draw_mermaid_png(output_file_path=absolute_path)
         print(f"Graph generated at '{absolute_path}'.")
         sys.exit()
 
-is_debugging = any(arg in sys.argv for arg in ["--debug", "-d"])
-wkf: CompiledGraph = workflow.build(is_debugging)
-wkf.validate()
-wkf.invoke({}, debug=is_debugging)
+if __name__ == "__main__":
+    import workflow
+
+    is_debugging = any(arg in sys.argv for arg in ["--debug", "-d"])
+    wkf = workflow.build(is_debugging)
+    wkf.validate()
+    wkf.invoke({}, debug=is_debugging)
