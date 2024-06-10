@@ -6,7 +6,7 @@ Represents utility functions used throughout the application.
 import sys
 from typing import Iterable
 from utils.general import is_linux, is_win32
-from utils.terminal_common import Color, Style
+from utils.terminal_common import Color, Style, TerminalAction
 
 if is_linux:
     import utils.terminal_linux as linux_terminal
@@ -21,6 +21,7 @@ elif is_win32:
 else:
     raise OSError(f"{sys.platform} is not supported.")
 
+Action = TerminalAction
 
 def clear() -> str:
     """
@@ -59,7 +60,7 @@ def read_key() -> str:
     return __terminal.read_key()
 
 
-def paint(
+def format(
     text: str,
     foreground: Color | None = None,
     background: Color | None = None,
@@ -81,7 +82,7 @@ def paint(
         Available style:
             bold, dark, underline, blink, reverse, concealed.
     """
-    return __terminal.paint(text, foreground, background, styles)
+    return __terminal.format(text, foreground, background, styles)
 
 
 def write(

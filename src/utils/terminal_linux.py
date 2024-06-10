@@ -9,8 +9,10 @@ import termios
 
 from typing import Any
 
-from utils.general import static_init
-from utils.terminal_common import TerminalBase
+from click import pause
+
+from utils.general import static_init, is_verbose
+from utils.terminal_common import TerminalBase, Position, TerminalAction
 
 
 @static_init
@@ -40,7 +42,7 @@ class KeyMapping:
             if value not in cls._name_of.keys():
                 cls._name_of[value] = name
             else:
-                cls._name_of[value] += f" | {name}"
+                cls._name_of[value] += f"|{name}"
 
     @classmethod
     def list(cls) -> list[(str, str)]:
@@ -315,6 +317,11 @@ class Terminal(TerminalBase):
     __backspace_keys: list[KeyMapping] = [KeyMapping.BACKSPACE]
     __arrow_keys: list[KeyMapping] = [KeyMapping.UP, KeyMapping.DOWN, KeyMapping.RIGHT, KeyMapping.LEFT]
 
+    __stdin: int
+
+    def __init__(self):
+        self.__stdin = sys.stdin.fileno()
+
     def read_lines(self) -> list[str]:
         """
         Reads a multipe lines from the user's input.
@@ -326,23 +333,25 @@ class Terminal(TerminalBase):
         """
         max_line_size = self._get_line_size()
         buffer = list[str]([""])
+        if is_verbose:
+            self.write_line(f"Line size: {max_line_size}")
 
-        print(f"Line size: {max_line_size}")
-
-        fd, old_settings = self.__start_read()
+        exit_options = [KeyMapping.name_of(key) for key in self.__exit_keys]
+        self._write_footer(exit_options)
+        old_settings = self.__start_read()
         try:
             while True:
                 key = self.__read_key()
                 if key.isprintable():
                     self._handle_printable(buffer, key, max_line_size)
                 elif key in self.__backspace_keys:
-                    self._handle_backspace(buffer)
+                    self._handle_backspace(buffer, exit_options)
                 elif key in self.__linebreak_keys:
-                    self._handle_linebreak(buffer)
+                    self._handle_linebreak(buffer, exit_options)
                 if key in self.__exit_keys:
                     break
         finally:
-            self.__end_read(fd, old_settings)
+            self.__end_read(old_settings)
 
         lines = list[str]()
         line = ""
@@ -368,7 +377,7 @@ class Terminal(TerminalBase):
         """
         max_line_size = self._get_line_size()
         buffer = list[str]([""])
-        fd, old_settings = self.__start_read()
+        old_settings = self.__start_read()
         try:
             while True:
                 key = self.__read_key()
@@ -380,7 +389,7 @@ class Terminal(TerminalBase):
                     self._handle_linebreak(buffer)
                     break
         finally:
-            self.__end_read(fd, old_settings)
+            self.__end_read(old_settings)
 
         line = ""
         for entry in buffer:
@@ -400,21 +409,19 @@ class Terminal(TerminalBase):
         Returns:
             str: The key pressed by the user.
         """
-        fd, old_settings = self.__start_read()
+        old_settings = self.__start_read()
         try:
             return self.__read_key()
         finally:
-            self.__end_read(fd, old_settings)
+            self.__end_read(old_settings)
 
-    def __start_read(self) -> tuple[int, list[Any]]:
-        sys.stdout.flush()
-        fd = sys.stdin.fileno()
-        old_settings = termios.tcgetattr(fd)
-        tty.setraw(fd)
-        return fd, old_settings
+    def __start_read(self, when: int = termios.TCSADRAIN) -> list[Any]:
+        old_settings = termios.tcgetattr(self.__stdin)
+        tty.setraw(self.__stdin, when)
+        return old_settings
 
-    def __end_read(self, fd: int, old_settings: list[Any]) -> None:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    def __end_read(self, old_settings: list[Any]) -> None:
+        termios.tcsetattr(self.__stdin, termios.TCSADRAIN, old_settings)
 
     def __read_key(self) -> str:
         ch = sys.stdin.read(1)
@@ -429,3 +436,18 @@ class Terminal(TerminalBase):
         if ch in KeyMapping.CTRL_C:
             raise KeyboardInterrupt
         return ch
+
+    def _get_cursor_position(self) -> Position:
+        """
+        Returns the current cursor position and the text at the cursor position.
+        """
+        buffer = ""
+        old_settings = self.__start_read()
+        try:
+            self._write(TerminalAction.GET_CURSOR_POS)
+            buffer = self.__read_key()
+        finally:
+            self.__end_read(old_settings)
+
+        values = buffer[2:-1].split(";")
+        return Position(values[0], values[1])

@@ -7,7 +7,7 @@ Tools that helps reading the console input from the user in Windows.
 import msvcrt
 
 # pylint: enable=import-error
-from utils.general import static_init
+from utils.general import static_init, is_verbose
 from utils.terminal_common import TerminalBase
 
 
@@ -289,7 +289,8 @@ class Terminal(TerminalBase):
         max_line_size = self._get_line_size()
         buffer = list[str]([""])
 
-        print(f"Line size: {max_line_size}")
+        if is_verbose:
+            self.write_line(f"Line size: {max_line_size}")
 
         while True:
             key = self.read_key()

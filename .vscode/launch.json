@@ -5,22 +5,30 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run Debug",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "src/main.py",
-            "console": "integratedTerminal",
-            "args": "-d",
-            "justMyCode": true
-        },
-        {
-            "name": "Run in Dev Mode",
+            "name": "Run Sandbox",
             "type": "debugpy",
             "request": "launch",
             "program": "src/main.py",
             "console": "integratedTerminal",
             "args": "-s",
             "justMyCode": true
-        }
+        },
+        {
+            "name": "Run",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Run in Verbose Mode",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/main.py",
+            "console": "integratedTerminal",
+            "args": "-v",
+            "justMyCode": true
+        },
     ]
 }

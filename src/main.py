@@ -4,6 +4,7 @@ print("Starting...")
 
 # pylint: disable=wrong-import-position
 import sys
+
 # pylint: enable=wrong-import-position
 
 if len(sys.argv) > 1:
@@ -35,7 +36,14 @@ if len(sys.argv) > 1:
         sys.exit()
 
     if any(arg in sys.argv for arg in ["--sandbox", "-s"]):
-        print("Sandbox")
+        import time
+        from utils import terminal
+        spinner = ["-", "\\", "|", "/"]
+        for _ in range(10):
+            for char in spinner:
+                terminal.write(terminal.Action.MOVE_TO_BEGIN_OF_LINE)
+                terminal.write(f"{char} Thinking...")
+                time.sleep(0.1)
         sys.exit()
 
     if any(arg in sys.argv for arg in ["--graph", "-g"]):
@@ -50,8 +58,8 @@ if len(sys.argv) > 1:
 
 if __name__ == "__main__":
     import workflow
+    from utils.general import is_verbose
 
-    is_debugging = any(arg in sys.argv for arg in ["--debug", "-d"])
-    wkf = workflow.build(is_debugging)
+    wkf = workflow.build(is_verbose)
     wkf.validate()
-    wkf.invoke({}, debug=is_debugging)
+    wkf.invoke({}, debug=is_verbose)

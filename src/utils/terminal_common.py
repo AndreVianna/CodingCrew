@@ -3,15 +3,19 @@
 Represents utility functions used throughout the application.
 """
 
+from contextlib import redirect_stdout
+from io import StringIO
+import re
 import sys
 import curses
 from typing import Iterable, Literal
+
+from attr import dataclass
 
 from utils.general import static_init, normalize_text
 
 is_linux = sys.platform.startswith("linux")
 is_win32 = sys.platform.startswith("win32")
-
 
 @static_init
 class TerminalAction:
@@ -82,7 +86,7 @@ class TerminalAction:
     # MOVE_UP_N_BOL       = "\x1b[#nF"
     # MOVE_TOP            = "\x1b[I"
     # MOVE_TO_LINE_N      = "\x1b[#nI"
-    MOVE_TO_BEGIN_OF_LINE = "\x1b[G"
+    MOVE_TO_BEGIN_OF_LINE = "\x1b[E"
     MOVE_TO_COL_N = "\x1b[#nG"
     MOVE_TO_0_0 = "\x1b[H"
     MOVE_TO_L_C = "\x1b[#l;#cH"
@@ -158,6 +162,15 @@ COLORS: dict[Color, int] = {
 
 RESET = "\x1b[0m"
 
+@dataclass
+class Position:
+    line: int
+    column: int
+
+    def __init__(self, line: int, column: int):
+        self.line = line
+        self.column = column
+
 class TerminalBase:
     def read_text(self) -> str:
         """
@@ -204,6 +217,7 @@ class TerminalBase:
         Returns:
             str: The line entered by the user.
         """
+        return ""
 
     def read_key(self) -> str:
         """
@@ -215,6 +229,7 @@ class TerminalBase:
         Returns:
             str: The key pressed by the user.
         """
+        return ""
 
     def clear(self):
         """
@@ -225,7 +240,7 @@ class TerminalBase:
         self._write(TerminalAction.CLEAR_SCREEN)
         self._write(TerminalAction.MOVE_TO_0_0)
 
-    def paint(
+    def format(
         self,
         text: object,
         foreground: Color | None = None,
@@ -292,7 +307,7 @@ class TerminalBase:
 
         """
         if text:
-            colored_text = self.paint(text, foreground, background, styles)
+            colored_text = self.format(text, foreground, background, styles)
             self._write(colored_text)
 
     def write_line(
@@ -312,18 +327,17 @@ class TerminalBase:
         sys.stdout.write(char)
         sys.stdout.flush()
 
-    def _get_cursor_position(self):
+    def _get_cursor_position(self) -> Position:
         """
         Returns the current cursor position and the text at the cursor position.
         """
-        curses.filter()
-        scr = curses.initscr()
-        try:
-            y, x = scr.getyx()
-            char = chr(scr.inch(y, x))
-        finally:
-            curses.endwin()
-        return (y, x, char)
+        return Position(0, 0)
+
+    def _set_cursor_position(self, position: Position) -> None:
+        """
+        Sets the cursor position.
+        """
+        self._write(TerminalAction.MOVE_TO_L_C.replace("#l", str(position.line)).replace("#c", str(position.column)))
 
     def _get_line_size(self):
         """
@@ -337,17 +351,38 @@ class TerminalBase:
             curses.endwin()
         return x
 
+    def _write_footer(self, exit_options: list[str]) -> None:
+        pos = self._get_cursor_position()
+        self._write(TerminalAction.CLEAR_TO_END_OF_SCREEN)
+        self._write(TerminalAction.ADD_NEW_LINE)
+        self._write(TerminalAction.ADD_NEW_LINE)
+        exit_options = " or ".join(
+            [" or ".join(
+                [(
+                    "'" + self.format(item, "yellow", styles=["bold"]) + "'"
+                ) for item in option.split("|")]
+            ) for option in exit_options]
+        )
+        self.write(
+            f"You can add multiple lines. Press {exit_options} to submit.",
+            styles=["dim"],
+        )
+        self._write(TerminalAction.MOVE_UP_N.replace("#n", "2"))
+        self._write(TerminalAction.MOVE_TO_COL_N.replace("#n", f"{pos.column}"))
+
     def _handle_printable(self, buffer: list[str], key: str, max_line_size: int) -> None:
         buffer[-1] += key
         self._write(key)
         if len(buffer[-1]) % max_line_size == 0:
             self.__add_new_line(buffer)
 
-    def _handle_linebreak(self, buffer: list[str]) -> None:
+    def _handle_linebreak(self, buffer: list[str], exit_options: list[str]) -> None:
         buffer[-1] += "\n"
         self.__add_new_line(buffer)
+        self._write_footer(exit_options)
 
-    def _handle_backspace(self, buffer: list[str]) -> None:
+
+    def _handle_backspace(self, buffer: list[str], exit_options: list[str]) -> None:
         if buffer[-1]:
             buffer[-1] = buffer[-1][:-1]
             self._write(TerminalAction.MOVE_LEFT)
@@ -360,6 +395,7 @@ class TerminalBase:
                 self._write(TerminalAction.MOVE_TO_COL_N.replace("#n", str(len(buffer[-1]))))
                 buffer[-1] = buffer[-1][:-1]
         self._write(TerminalAction.CLEAR_TO_END_OF_LINE)
+        self._write_footer(exit_options)
 
     def __add_new_line(self, buffer: list[str]) -> None:
         buffer.append("")

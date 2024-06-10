@@ -7,9 +7,11 @@ Attributes:
 """
 
 
+import time
 from crewai import Crew
 from langchain_openai import ChatOpenAI
 
+from utils import terminal
 from agents import system_analyst, report_writer
 from tasks import execute_analysis
 from tasks import generate_project_summary_report
@@ -57,7 +59,18 @@ class ProjectCrew():
             llm=ChatOpenAI(model_name="gpt-4o", temperature=0),
             manager_llm=ChatOpenAI(model_name="gpt-4o", temperature=0),
         )
+        terminal.write_line("Starting the analysis process...")
+        # Add a spinner to show in the terminal while the next method is running
+        terminal.write("/ Thinking...")
+        spinner = ["-", "\\", "|", "/"]
+        terminal.write(terminal.Action.MOVE_TO_BEGIN_OF_LINE)
+        terminal.write(terminal.Action.MOVE_RIGHT)
+        for _ in range(10):
+            for char in spinner:
+                time.sleep(0.1)
+                terminal.write_line("\b" + char)
         response = crew.kickoff()
+        terminal.write_line("Analysis completed.")
         result = CrewOutput.from_json(response)
         return {
             **state,

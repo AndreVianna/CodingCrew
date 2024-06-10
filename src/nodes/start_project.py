@@ -11,13 +11,12 @@ Returns:
 import os
 import sys
 from os.path import expanduser
-from utils.general import is_linux, is_win32
 
 from models.workflow import AnalysisState
 
 # pylint: disable=import-error
-from utils.terminal import clear, read_text, paint, write_line
-from utils.general import to_snake_case
+from utils.general import to_snake_case, is_linux
+from utils.terminal import clear, read_text, format, write_line, write, Action
 
 # pylint: enable=import-error
 
@@ -36,7 +35,7 @@ def create(state: AnalysisState) -> AnalysisState:
     while yes_no != "yes" and yes_no != "y":
         yes_no = ""
         clear()
-        name = paint("Project Builder", "yellow", styles=["bold"])
+        name = format("Project Builder", "yellow", styles=["bold"])
         write_line(f"Welcome to {name}.", styles=["bold"])
         write_line()
         write_line("Let's start by getting some basic information about the project.")
@@ -47,7 +46,7 @@ def create(state: AnalysisState) -> AnalysisState:
         project_name = input("Please, enter the project name: ")
         write_line()
 
-        default_folder_color = paint(default_folder, "cyan")
+        default_folder_color = format(default_folder, "cyan")
         base_folder = input(
             f"Please, enter the full path of the project location (default: '{default_folder_color}'): "
         )
@@ -58,7 +57,7 @@ def create(state: AnalysisState) -> AnalysisState:
         )
         write_line()
 
-        project_root_folder_color = paint(project_root_folder, "cyan")
+        project_root_folder_color = format(project_root_folder, "cyan")
         write_line(f"Your project will be located at: '{project_root_folder_color}'.")
         write_line("Is that OK? ([Yes]/No/eXit): ")
         yes_no = input().lower()
@@ -67,24 +66,15 @@ def create(state: AnalysisState) -> AnalysisState:
         if not yes_no:
             yes_no = "yes"
 
-    write_line()
-    write_line("Please provide a detailed description of the project.")
     yes_no = ""
-    submit_key = paint("Ctrl+Enter", "yellow", styles=["bold", "dim"])
     lines = []
     while yes_no != "yes" and yes_no != "y":
         yes_no = ""
-
-        write_line(
-            f"You can add multiple lines. Press '{submit_key}' to submit.",
-            styles=["dim"],
-        )
-        lines += read_text()
-
         write_line()
-        write_line(
-            "Can we proceed to the analysis of the project description? ([Yes]/no/eXit): "
-        )
+        write_line("Please provide a detailed description of the project:")
+        lines += read_text()
+        write_line()
+        write_line("Can we proceed to the analysis of the project description? ([Yes]/no/eXit): ")
         yes_no = input().lower()
         if yes_no == "exit" or yes_no == "x":
             sys.exit(0)
