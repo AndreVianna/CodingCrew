@@ -4,6 +4,7 @@ import asyncio
 
 print("Starting...")
 
+# pylint: disable-next=missing-function-docstring
 async def main():
     if sys.platform not in ["linux", "win32"]:
         print(f"The '{sys.platform}' is not supported.")
@@ -14,7 +15,7 @@ async def main():
 
     if len(sys.argv) > 1:
         if any(arg in sys.argv for arg in ["--text", "-t"]):
-            from utils.terminal import terminal
+            from utils.terminal import terminal   # pylint: disable=import-outside-toplevel
 
             print("Add a text input:")
             text: str = terminal.read_text()
@@ -24,7 +25,7 @@ async def main():
             sys.exit()
 
         if any(arg in sys.argv for arg in ["--list", "-l"]):
-            from utils.terminal import terminal
+            from utils.terminal import terminal   # pylint: disable=import-outside-toplevel
 
             keys = terminal.Key.list()
             keys.sort(key=lambda x: x[1])
@@ -33,7 +34,7 @@ async def main():
             sys.exit()
 
         if any(arg in sys.argv for arg in ["--key_press", "-k"]):
-            from utils.terminal import terminal
+            from utils.terminal import terminal   # pylint: disable=import-outside-toplevel
 
             print("Press a key to display its code and name (press 'q' to finish):")
             key = terminal.read_key()
@@ -43,32 +44,35 @@ async def main():
             sys.exit()
 
         if any(arg in sys.argv for arg in ["--sandbox", "-s"]):
-            from time import sleep
-            from utils.terminal import terminal
+            from time import sleep                 # pylint: disable=import-outside-toplevel
+            from utils.terminal import terminal    # pylint: disable=import-outside-toplevel
 
-            def delay_2() -> str:
+            def delay_short() -> str:
                 sleep(2)
-                return "Returned"
+                return "Short"
 
-            # def delay_10() -> str:
-            #     sleep(10)
-            #     return "Returned"
+            def delay_long() -> str:
+                sleep(10)
+                return "Long"
 
             try:
                 print("Testing the wait_for function:")
-                await terminal.wait_for(delay_2, text="This should finish in 2 second...", timeout=4.0)
-                print("Finished.")
-                # await terminal.wait_for(delay_10, "This should timeout in 3 seconds...", timeout=4.0)
-                # print("Timeout Gracefully.")
-                # await terminal.wait_for(delay_10, "This should timeout in 3 seconds...", timeout=4.0, raise_error=True)
-                # print("Shoild not be here.")
+                result = await terminal.wait_for(delay_short, text="This should finish in 2 second...", timeout=4.0)
+                print(f"Finished. {result if result is not None else 'No result'}")
+                print()
+                result = await terminal.wait_for(delay_long, "This should timeout in 3 seconds...", timeout=4.0)
+                print(f"No Exception. {result if result is not None else 'No result'}")
+                print()
+                result = await terminal.wait_for(delay_long, "This should timeout in 3 seconds...", timeout=4.0, raise_timeout_error=True)
+                print("**** You shoild not be here. ****")
+                print()
             except TimeoutError:
-                print("Timeout Error!.")
+                print(f"Timeout error raised!. {result if result is not None else 'No result'}")
             sys.exit()
 
         if any(arg in sys.argv for arg in ["--graph", "-g"]):
-            import os
-            import workflow
+            import os        # pylint: disable=import-outside-toplevel
+            import workflow  # pylint: disable=import-outside-toplevel
 
             print("Generating graph...")
             temp = workflow.build()
@@ -78,8 +82,8 @@ async def main():
             sys.exit()
 
     if __name__ == "__main__":
-        import workflow
-        from utils.general import is_verbose # pylint: disable=import-error
+        import workflow                      # pylint: disable=import-outside-toplevel
+        from utils.general import is_verbose # pylint: disable=import-outside-toplevel
 
         wkf = workflow.build(is_verbose)
         wkf.validate()

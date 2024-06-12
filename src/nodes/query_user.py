@@ -13,11 +13,8 @@ import sys
 from models.common import Query
 from models.workflow import AnalysisState
 
-# pylint: disable=import-error
-from utils.terminal import read_text, write_line
+from utils.terminal.terminal import read_text, write_line
 from utils.general import normalize_text
-
-# pylint: enable=import-error
 
 
 def create(state: AnalysisState) -> AnalysisState:

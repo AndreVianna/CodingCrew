@@ -9,8 +9,8 @@ import termios
 
 from typing import Any
 
-from ..general import static_init, is_verbose                          # pylint: disable=relative-beyond-top-level
-from .common import TerminalBase, Position, Action                     # pylint: disable=relative-beyond-top-level
+from ..general import static_init                          # pylint: disable=relative-beyond-top-level
+from .common import TerminalBase, Position, Action         # pylint: disable=relative-beyond-top-level
 
 
 @static_init

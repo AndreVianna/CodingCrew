@@ -10,7 +10,6 @@ from crewai import Crew
 from langchain_openai import ChatOpenAI
 
 from utils.terminal import terminal
-from utils.threading.decorators import sync_to_async
 
 from .agents import system_analyst, report_writer
 from .tasks import execute_analysis, generate_project_summary_report
@@ -70,7 +69,6 @@ class ProjectCrew:
             "questions": result.questions,
         }
 
-    @sync_to_async
     def __kickoff(self, crew: Crew) -> str:
         return crew.kickoff()
 

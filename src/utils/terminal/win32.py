@@ -7,7 +7,7 @@ Tools that helps reading the console input from the user in Windows.
 import msvcrt
 
 # pylint: enable=import-error
-from ..general import static_init, is_verbose    # pylint: disable=relative-beyond-top-level
+from ..general import static_init      # pylint: disable=relative-beyond-top-level
 from .common import TerminalBase       # pylint: disable=relative-beyond-top-level
 
 

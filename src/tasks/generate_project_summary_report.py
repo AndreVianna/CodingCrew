@@ -6,10 +6,7 @@ from crewai import Task
 
 from models.crew import CrewInput
 
-# pylint: disable=import-error
 from utils.general import normalize_text
-
-# pylint: enable=import-error
 
 
 def create(agent, data: CrewInput) -> Task:
