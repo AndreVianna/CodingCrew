@@ -62,7 +62,7 @@ async def wait_for(func: Callable[[], _R],
              /,
              text: str | None = None,
              timeout: float = 5.0,
-             raise_timeout_error: bool = False) -> _R | None:
+             raise_timeout_error: bool = True) -> _R | None:
     """
     Waits for the callback to return asynchronously and displays a spinner.
 
@@ -120,7 +120,7 @@ async def start_spinner(text: str, stop: asyncio.Event):
         current_frane = 0
         while not stop.is_set():
             write(Action.MOVE_TO_COL_N.replace("#n", "1"))
-            write(f" {__SPINNER_FRAMES[current_frane]} {text}... {(time.time() - start):0.1f}s  ")
+            write(f" {__SPINNER_FRAMES[current_frane]} {text} {(time.time() - start):0.1f}s  ")
             current_frane = 0 if current_frane >= frame_count - 1 else current_frane + 1
             await asyncio.sleep(0.1)
         state = "STOPPED"
@@ -136,13 +136,13 @@ async def end_spinner(state: Literal["STOPPED", "TIMEOUT", "ERROR"], ellapsed: f
     write(Action.MOVE_TO_COL_N.replace("#n", "1"))
     if state == "STOPPED":
         symbol = set_style(__CHECK, "green")
-        write(f" {symbol} Done. Ellapsed time: {ellapsed:0.1f}s")
+        write(f" {symbol}  Done. Ellapsed time: {ellapsed:0.1f}s")
     elif state == "TIMEOUT":
         symbol = set_style(__FAIL, "red")
-        write(f" {symbol} Timeout! Ellapsed time: {ellapsed:0.1f}s")
+        write(f" {symbol}  Timeout! Ellapsed time: {ellapsed:0.1f}s")
     else:
         symbol = set_style(__FAIL, "red")
-        write(f" {symbol} Error! Ellapsed time: {ellapsed:0.1f}s")
+        write(f" {symbol}  Error! Ellapsed time: {ellapsed:0.1f}s")
     write(Action.CLEAR_TO_END_OF_LINE)
     write_line()
 

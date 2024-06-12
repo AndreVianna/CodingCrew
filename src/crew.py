@@ -6,6 +6,7 @@ Attributes:
     generate_report: The method to generate the final report.
 """
 
+import asyncio
 from crewai import Crew
 from langchain_openai import ChatOpenAI
 
@@ -60,7 +61,17 @@ class ProjectCrew:
             manager_llm=ChatOpenAI(model_name="gpt-4o", temperature=0),
         )
         terminal.write_line("Starting the analysis process...")
-        response = await terminal.wait_for(self.__kickoff(crew), timeout=10)
+        terminal.write_line()
+
+        try:
+            response = await terminal.wait_for(crew.kickoff(), text="Thinking...", timeout=30)
+        except asyncio.TimeoutError:
+            terminal.write_line()
+            terminal.write_line("The analysis process took too long to complete.")
+            terminal.write_line("Please try again later.")
+            return state
+
+        terminal.write_line()
         terminal.write_line("Analysis completed.")
         result = CrewOutput.from_json(response)
         return {
@@ -69,10 +80,7 @@ class ProjectCrew:
             "questions": result.questions,
         }
 
-    def __kickoff(self, crew: Crew) -> str:
-        return crew.kickoff()
-
-    def generate_report(self, state: AnalysisState) -> AnalysisState:
+    async def generate_report(self, state: AnalysisState) -> AnalysisState:
         """
         Kick off the report generation process.
 
@@ -90,7 +98,19 @@ class ProjectCrew:
             ],
             verbose=self.is_debugging,
         )
-        response = crew.kickoff()
+        terminal.write_line("Generating report...")
+        terminal.write_line()
+
+        try:
+            response = await terminal.wait_for(crew.kickoff(), text="Writing...", timeout=30)
+        except asyncio.TimeoutError:
+            terminal.write_line()
+            terminal.write_line("The report generation process took too long to complete.")
+            terminal.write_line("Please try again later.")
+            return state
+
+        terminal.write_line()
+        terminal.write_line("Reported generated.")
         with open("report.md", "w", encoding="utf-8") as file:
             file.write(response)
         return {

@@ -60,10 +60,10 @@ async def main():
                 result = await terminal.wait_for(delay_short, text="This should finish in 2 second...", timeout=4.0)
                 print(f"Finished. {result if result is not None else 'No result'}")
                 print()
-                result = await terminal.wait_for(delay_long, "This should timeout in 3 seconds...", timeout=4.0)
+                result = await terminal.wait_for(delay_long, "This should timeout in 3 seconds...", timeout=4.0, raise_timeout_error=False)
                 print(f"No Exception. {result if result is not None else 'No result'}")
                 print()
-                result = await terminal.wait_for(delay_long, "This should timeout in 3 seconds...", timeout=4.0, raise_timeout_error=True)
+                result = await terminal.wait_for(delay_long, "This should timeout in 3 seconds...", timeout=4.0)
                 print("**** You shoild not be here. ****")
                 print()
             except TimeoutError:
