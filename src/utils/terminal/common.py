@@ -373,13 +373,12 @@ class TerminalBase:
         if len(buffer[-1]) % max_line_size == 0:
             self.__add_new_line(buffer)
 
-    def _handle_linebreak(self, buffer: list[str], exit_options: list[str]) -> None:
+    def _handle_linebreak(self, buffer: list[str]) -> None:
         buffer[-1] += "\n"
         self.__add_new_line(buffer)
-        self._write_footer(exit_options)
 
 
-    def _handle_backspace(self, buffer: list[str], exit_options: list[str]) -> None:
+    def _handle_backspace(self, buffer: list[str]) -> None:
         if buffer[-1]:
             buffer[-1] = buffer[-1][:-1]
             self._write(Action.MOVE_LEFT)
@@ -392,7 +391,6 @@ class TerminalBase:
                 self._write(Action.MOVE_TO_COL_N.replace("#n", str(len(buffer[-1]))))
                 buffer[-1] = buffer[-1][:-1]
         self._write(Action.CLEAR_TO_END_OF_LINE)
-        self._write_footer(exit_options)
 
     def __add_new_line(self, buffer: list[str]) -> None:
         buffer.append("")

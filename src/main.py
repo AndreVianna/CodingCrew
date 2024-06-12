@@ -46,17 +46,21 @@ async def main():
             from time import sleep
             from utils.terminal import terminal
 
-            def delay(seconds: int) -> str:
-                sleep(seconds)
+            def delay_2() -> str:
+                sleep(2)
                 return "Returned"
+
+            # def delay_10() -> str:
+            #     sleep(10)
+            #     return "Returned"
 
             try:
                 print("Testing the wait_for function:")
-                await terminal.wait_for(lambda: delay(2), "This should finish in 2 second...", timeout=4.0)
+                await terminal.wait_for(delay_2, text="This should finish in 2 second...", timeout=4.0)
                 print("Finished.")
-                # await terminal.wait_for(lambda: delay(10), "This should timeout in 3 seconds...", timeout=4.0)
+                # await terminal.wait_for(delay_10, "This should timeout in 3 seconds...", timeout=4.0)
                 # print("Timeout Gracefully.")
-                # await terminal.wait_for(lambda: delay(10), "This should timeout in 3 seconds...", timeout=4.0, raise_error=True)
+                # await terminal.wait_for(delay_10, "This should timeout in 3 seconds...", timeout=4.0, raise_error=True)
                 # print("Shoild not be here.")
             except TimeoutError:
                 print("Timeout Error!.")

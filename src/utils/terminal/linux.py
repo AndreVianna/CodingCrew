@@ -331,9 +331,6 @@ class Terminal(TerminalBase):
         """
         max_line_size = self._get_line_size()
         buffer = list[str]([""])
-        if is_verbose:
-            self.write_line(f"Line size: {max_line_size}")
-
         exit_options = [KeyMapping.name_of(key) for key in self.__exit_keys]
         self._write_footer(exit_options)
         old_settings = self.__start_read()
@@ -343,11 +340,12 @@ class Terminal(TerminalBase):
                 if key.isprintable():
                     self._handle_printable(buffer, key, max_line_size)
                 elif key in self.__backspace_keys:
-                    self._handle_backspace(buffer, exit_options)
+                    self._handle_backspace(buffer)
                 elif key in self.__linebreak_keys:
-                    self._handle_linebreak(buffer, exit_options)
+                    self._handle_linebreak(buffer)
                 if key in self.__exit_keys:
                     break
+                self._write_footer(exit_options)
         finally:
             self.__end_read(old_settings)
 
