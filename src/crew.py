@@ -6,19 +6,20 @@ Attributes:
     generate_report: The method to generate the final report.
 """
 
-
-import time
 from crewai import Crew
 from langchain_openai import ChatOpenAI
 
-from utils import terminal
-from agents import system_analyst, report_writer
-from tasks import execute_analysis
-from tasks import generate_project_summary_report
-from models.crew import CrewOutput
-from models.workflow import AnalysisState
+from utils.terminal import terminal
+from utils.threading.decorators import sync_to_async
 
-class ProjectCrew():
+from .agents import system_analyst, report_writer
+from .tasks import execute_analysis, generate_project_summary_report
+from .models.crew import CrewOutput
+from .models.workflow import AnalysisState
+
+
+
+class ProjectCrew:
     """
     Represents a crew responsible for executing the analysis and generating reports for a project.
 
@@ -39,7 +40,7 @@ class ProjectCrew():
         self.report_writer = report_writer.create(is_debugging)
         self.is_debugging = is_debugging
 
-    def execute_analysis(self, state: AnalysisState) -> AnalysisState:
+    async def execute_analysis(self, state: AnalysisState) -> AnalysisState:
         """
         Kick off the crew's analysis process.
 
@@ -60,16 +61,7 @@ class ProjectCrew():
             manager_llm=ChatOpenAI(model_name="gpt-4o", temperature=0),
         )
         terminal.write_line("Starting the analysis process...")
-        # Add a spinner to show in the terminal while the next method is running
-        terminal.write("/ Thinking...")
-        spinner = ["-", "\\", "|", "/"]
-        terminal.write(terminal.Action.MOVE_TO_BEGIN_OF_LINE)
-        terminal.write(terminal.Action.MOVE_RIGHT)
-        for _ in range(10):
-            for char in spinner:
-                time.sleep(0.1)
-                terminal.write_line("\b" + char)
-        response = crew.kickoff()
+        response = await terminal.wait_for(self.__kickoff(crew), timeout=10)
         terminal.write_line("Analysis completed.")
         result = CrewOutput.from_json(response)
         return {
@@ -77,6 +69,10 @@ class ProjectCrew():
             "project_description": result.description,
             "questions": result.questions,
         }
+
+    @sync_to_async
+    def __kickoff(self, crew: Crew) -> str:
+        return crew.kickoff()
 
     def generate_report(self, state: AnalysisState) -> AnalysisState:
         """
@@ -94,7 +90,7 @@ class ProjectCrew():
             tasks=[
                 generate_project_summary_report.create(self.report_writer, state),
             ],
-            verbose=self.is_debugging
+            verbose=self.is_debugging,
         )
         response = crew.kickoff()
         with open("report.md", "w", encoding="utf-8") as file:

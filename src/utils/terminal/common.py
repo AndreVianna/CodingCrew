@@ -3,22 +3,19 @@
 Represents utility functions used throughout the application.
 """
 
-from contextlib import redirect_stdout
-from io import StringIO
-import re
 import sys
 import curses
 from typing import Iterable, Literal
 
 from attr import dataclass
 
-from utils.general import static_init, normalize_text
+from ..general import static_init, normalize_text        # pylint: disable=relative-beyond-top-level
 
 is_linux = sys.platform.startswith("linux")
 is_win32 = sys.platform.startswith("win32")
 
 @static_init
-class TerminalAction:
+class Action:
     """
     Represents a collection of ansi escape codes used for manipulate the terminal.
     """
@@ -237,8 +234,8 @@ class TerminalBase:
 
         This function clears the terminal screen by executing the appropriate operating system's command
         """
-        self._write(TerminalAction.CLEAR_SCREEN)
-        self._write(TerminalAction.MOVE_TO_0_0)
+        self._write(Action.CLEAR_SCREEN)
+        self._write(Action.MOVE_TO_0_0)
 
     def format(
         self,
@@ -321,7 +318,7 @@ class TerminalBase:
         writes a formated text with the operating system's line separator character at the end.
         """
         self.write(text, foreground, background, styles)
-        self._write(TerminalAction.ADD_NEW_LINE)
+        self._write(Action.ADD_NEW_LINE)
 
     def _write(self, char: str) -> None:
         sys.stdout.write(char)
@@ -337,7 +334,7 @@ class TerminalBase:
         """
         Sets the cursor position.
         """
-        self._write(TerminalAction.MOVE_TO_L_C.replace("#l", str(position.line)).replace("#c", str(position.column)))
+        self._write(Action.MOVE_TO_L_C.replace("#l", str(position.line)).replace("#c", str(position.column)))
 
     def _get_line_size(self):
         """
@@ -353,9 +350,9 @@ class TerminalBase:
 
     def _write_footer(self, exit_options: list[str]) -> None:
         pos = self._get_cursor_position()
-        self._write(TerminalAction.CLEAR_TO_END_OF_SCREEN)
-        self._write(TerminalAction.ADD_NEW_LINE)
-        self._write(TerminalAction.ADD_NEW_LINE)
+        self._write(Action.CLEAR_TO_END_OF_SCREEN)
+        self._write(Action.ADD_NEW_LINE)
+        self._write(Action.ADD_NEW_LINE)
         exit_options = " or ".join(
             [" or ".join(
                 [(
@@ -367,8 +364,8 @@ class TerminalBase:
             f"You can add multiple lines. Press {exit_options} to submit.",
             styles=["dim"],
         )
-        self._write(TerminalAction.MOVE_UP_N.replace("#n", "2"))
-        self._write(TerminalAction.MOVE_TO_COL_N.replace("#n", f"{pos.column}"))
+        self._write(Action.MOVE_UP_N.replace("#n", "2"))
+        self._write(Action.MOVE_TO_COL_N.replace("#n", f"{pos.column}"))
 
     def _handle_printable(self, buffer: list[str], key: str, max_line_size: int) -> None:
         buffer[-1] += key
@@ -385,18 +382,18 @@ class TerminalBase:
     def _handle_backspace(self, buffer: list[str], exit_options: list[str]) -> None:
         if buffer[-1]:
             buffer[-1] = buffer[-1][:-1]
-            self._write(TerminalAction.MOVE_LEFT)
+            self._write(Action.MOVE_LEFT)
         elif not buffer[-1] and len(buffer) > 1:
             buffer.pop()
-            self._write(TerminalAction.MOVE_UP)
+            self._write(Action.MOVE_UP)
             if buffer[-1].endswith("\n"):
                 buffer[-1] = buffer[-1].rstrip("\n")
             if buffer[-1]:
-                self._write(TerminalAction.MOVE_TO_COL_N.replace("#n", str(len(buffer[-1]))))
+                self._write(Action.MOVE_TO_COL_N.replace("#n", str(len(buffer[-1]))))
                 buffer[-1] = buffer[-1][:-1]
-        self._write(TerminalAction.CLEAR_TO_END_OF_LINE)
+        self._write(Action.CLEAR_TO_END_OF_LINE)
         self._write_footer(exit_options)
 
     def __add_new_line(self, buffer: list[str]) -> None:
         buffer.append("")
-        self._write(TerminalAction.ADD_NEW_LINE)
+        self._write(Action.ADD_NEW_LINE)

@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "src/main.py",
             "console": "integratedTerminal",
-            "args": "-s",
+            "args": "-s -X dev" ,
             "justMyCode": true
         },
         {
@@ -27,7 +27,7 @@
             "request": "launch",
             "program": "src/main.py",
             "console": "integratedTerminal",
-            "args": "-v",
+            "args": "-v -X dev",
             "justMyCode": true
         },
     ]

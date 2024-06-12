@@ -9,10 +9,8 @@ import termios
 
 from typing import Any
 
-from click import pause
-
-from utils.general import static_init, is_verbose
-from utils.terminal_common import TerminalBase, Position, TerminalAction
+from ..general import static_init, is_verbose                          # pylint: disable=relative-beyond-top-level
+from .common import TerminalBase, Position, Action                     # pylint: disable=relative-beyond-top-level
 
 
 @static_init
@@ -444,7 +442,7 @@ class Terminal(TerminalBase):
         buffer = ""
         old_settings = self.__start_read()
         try:
-            self._write(TerminalAction.GET_CURSOR_POS)
+            self._write(Action.GET_CURSOR_POS)
             buffer = self.__read_key()
         finally:
             self.__end_read(old_settings)

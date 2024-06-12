@@ -4,24 +4,20 @@ Represents utility functions used throughout the application.
 """
 
 import sys
-from typing import Iterable
-from utils.general import is_linux, is_win32
-from utils.terminal_common import Color, Style, TerminalAction
+import time
+from typing import Callable, Iterable, Literal, TypeVar
+import asyncio
+from ..general import is_linux, is_win32 # pylint: disable=relative-beyond-top-level
+from .common import Color, Style, Action as Action # pylint: disable=relative-beyond-top-level
 
 if is_linux:
-    import utils.terminal_linux as linux_terminal
-
-    Key = linux_terminal.KeyMapping
-    __terminal: linux_terminal.Terminal = linux_terminal.Terminal()
+    from .linux import Terminal, KeyMapping as Key # pylint: disable=relative-beyond-top-level, unused-import
 elif is_win32:
-    import utils.terminal_win32 as win32_terminal
-
-    Key = win32_terminal.KeyMapping
-    __terminal: win32_terminal.Terminal = win32_terminal.Terminal()
+    from .win32 import Terminal, KeyMapping as Key # pylint: disable=relative-beyond-top-level, unused-import
 else:
     raise OSError(f"{sys.platform} is not supported.")
 
-Action = TerminalAction
+__terminal: Terminal = Terminal()
 
 def clear() -> str:
     """
@@ -60,6 +56,107 @@ def read_key() -> str:
     return __terminal.read_key()
 
 
+# def fire_and_forget(f):
+#     def wrapped(*args, **kwargs):
+#         loop = asyncio.get_event_loop()
+#         return loop.run_in_executor(None, f, *args, *kwargs)
+
+#     return wrapped
+
+T = TypeVar("T")
+
+async def wait_for(callback: Callable[[], T],
+             /,
+             text: str | None = None,
+             timeout: float = 5.0,
+             raise_error: bool = False) -> T:
+    """
+    Waits for the callback to return asynchronously and displays a spinner.
+
+    Args:
+        callback: The callback function to wait for.
+
+    Returns:
+        The result of the callback function.
+    """
+    if timeout <= 0:
+        raise ValueError("Timeout must be greater than 0.")
+
+    text = "Processing" if text is None else text
+    loop = asyncio.get_event_loop()
+
+    is_timeout = False
+    cancel = False
+    def stop()-> bool:
+        nonlocal cancel
+        return cancel
+
+    has_finished = False
+    def on_finish(timeout) -> None:
+        try:
+            nonlocal is_timeout
+            nonlocal task2
+            nonlocal has_finished
+            nonlocal loop
+            task2.cancel()
+            end_spinner(timeout)
+        finally:
+            is_timeout = timeout
+            has_finished = True
+
+    loop.run_in_executor(None, start_spinner, stop, text, timeout, on_finish)
+    task2 = loop.run_in_executor(None, callback)
+    while not task2.done() and not task2.cancelled():
+        print("Waiting...")
+        pass
+    print("Ended")
+    cancel = True
+    while not has_finished:
+        print("finishing")
+        pass
+    if is_timeout and raise_error:
+        raise TimeoutError("The operation has timed out.")
+    print("finished")
+    return None if not task2.done() or task2.cancelled() else task2.result()
+
+
+__SPINNER_FRAMES: list[str] = [
+    "\u2308",
+    "\u2309",
+    "\u230b",
+    "\u230a",
+]
+__CHECK: Literal["\u2714"] = "\u2714"
+__FAIL: Literal["\u2714"] = "\u2718"
+
+# @fire_and_forget
+def start_spinner(stop: Callable[[], bool], text: str, timeout: float, on_finish: Callable[[bool], None]) -> None:
+    start = time.time()
+    text = "Processing" if text is None else text
+    end = start + timeout
+    while not stop():
+        now = time.time()
+        if  now > end:
+            on_finish(True)
+            return
+        for frame in __SPINNER_FRAMES:
+            write(Action.MOVE_TO_COL_N.replace("#n", "1"))
+            write(f"{frame} {text}... {(now - start):0.1f}s  ")
+            time.sleep(0.1)
+    on_finish(False)
+
+
+def end_spinner(is_timeout: bool) -> None:
+    write(Action.MOVE_TO_COL_N.replace("#n", "1"))
+    if is_timeout:
+        write(f"Timed out! {__FAIL}")
+    else:
+        write(f"Done. {__CHECK}")
+    write(Action.CLEAR_TO_END_OF_LINE)
+    write_line()
+
+
+# pylint: disable-next=redefined-builtin
 def format(
     text: str,
     foreground: Color | None = None,
