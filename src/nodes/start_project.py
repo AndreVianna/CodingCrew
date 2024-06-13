@@ -11,6 +11,7 @@ Returns:
 import os
 import sys
 from os.path import expanduser
+import uuid
 
 from tasks.models import ProjectState
 
@@ -23,34 +24,34 @@ def create(state: ProjectState) -> ProjectState:
     Prompts the user to enter the project name and description, and updates the state accordingly.
 
     Args:
-        state (AnalysisState): The current state of the analysis.
+        state (ProjectState): The current state of the analysis.
 
     Returns:
         dict: The updated state with the project name and description added.
     """
-    yes_no = ""
+    yes_no: str = ""
+    clear()
+    name = set_style("Project Builder", "yellow", styles=["bold"])
+    write_line(f"Welcome to {name}.", styles=["bold"])
+    write_line()
+    write_line("Let's start by getting some basic information about the project.")
     while yes_no != "yes" and yes_no != "y":
-        yes_no = ""
-        clear()
-        name = set_style("Project Builder", "yellow", styles=["bold"])
-        write_line(f"Welcome to {name}.", styles=["bold"])
-        write_line()
-        write_line("Let's start by getting some basic information about the project.")
+        yes_no = "" # Reset the value of yes_no
         user_folder = expanduser("~") if is_linux else os.environ.get("USERPROFILE")
         folder_separator = "/" if is_linux else "\\"
         default_folder = f"{user_folder}{folder_separator}projects"
-
+        project_id = uuid.uuid4()
         project_name = input("Please, enter the project name: ")
         write_line()
 
-        default_folder_color = set_style(default_folder, "cyan")
+        default_folder = set_style(default_folder, "cyan")
         base_folder = input(
-            f"Please, enter the full path of the project location (default: '{default_folder_color}'): "
+            f"Please, enter the full path of the projects root folder (default: '{default_folder}'): "
         )
         if not base_folder:
             base_folder = default_folder
         project_folder = (
-            f"{base_folder}{folder_separator}{to_snake_case(project_name)}"
+            f"{base_folder}{folder_separator}{to_snake_case(project_name)}#{str(project_id).lower()}"
         )
         write_line()
 
@@ -61,7 +62,7 @@ def create(state: ProjectState) -> ProjectState:
         if yes_no == "exit" or yes_no == "x":
             sys.exit(0)
         if not yes_no:
-            yes_no = "yes"
+            yes_no = "yes" # Default selection
 
     yes_no = ""
     lines = []
@@ -85,7 +86,9 @@ def create(state: ProjectState) -> ProjectState:
     project_description = "\n".join(lines)
     return {
         **state,
+        "id": project_id,
         "name": project_name,
         "folder": project_folder,
-        "description": project_description,
+        "description": [project_description],
+        "status": "STARTED",
     }

@@ -8,13 +8,13 @@ Attributes:
 
 import asyncio
 import sys
-from typing import List, Tuple, Union
+# from typing import List, Tuple, Union
 import uuid
 from crewai import Crew, Agent, Process
-from crewai.tasks.task_output import TaskOutput
-from langchain_core.agents import AgentFinish, AgentAction
+# from crewai.tasks.task_output import TaskOutput
+# from langchain_core.agents import AgentFinish, AgentAction
 from langchain_openai import ChatOpenAI
-from pydantic import UUID4
+# from pydantic import UUID4
 
 from utils.terminal import terminal
 
@@ -90,7 +90,7 @@ class AnalysisCrew:
             process=Process.hierarchical,
             llm=ChatOpenAI(model_name="gpt-4o", temperature=0),
             manager_llm=ChatOpenAI(model_name="gpt-4o", temperature=0),
-            output_log_file="analysis.log",
+            output_log_file="./logs/analysis.log",
             # task_callback=task_callback,
             # step_callback=step_callback,
         )

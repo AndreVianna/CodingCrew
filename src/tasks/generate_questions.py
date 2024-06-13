@@ -2,7 +2,7 @@ import ast
 from crewai import Task
 from pydantic import BaseModel
 
-from models.common import Query, Question
+from tasks.models import Query
 from utils.general import normalize_text
 
 
@@ -13,7 +13,7 @@ class GenerateQuestionsInput(BaseModel):
     finish: bool
 
 class GenerateQuestionsOutput(BaseModel):
-    questions: list[Question]
+    questions: list[Query]
 
     @classmethod
     def from_json(cls, json_data: dict | str) -> "GenerateQuestionsOutput":
@@ -38,12 +38,14 @@ def create(agent, data: GenerateQuestionsInput) -> Task:
       Use your expertise in system analysis to identify patterns, trends, and GAPS in the information provided.
       Assess the validity and reliability of the information.
       Be attentive to details and identify inconsistencies in the information provided.
-      IMPORTANT! Ask as many questions to refine the project information as necessary.
-      IMPORTANT! If all the required information is already provided, do not ask any more questions.
-      IMPORTANT! Do not repeat a question that was already asked and answered.
-      Keep asking until you have all the information you need to properly define the project charter or until the user asks you to finish.
-      IMPORTANT! When you ask a question add an explain what information you expect to get from that question, and how it will help you to refine the project description.
-      Here is a list of questions you can ask to refine the project description:
+      Ask as many questions to refine the project information as necessary.
+      IMPORTANT! When asking a question, explain why you are asking it and what information you expect to get from that question as part of the text of the question.
+      IMPORTANT! If you have all the required information to correctly execute the project, JUST RESPOND "DONE".
+      IMPORTANT! You MUST NOT ASK a query that is already ANSWERED BY the CURRENT DESCRIPTION.
+      IMPORTANT! You MUST NOT ASK a query that is already ANSWERED BY the EXISTING QUERIES.
+      IMPORTANT! You MUST NOT ASK a query that is NOT RELATED to the PROJECT.
+      IMPORTANT! You MUST NOT ASK a query that is NOT RELEVANT to the PROJECT.
+      SUGGESTED QUESTIONS:
         - What is the Project Goal? The project goal establishes the objectives of the project.
         - Who is the Target Audience? The target audience is the group of people who will be impacted by the project.
         - What is the Project Scope? The project scope establishes the boundaries of the project. It identifies the limits and defines the deliverables.
@@ -61,7 +63,6 @@ def create(agent, data: GenerateQuestionsInput) -> Task:
         - What are the External Connections? External Connections are the external sources, services, or APIs that are required to perform the project tasks.
         - What are the Design Preferences? Design Preferences are the colors, fonts, themes, and  layouts that will be used in the project.
         - What are the views or pages and how to navigate between them? Those are the interfaces that will be used in the project and how they are connected.
-      Do NOT limit yourself to these questions. Feel free to ask any question that you think will help you to refine the project description.
 
       Project Information
       -----------------------------------------------------------
@@ -78,50 +79,54 @@ def create(agent, data: GenerateQuestionsInput) -> Task:
 
     task_output = normalize_text(
         """
-        Your final answer MUST be a json containing:
-          - a string parameter named "description" containing an UPDATED DESCRIPTION of the project based on the PROJECT DESCRIPTION and answers to the PENDING QUESTION.
-          - an object array parameter named "questions" containing the ADDITIONAL QUESTIONS you want to ask the user to improva and refine the project description.
-          - each object in the array MUST have:
-          - a string parameter named "text" containing the question to ask the user; and
-          - a optional string parameter named "proposed answer" containing the analyst proposed answer to that question. If no proposed answer is given send an empty string.
+        Your final answer MUST be in a json format:
         Here is the json schema for the answer:
         ```json
         {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "type": "object",
-          "title": "GenerateQuestionsOutput",
-          "description": "Response for the task to generate questions to refine the project description.",
-          "properties": {
-            "questions": {
-              "type": "array",
-              "description": "The list of questions to ask the user to refine the project description.",
-              "items": [
-                {
-                  "type": "object",
-                  "description": "A question to ask the user to refine the project description.",
-                  "properties": {
-                    "text": {
-                      "type": "string",
-                      "description": "The question to ask the user."
-                    },
-                    "proposed_answer": {
-                      "type": "string",
-                      "description": "Add here your proposed answer to the question."
+            "$schema": "http://json-schema.org/draft-06/schema#",
+            "$ref": "#/definitions/Response",
+            "definitions": {
+                "Response": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "title": "Response",
+                    "description": "The output response format for this task.",
+                    "required": [
+                        "queries"
+                    ],
+                    "properties": {
+                        "queries": {
+                            "type": "array",
+                            "description": "The list of queries to be sent to the user to get more information about the project in order to update its description.",
+                            "items": {
+                                "$ref": "#/definitions/Query"
+                            }
+                        }
                     }
-                  },
-                  "required": [
-                    "text",
-                    "proposed_answer"
-                  ]
+                },
+                "Query": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "title": "Query",
+                    "description": "The query to be sent to the user to obtain more informaton about the project in order to update its description.",
+                    "required": [
+                        "question",
+                        "answer"
+                    ],
+                    "properties": {
+                        "question": {
+                            "type": "string",
+                            "description": "The text of the question."
+                        },
+                        "answer": {
+                            "type": "string",
+                            "description": "The answer to the question."
+                        }
+                    }
                 }
-              ]
             }
-          },
-          "required": [
-            "description",
-            "questions"
-          ]
         }
+        ```
         IMPORTANT! If the user asks you to finish (Finish: True), you MUST return only the updated project description and an empty array of ADDITIONAL QUESTIONS.
         IMPORTANT! If you DO NOT HAVE any ADDITIONAL QUESTIONS to ask, you MUST return only the updated project description and an empty array of questions.
         """
