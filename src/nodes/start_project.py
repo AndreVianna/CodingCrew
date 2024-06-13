@@ -12,13 +12,13 @@ import os
 import sys
 from os.path import expanduser
 
-from models.workflow import AnalysisState
+from tasks.models import ProjectState
 
 from utils.general import to_snake_case, is_linux
 from utils.terminal.terminal import clear, read_text, set_style, write_line
 
 
-def create(state: AnalysisState) -> AnalysisState:
+def create(state: ProjectState) -> ProjectState:
     """
     Prompts the user to enter the project name and description, and updates the state accordingly.
 
@@ -49,12 +49,12 @@ def create(state: AnalysisState) -> AnalysisState:
         )
         if not base_folder:
             base_folder = default_folder
-        project_root_folder = (
+        project_folder = (
             f"{base_folder}{folder_separator}{to_snake_case(project_name)}"
         )
         write_line()
 
-        project_root_folder_color = set_style(project_root_folder, "cyan")
+        project_root_folder_color = set_style(project_folder, "cyan")
         write_line(f"Your project will be located at: '{project_root_folder_color}'.")
         write_line("Is that OK? ([Yes]/No/eXit): ")
         yes_no = input().lower()
@@ -78,14 +78,14 @@ def create(state: AnalysisState) -> AnalysisState:
         if not yes_no:
             yes_no = "yes"
 
-    os.makedirs(project_root_folder, exist_ok=True)
+    os.makedirs(project_folder, exist_ok=True)
     write_line("Project folder created.")
     write_line("Let's proceed with the initial analysis.")
 
     project_description = "\n".join(lines)
     return {
         **state,
-        "project_name": project_name,
-        "project_root_folder": project_root_folder,
-        "project_description": project_description,
+        "name": project_name,
+        "folder": project_folder,
+        "description": project_description,
     }

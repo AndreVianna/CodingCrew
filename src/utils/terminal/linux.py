@@ -331,12 +331,13 @@ class Terminal(TerminalBase):
         """
         max_line_size = self._get_line_size()
         buffer = list[str]([""])
-        exit_options = [KeyMapping.name_of(key) for key in self.__exit_keys]
-        self._write_footer(exit_options)
+        # exit_options = [KeyMapping.name_of(key) for key in self.__exit_keys]
+        # self._write_footer(exit_options)
         old_settings = self.__start_read()
         try:
             while True:
                 key = self.__read_key()
+                # self._write(Action.CLEAR_TO_END_OF_SCREEN)
                 if key.isprintable():
                     self._handle_printable(buffer, key, max_line_size)
                 elif key in self.__backspace_keys:
@@ -345,7 +346,7 @@ class Terminal(TerminalBase):
                     self._handle_linebreak(buffer)
                 if key in self.__exit_keys:
                     break
-                self._write_footer(exit_options)
+                # self._write_footer(exit_options)
         finally:
             self.__end_read(old_settings)
 
@@ -446,4 +447,4 @@ class Terminal(TerminalBase):
             self.__end_read(old_settings)
 
         values = buffer[2:-1].split(";")
-        return Position(values[0], values[1])
+        return Position(values[0], 0 if len(values) < 2 else values[1])

@@ -1,25 +1,28 @@
-"""
-Represents a task to analyze the initial information about the project and ask the user for more details to refine the project description if necessary.
-"""
-
+import ast
 from crewai import Task
+from pydantic import BaseModel
 
-from models.crew import CrewInput, CrewOutput
-
+from models.common import Query, Question
 from utils.general import normalize_text
 
 
-def create(agent, data: CrewInput) -> Task:
-    """
-    Task to analyze the initial information about the project and ask the user for more details to refine the project description if necessary.
+class GenerateQuestionsInput(BaseModel):
+    project_name: str
+    project_description: str
+    queries: list[Query]
+    finish: bool
 
-    Parameters:
-    - agent (str): The name of the agent responsible for the task.
-    - state (CrewInput): The current state of the planning workflow.
+class GenerateQuestionsOutput(BaseModel):
+    questions: list[Question]
 
-    Returns:
-    - Task: A Task object representing the initial analisys task.
-    """
+    @classmethod
+    def from_json(cls, json_data: dict | str) -> "GenerateQuestionsOutput":
+        if isinstance(json_data, str):
+            json_data = ast.literal_eval(json_data.strip(" `\n"))
+        return cls(**json_data)
+
+
+def create(agent, data: GenerateQuestionsInput) -> Task:
     queries_output: str = ""
     if data["queries"] is not None:
         queries_output = "\nQueries:\n"
@@ -28,44 +31,7 @@ def create(agent, data: CrewInput) -> Task:
             answer: str = query["answer"]
             queries_output += f"{i+1}. {question}\n{answer}\n\n"
 
-    analysis_description = normalize_text(
-      f"""
-      The objective is to analyze the all the information provided about the project, including the current description and the answers to the existing questions and generate an updated description of the project.
-      Use all your expertise in system analysis to identify patterns, trends, and gaps in the information provided.
-      Assess the validity and reliability of the information.
-      Be attentive to details and identify inconsistencies in the information provided.
-      Make sure to try to cover all the most important aspects of the project, including but not limited to:
-        - Major components, like a console application, API, library, web application, mobile application, desktop application, or background service;
-        - OS and Platform of the project, like Windows, Linux, macOS, Android, iOS, or web;
-        - Programming Languages, Frameworks, and/or Tools;
-        - Professional Resources Required, like developers, designers, testers, and project managers;
-        - Goals and Objectives;
-        - Major Features;
-        - Constraints, Assumptions, and Risks;
-        - Target Audience;
-        - Security Requirements, like authentication, authorization, and data protection;
-        - Data Management like data storage, or external data sources;
-        - Externat Resources like services or APIs;
-        - Design preferences, like colors, fonts, themes, layouts, navigation;
-        - UI requiremtns, like pages, components, and navigation;
-      IMPORTANT! DO NOT ADD to the description any information not found in the previous description or answered questions.
-      IMPORTANT! DO NOT MAKE assumptions or add information that was not yet provided.
-      IMPORTANT! DO NOT ADD unanswered questions to the description.
-
-      Project Information
-      -----------------------------------------------------------
-      Project Name: {data["project_name"]}
-
-      Project Description:
-      {data["project_description"]}
-      {queries_output}
-      -----------------------------------------------------------
-
-      User Rquested to Finish Analysis: {data["finish"]}
-      """
-    )
-
-    questions_description = normalize_text(
+    task_description = normalize_text(
       f"""
       The objective is to identify the gaps in the information provided about the project and ask for more details if needed.
       Analyze the current information about the project including the description and the answers provided by the user.
@@ -77,7 +43,7 @@ def create(agent, data: CrewInput) -> Task:
       IMPORTANT! Do not repeat a question that was already asked and answered.
       Keep asking until you have all the information you need to properly define the project charter or until the user asks you to finish.
       IMPORTANT! When you ask a question add an explain what information you expect to get from that question, and how it will help you to refine the project description.
-      Make sure to cover all the most important aspects of the project, including but not limited to:
+      Here is a list of questions you can ask to refine the project description:
         - What is the Project Goal? The project goal establishes the objectives of the project.
         - Who is the Target Audience? The target audience is the group of people who will be impacted by the project.
         - What is the Project Scope? The project scope establishes the boundaries of the project. It identifies the limits and defines the deliverables.
@@ -109,19 +75,8 @@ def create(agent, data: CrewInput) -> Task:
       Finish: {data["finish"]}
       """
     )
-    analysis_output = normalize_text(
-      """
-      Your final answer MUST be a text containing the updated description of the project.
-      The description MUST be contain the original description enriched with the answers provided by analysts and the user.
-      The description MUST contain ALL the information relevant to the project in a clear, detailed, and concise way.
-      The description MUST be organized in in paragraphs and bullet points to help any person to understand the project.
-      The description MUST NOT contain unanswered questions, it MUST be an assertive and thoughtful overview of the project.
-      IMPORTANT! You MUST NOT add any information that is not in the previous description or in the answers provided by the user.
-      You MUST NOT make assumptions or add information that was not yet provided.
-      """
-    )
 
-    questions_output = normalize_text(
+    task_output = normalize_text(
         """
         Your final answer MUST be a json containing:
           - a string parameter named "description" containing an UPDATED DESCRIPTION of the project based on the PROJECT DESCRIPTION and answers to the PENDING QUESTION.
@@ -129,28 +84,51 @@ def create(agent, data: CrewInput) -> Task:
           - each object in the array MUST have:
           - a string parameter named "text" containing the question to ask the user; and
           - a optional string parameter named "proposed answer" containing the analyst proposed answer to that question. If no proposed answer is given send an empty string.
-        Here is an example of the expected output:
+        Here is the json schema for the answer:
         ```json
         {
-          "description": "The project is a simple calculator that performs basic arithmetic operations like addition, subtraction, multiplication, and division.",
-          "questions": [
-            {
-              "text": "What is the Project Objective?\nDescribe the specific objectives of the project. What value does this project add to the organization? What results are expected?  What are the deliverables? What benefits will be realized? What problems will be resolved?",
-              "proposed answer": "The project objective is to create a simple calculator that performs basic arithmetic operations like addition, subtraction, multiplication, and division."
-            },
-            {
-              "text": "What are the Major Features?\nDescribe the key functionalities of the project. What are the main components of the project? What are the main use cases of the project?",
-              "proposed answer": ""
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "title": "GenerateQuestionsOutput",
+          "description": "Response for the task to generate questions to refine the project description.",
+          "properties": {
+            "questions": {
+              "type": "array",
+              "description": "The list of questions to ask the user to refine the project description.",
+              "items": [
+                {
+                  "type": "object",
+                  "description": "A question to ask the user to refine the project description.",
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "description": "The question to ask the user."
+                    },
+                    "proposed_answer": {
+                      "type": "string",
+                      "description": "Add here your proposed answer to the question."
+                    }
+                  },
+                  "required": [
+                    "text",
+                    "proposed_answer"
+                  ]
+                }
+              ]
             }
-          }
+          },
+          "required": [
+            "description",
+            "questions"
+          ]
         }
         IMPORTANT! If the user asks you to finish (Finish: True), you MUST return only the updated project description and an empty array of ADDITIONAL QUESTIONS.
         IMPORTANT! If you DO NOT HAVE any ADDITIONAL QUESTIONS to ask, you MUST return only the updated project description and an empty array of questions.
         """
     )
     return Task(
-        description=questions_description,
-        expected_output=questions_output,
+        description=task_description,
+        expected_output=task_output,
         agent=agent,
-        output_json=CrewOutput,
+        output_json=GenerateQuestionsOutput,
     )

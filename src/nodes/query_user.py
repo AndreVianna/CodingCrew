@@ -10,14 +10,13 @@ Returns:
 
 import sys
 
-from models.common import Query
-from models.workflow import AnalysisState
+from tasks.models import Query, ProjectState
 
 from utils.terminal.terminal import read_text, write_line
 from utils.general import normalize_text
 
 
-def create(state: AnalysisState) -> AnalysisState:
+def create(state: ProjectState) -> ProjectState:
     """
     Queries the user for additional information to refine the project description.
 

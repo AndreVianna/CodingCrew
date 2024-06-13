@@ -9,9 +9,9 @@ Returns:
 """
 
 from typing import Literal
-from models.workflow import AnalysisState
+from tasks.models import ProjectState
 
-def create(state: AnalysisState) -> Literal["FINISH"] | Literal["CONTINUE"]:
+def create(state: ProjectState) -> Literal["FINISH"] | Literal["CONTINUE"]:
     """
     Checks if there are any unanswered questions in the given state.
 

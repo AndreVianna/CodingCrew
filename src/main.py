@@ -67,7 +67,7 @@ async def main():
                 print("**** You shoild not be here. ****")
                 print()
             except TimeoutError:
-                print(f"Timeout error raised!. {result if result is not None else 'No result'}")
+                print(f"Timeout error raised! {result if result is not None else 'No result'}")
             sys.exit()
 
         if any(arg in sys.argv for arg in ["--graph", "-g"]):
@@ -82,12 +82,20 @@ async def main():
             sys.exit()
 
     if __name__ == "__main__":
-        import workflow                      # pylint: disable=import-outside-toplevel
-        from utils.general import is_verbose # pylint: disable=import-outside-toplevel
+        import workflow                       # pylint: disable=import-outside-toplevel
+        from utils.general import is_verbose  # pylint: disable=import-outside-toplevel
+        from utils.terminal import terminal   # pylint: disable=import-outside-toplevel
 
+
+        terminal.write_line("Building workflow...")
         wkf = workflow.build(is_verbose)
+        terminal.write_line("Validating workflow...")
         wkf.validate()
-        wkf.invoke({}, debug=is_verbose)
+        terminal.write_line("Executing workflow...")
+        result = wkf.invoke({}, debug=is_verbose)
+        terminal.write_line("Workflow completed.")
+        terminal.write_line("Result:")
+        terminal.write_line(result)
 
 
 asyncio.run(main())
