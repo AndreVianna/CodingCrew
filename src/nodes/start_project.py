@@ -16,7 +16,7 @@ import uuid
 from tasks.models import ProjectState
 
 from utils.general import to_snake_case, is_linux
-from utils.terminal.terminal import clear, read_text, set_style, write_line
+from utils.terminal.terminal import clear, set_style, write, write_line, read_line, read_text
 
 
 def create(state: ProjectState) -> ProjectState:
@@ -41,13 +41,13 @@ def create(state: ProjectState) -> ProjectState:
         folder_separator = "/" if is_linux else "\\"
         default_folder = f"{user_folder}{folder_separator}projects"
         project_id = uuid.uuid4()
-        project_name = input("Please, enter the project name: ")
+        write("Please, enter the project name: ")
+        project_name = read_line()
         write_line()
 
-        default_folder = set_style(default_folder, "cyan")
-        base_folder = input(
-            f"Please, enter the full path of the projects root folder (default: '{default_folder}'): "
-        )
+        formatted_default_folder = set_style(default_folder, "cyan")
+        write_line(f"Please, enter the full path of the projects root folder (default: '{formatted_default_folder}'): ")
+        base_folder = read_line()
         if not base_folder:
             base_folder = default_folder
         project_folder = (
@@ -55,25 +55,25 @@ def create(state: ProjectState) -> ProjectState:
         )
         write_line()
 
-        project_root_folder_color = set_style(project_folder, "cyan")
-        write_line(f"Your project will be located at: '{project_root_folder_color}'.")
+        formatted_project_folder = set_style(project_folder, "cyan")
+        write_line(f"Your project will be located at: '{formatted_project_folder}'.")
         write_line("Is that OK? ([Yes]/No/eXit): ")
-        yes_no = input().lower()
+        yes_no = read_line().lower()
         if yes_no == "exit" or yes_no == "x":
             sys.exit(0)
         if not yes_no:
             yes_no = "yes" # Default selection
 
     yes_no = ""
-    lines = []
+    project_description = ""
     while yes_no != "yes" and yes_no != "y":
         yes_no = ""
         write_line()
         write_line("Please provide a detailed description of the project:")
-        lines += read_text()
+        project_description = read_text()
         write_line()
         write_line("Can we proceed to the analysis of the project description? ([Yes]/no/eXit): ")
-        yes_no = input().lower()
+        yes_no = read_line().lower()
         if yes_no == "exit" or yes_no == "x":
             sys.exit(0)
         if not yes_no:
@@ -83,12 +83,12 @@ def create(state: ProjectState) -> ProjectState:
     write_line("Project folder created.")
     write_line("Let's proceed with the initial analysis.")
 
-    project_description = "\n".join(lines)
-    return {
+    result = {
         **state,
-        "id": project_id,
+        "id": str(project_id),
         "name": project_name,
         "folder": project_folder,
         "description": [project_description],
         "status": "STARTED",
     }
+    return result

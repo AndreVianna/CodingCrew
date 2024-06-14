@@ -17,7 +17,7 @@ def create(agent, data: ProjectState) -> Task:
             question: str = query["question"]
             answer: str = query["answer"]
             input_queries += f"{i+1}. {question}\n{answer}\n\n"
-    input_queries = "No qeries yet." if not input_queries else input_queries
+    input_queries = "No queries yet." if not input_queries else input_queries
 
     task_description = normalize_text(
       f"""

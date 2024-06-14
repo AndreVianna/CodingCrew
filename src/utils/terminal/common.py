@@ -340,13 +340,8 @@ class TerminalBase:
         """
         Returns the size of the terminal line.
         """
-        curses.filter()
-        scr = curses.initscr()
-        try:
-            _, x = scr.getmaxyx()
-        finally:
-            curses.endwin()
-        return x
+        curses.setupterm()
+        return curses.tigetnum("cols")
 
     def _write_footer(self, exit_options: list[str]) -> None:
         pos = self._get_cursor_position()

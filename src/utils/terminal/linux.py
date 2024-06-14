@@ -310,8 +310,8 @@ class KeyMapping:
 
 
 class Terminal(TerminalBase):
-    __exit_keys: list[str] = [KeyMapping.CTRL_ENTER]
-    __linebreak_keys: list[KeyMapping] = [KeyMapping.ENTER, KeyMapping.CTRL_ENTER]
+    __exit_keys: list[str] = [KeyMapping.CTRL_ENTER, KeyMapping.CTRL_D]
+    __linebreak_keys: list[KeyMapping] = [KeyMapping.ENTER, KeyMapping.CTRL_ENTER, KeyMapping.CTRL_D]
     __backspace_keys: list[KeyMapping] = [KeyMapping.BACKSPACE]
     __arrow_keys: list[KeyMapping] = [KeyMapping.UP, KeyMapping.DOWN, KeyMapping.RIGHT, KeyMapping.LEFT]
 

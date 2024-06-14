@@ -38,13 +38,11 @@ class AnalysisCrew:
             Kick off the report generation process.
     """
     is_debugging: bool
-
     system_analyst: Agent
-    report_writer: Agent
+    # report_writer: Agent
 
     def __init__(self, is_debugging: bool):
         self.is_debugging = is_debugging
-
         self.system_analyst = system_analyst.create(is_debugging)
         # self.report_writer = report_writer.create(is_debugging)
 
@@ -60,7 +58,7 @@ class AnalysisCrew:
 
         """
         terminal.write_line("Setting up crew...")
-        update_description_task = update_description.create(self.system_analyst, state)
+        # update_description_task = update_description.create(self.system_analyst, state)
 
         # def step_callback(step: Union[AgentFinish, List[Tuple[AgentAction, str]]]) -> None:
         #     if isinstance(step, AgentFinish):
@@ -82,15 +80,15 @@ class AnalysisCrew:
 
         terminal.write_line("Create crew...")
         crew = Crew(
-            id=uuid.uuid4(),
+            # id=uuid.uuid4(),
             agents=[self.system_analyst],
-            tasks=[update_description_task],
+            tasks=[update_description.create(self.system_analyst, state)],
             verbose=self.is_debugging,
-            memory=True,
-            process=Process.hierarchical,
             llm=ChatOpenAI(model_name="gpt-4o", temperature=0),
-            manager_llm=ChatOpenAI(model_name="gpt-4o", temperature=0),
-            output_log_file="./logs/analysis.log",
+            # memory=True,
+            # process=Process.hierarchical,
+            # manager_llm=ChatOpenAI(model_name="gpt-4o", temperature=0),
+            # output_log_file="./logs/analysis.log",
             # task_callback=task_callback,
             # step_callback=step_callback,
         )
