@@ -27,6 +27,7 @@ class ProjectState(TypedDict):
         "DESCRIPTION_UPDATED",
         "REPORT_GENERATED",
     ]
+    finish: bool = False
 
     def __init__(self):
         self.id = uuid.uuid4()

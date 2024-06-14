@@ -1,6 +1,6 @@
 """Entry point."""
 import sys  # pylint: disable=wrong-import-position
-import asyncio
+# import asyncio
 
 from tasks.models import ProjectState
 from utils.general import is_verbose

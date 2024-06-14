@@ -6,21 +6,19 @@ Attributes:
     generate_report: The method to generate the final report.
 """
 
-import asyncio
+import os
 import sys
-# from typing import List, Tuple, Union
-import uuid
+import asyncio
+from typing import List, Tuple, Union
 from crewai import Crew, Agent, Process
-# from crewai.tasks.task_output import TaskOutput
-# from langchain_core.agents import AgentFinish, AgentAction
+from crewai.tasks.task_output import TaskOutput
+from langchain_core.agents import AgentFinish, AgentAction
 from langchain_openai import ChatOpenAI
-# from pydantic import UUID4
 
 from utils.terminal import terminal
 
-
 from agents import system_analyst     #, report_writer
-from tasks import update_description  #, generate_questions, generate_report,
+from tasks import update_description , generate_questions #, generate_report,
 from tasks.models import ProjectState #, Query
 
 class AnalysisCrew:
@@ -46,7 +44,7 @@ class AnalysisCrew:
         self.system_analyst = system_analyst.create(is_debugging)
         # self.report_writer = report_writer.create(is_debugging)
 
-    async def execute_analysis(self, state: ProjectState) -> ProjectState:
+    def execute_analysis(self, state: ProjectState) -> ProjectState:
         """
         Kick off the crew's analysis process.
 
@@ -58,45 +56,53 @@ class AnalysisCrew:
 
         """
         terminal.write_line("Setting up crew...")
-        # update_description_task = update_description.create(self.system_analyst, state)
+        update_description_task = update_description.create(self.system_analyst, state)
+        generate_questions_task = generate_questions.create(self.system_analyst, state)
 
-        # def step_callback(step: Union[AgentFinish, List[Tuple[AgentAction, str]]]) -> None:
-        #     if isinstance(step, AgentFinish):
-        #         terminal.write_line("Step completed.")
-        #         terminal.write_line(f"Result: {step}")
-        #     else:
-        #         step_count = 1
-        #         for action, observation in step:
-        #             terminal.write_line(f"Step {step_count}:")
-        #             terminal.write_line(f"Observaltion: {observation}")
-        #             terminal.write_line(f"Result: {action}")
-        #             step_count += 1
+        def step_callback(step: Union[AgentFinish, List[Tuple[AgentAction, str]]]) -> None:
+            if isinstance(step, AgentFinish):
+                terminal.write_line("Step completed.")
+                terminal.write_line(f"Result: {step}")
+            else:
+                step_count = 1
+                for action, observation in step:
+                    terminal.write_line(f"Step {step_count}:")
+                    terminal.write_line(f"Observaltion: {observation}")
+                    terminal.write_line(f"Result: {action}")
+                    step_count += 1
 
-        # def task_callback(task: TaskOutput) -> None:
-        #     terminal.write_line()
-        #     terminal.write_line("Task completed.")
-        #     terminal.write_line(f"Result: {task.raw_output}")
-        #     terminal.write_line()
+        def task_callback(task: TaskOutput) -> None:
+            terminal.write_line()
+            terminal.write_line("Task completed.")
+            terminal.write_line(f"Result: {task.raw_output}")
+            terminal.write_line()
+
+        # Create logs directory if it doesn't exist
+
+        if not os.path.exists("./logs/analysis.log"):
+            os.makedirs("./logs")
+            with open("./logs/analysis.log", "a", encoding="utf-8"):
+                pass
+
 
         terminal.write_line("Create crew...")
         crew = Crew(
-            # id=uuid.uuid4(),
             agents=[self.system_analyst],
-            tasks=[update_description.create(self.system_analyst, state)],
+            tasks=[update_description_task, generate_questions_task],
             verbose=self.is_debugging,
             llm=ChatOpenAI(model_name="gpt-4o", temperature=0),
-            # memory=True,
-            # process=Process.hierarchical,
-            # manager_llm=ChatOpenAI(model_name="gpt-4o", temperature=0),
-            # output_log_file="./logs/analysis.log",
-            # task_callback=task_callback,
-            # step_callback=step_callback,
+            memory=True,
+            process=Process.hierarchical,
+            manager_llm=ChatOpenAI(model_name="gpt-4o", temperature=0),
+            output_log_file="./logs/analysis.log",
+            task_callback=task_callback,
+            step_callback=step_callback,
         )
         terminal.write_line("Starting crew for project analysis...")
         terminal.write_line()
 
         try:
-            response = await terminal.wait_for(crew.kickoff(), text="Thinking...", timeout=30)
+            response = crew.kickoff()
         except asyncio.TimeoutError:
             terminal.write_line()
             terminal.write_line("Crew work was stopped because it was taking too long to complete.")

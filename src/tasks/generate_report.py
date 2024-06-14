@@ -42,10 +42,10 @@ def create(agent, data: GenerateReportInput) -> Task:
 
         Project Information
         -----------------------------------------------------------
-        Project Name: {data["project_name"]}
+        Project Name: {data["name"]}
 
         Project Description:
-        {data["project_description"]}
+        {data["description"]}
         {queries_output}
         -----------------------------------------------------------
         """

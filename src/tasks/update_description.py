@@ -11,7 +11,7 @@ class UpdateDescriptionInput(BaseModel):
 
 def create(agent, data: ProjectState) -> Task:
     input_queries: str = ""
-    if data["queries"] is not None:
+    if data["queries"]:
         input_queries = "\nQueries:\n"
         for i, query in enumerate(data["queries"]):
             question: str = query["question"]
@@ -45,10 +45,10 @@ def create(agent, data: ProjectState) -> Task:
 
         Project Information
         -----------------------------------------------------------
-        Project Name: {data["project_name"]}
+        Project Name: {data["name"]}
 
         Project Description:
-        {data["project_description"]}
+        {data["description"]}
         {input_queries}
         -----------------------------------------------------------
         """)

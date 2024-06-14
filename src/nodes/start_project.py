@@ -13,7 +13,7 @@ import sys
 from os.path import expanduser
 import uuid
 
-from tasks.models import ProjectState
+from tasks.models import ProjectState, Query
 
 from utils.general import to_snake_case, is_linux
 from utils.terminal.terminal import clear, set_style, write, write_line, read_line, read_text
@@ -51,7 +51,7 @@ def create(state: ProjectState) -> ProjectState:
         if not base_folder:
             base_folder = default_folder
         project_folder = (
-            f"{base_folder}{folder_separator}{to_snake_case(project_name)}#{str(project_id).lower()}"
+            f"{base_folder}{folder_separator}{to_snake_case(project_name)}{folder_separator}{str(project_id).lower()}"
         )
         write_line()
 
@@ -89,6 +89,7 @@ def create(state: ProjectState) -> ProjectState:
         "name": project_name,
         "folder": project_folder,
         "description": [project_description],
+        "queries": list[Query](),
         "status": "STARTED",
     }
     return result
