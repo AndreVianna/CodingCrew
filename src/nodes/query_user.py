@@ -1,16 +1,7 @@
-"""
-represents the node where the user is prompted to answer additional questions to refine the project description.
-
-Args:
-    state (AnalysisState): The current state of the analysis.
-
-Returns:
-    AnalysisState: The updated state after querying the user.
-"""
-
 import sys
 
-from tasks.models import Query, ProjectState
+from models.query import Query
+from models.project_state import ProjectState
 
 from utils.terminal.terminal import read_text, write_line
 from utils.general import normalize_text

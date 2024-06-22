@@ -1,7 +1,8 @@
 from crewai import Task
 from pydantic import BaseModel
 
-from tasks.models import ProjectState, Query
+from models.query import Query
+from models.project_state import ProjectState
 from utils.general import normalize_text
 
 class UpdateDescriptionInput(BaseModel):

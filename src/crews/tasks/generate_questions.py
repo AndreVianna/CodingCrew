@@ -2,7 +2,7 @@ import ast
 from crewai import Task
 from pydantic import BaseModel
 
-from tasks.models import Query
+from models.query import Query
 from utils.general import normalize_text
 
 

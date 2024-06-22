@@ -1,25 +1,18 @@
-"""
-Represents the models used in the analysis workflow.
-"""
 
-from typing import Literal
+
 import uuid
-from pydantic import UUID4
+from typing import Literal
 from typing_extensions import TypedDict
+from pydantic import UUID4
 
-class Query(TypedDict):
-    question: str
-    answer: str
-
-class ProjectQuery(Query):
-    pending: bool
+from models.query import Query
 
 class ProjectState(TypedDict):
     id:UUID4
     name: str | None
     folder: str | None
     description: list[str]
-    queries: list[ProjectQuery]
+    queries: list[Query]
     report: str | None
     status: Literal[
         "CREATED",
@@ -34,6 +27,6 @@ class ProjectState(TypedDict):
         self.name = None
         self.folder = None
         self.description = list[str]()
-        self.queries = list[ProjectQuery]()
+        self.queries = list[Query]()
         self.report = None
         self.status = Literal["CREATED"]

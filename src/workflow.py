@@ -13,9 +13,10 @@ from dotenv import load_dotenv
 from langgraph.graph.graph import CompiledGraph
 from langgraph.graph.state import StateGraph
 from langgraph.graph import END
-from tasks.models import ProjectState
+
+from models.project_state import ProjectState
+from crews.analysis_crew import AnalysisCrew
 from nodes import start_project # , query_user, has_answers
-from analysis_crew import AnalysisCrew
 
 load_dotenv()
 

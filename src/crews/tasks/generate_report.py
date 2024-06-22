@@ -5,7 +5,7 @@ Represents the task to generate a Project Summary Report.
 from crewai import Task
 from pydantic import BaseModel
 
-from tasks.models import Query
+from models.query import Query
 from utils.general import normalize_text
 
 class GenerateReportInput(BaseModel):

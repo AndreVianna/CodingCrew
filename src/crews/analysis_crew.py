@@ -16,10 +16,10 @@ from langchain_core.agents import AgentFinish, AgentAction
 from langchain_openai import ChatOpenAI
 
 from utils.terminal import terminal
+from models.project_state import ProjectState #, Query
 
-from agents import system_analyst     #, report_writer
-from tasks import update_description , generate_questions #, generate_report,
-from tasks.models import ProjectState #, Query
+from .agents import system_analyst     #, report_writer
+from .tasks import update_description , generate_questions #, generate_report,
 
 class AnalysisCrew:
     """
