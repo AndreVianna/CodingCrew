@@ -17,7 +17,7 @@ if sys.version_info < (3, 11) or sys.version_info > (3, 12):
     sys.exit(1)
 
 if len(sys.argv) > 1:
-    if any(arg in sys.argv for arg in ["--text", "-t"]):
+    if any(arg in sys.argv for arg in ["-t"]):
         from utils.terminal import terminal   # pylint: disable=import-outside-toplevel
 
         print("Add a text input:")
@@ -27,7 +27,7 @@ if len(sys.argv) > 1:
         print(text)
         sys.exit()
 
-    if any(arg in sys.argv for arg in ["--list", "-l"]):
+    if any(arg in sys.argv for arg in ["-l"]):
         from utils.terminal import terminal   # pylint: disable=import-outside-toplevel
 
         keys = terminal.Key.list()
@@ -36,7 +36,7 @@ if len(sys.argv) > 1:
             print(f"{key[1]}: {key[0]}")
         sys.exit()
 
-    if any(arg in sys.argv for arg in ["--key_press", "-k"]):
+    if any(arg in sys.argv for arg in ["-k"]):
         from utils.terminal import terminal   # pylint: disable=import-outside-toplevel
 
         print("Press a key to display its code and name (press 'q' to finish):")
@@ -46,10 +46,10 @@ if len(sys.argv) > 1:
             key = terminal.read_key()
         sys.exit()
 
-    if any(arg in sys.argv for arg in ["--sandbox", "-s"]):
+    if any(arg in sys.argv for arg in ["-s"]):
         sys.exit()
 
-    if any(arg in sys.argv for arg in ["--graph", "-g"]):
+    if any(arg in sys.argv for arg in ["-g"]):
         import os        # pylint: disable=import-outside-toplevel
         import workflow  # pylint: disable=import-outside-toplevel
 
@@ -61,9 +61,8 @@ if len(sys.argv) > 1:
         sys.exit()
 
 if __name__ == "__main__":
-    import workflow                       # pylint: disable=import-outside-toplevel
     from utils.terminal import terminal   # pylint: disable=import-outside-toplevel
-
+    import workflow                       # pylint: disable=import-outside-toplevel
 
     terminal.write_line("Building workflow...")
     wkf = workflow.build(is_verbose)

@@ -5,13 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run Sandbox",
+            "name": "Attach",
             "type": "debugpy",
-            "request": "launch",
-            "program": "src/main.py",
-            "console": "integratedTerminal",
-            "args": "-s -X dev" ,
-            "justMyCode": true
+            "request": "attach",
+            "processId": "${command:pickProcess}",
         },
         {
             "name": "Run",
@@ -19,16 +16,54 @@
             "request": "launch",
             "program": "src/main.py",
             "console": "integratedTerminal",
-            "justMyCode": true
         },
         {
-            "name": "Run in Verbose Mode",
+            "name": "Sandbox",
             "type": "debugpy",
             "request": "launch",
             "program": "src/main.py",
             "console": "integratedTerminal",
-            "args": "-v -X dev",
-            "justMyCode": true
+            "args": "-s" ,
+        },
+        {
+            "pythonArgs": ["-X", "dev", "-v"],
+            "name": "Verbose (Debug)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/main.py",
+            "console": "externalTerminal",
+            "sudo": true,
+            "subProcess": true,
+            "autoReload": {
+              "enable": true
+            },
+            "args": "-v",
+        },
+        {
+            "name": "Graph",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/main.py",
+            "console": "integratedTerminal",
+            "args": "-g",
+        },
+        {
+            "pythonArgs": ["-X", "dev", "-v", "-u"],
+            "name": "Text Input",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/main.py",
+            "console": "integratedTerminal",
+            "args": "-t",
+        },
+        {
+            "pythonArgs": ["-u"],
+            "name": "Key Test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "src/main.py",
+            "console": "integratedTerminal",
+            "args": "-k",
         },
     ]
 }
