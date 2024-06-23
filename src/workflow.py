@@ -15,8 +15,7 @@ from langgraph.graph.state import StateGraph
 from langgraph.graph import END
 
 from models.project_state import ProjectState
-from crews.analysis_crew import AnalysisCrew
-from nodes import start_project # , query_user, has_answers
+from nodes import start_project, update_description # , query_user, has_answers
 
 load_dotenv()
 
@@ -30,7 +29,7 @@ def build(is_debugging: bool = False) -> CompiledGraph:
     workflow = StateGraph(ProjectState)
 
     workflow.add_node("start_project", start_project.create)
-    workflow.add_node("execute_analysis", AnalysisCrew(is_debugging).execute_analysis)
+    workflow.add_node("execute_analysis", update_description.create)
     # workflow.add_node("query_user", query_user.create)
     # workflow.add_node("generate_report", AnalysisCrew(is_debugging).generate_report)
 

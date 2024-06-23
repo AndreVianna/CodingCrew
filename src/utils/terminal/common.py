@@ -11,9 +11,6 @@ from attr import dataclass
 
 from ..general import static_init, normalize_text        # pylint: disable=relative-beyond-top-level
 
-is_linux = sys.platform.startswith("linux")
-is_win32 = sys.platform.startswith("win32")
-
 @static_init
 class Action:
     """

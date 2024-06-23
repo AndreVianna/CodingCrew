@@ -2,13 +2,11 @@
 
 import uuid
 from typing import Literal
-from typing_extensions import TypedDict
-from pydantic import UUID4
 
 from models.query import Query
 
-class ProjectState(TypedDict):
-    id:UUID4
+class ProjectState():
+    project_id: str
     name: str | None
     folder: str | None
     description: list[str]
@@ -22,11 +20,12 @@ class ProjectState(TypedDict):
     ]
     finish: bool = False
 
-    def __init__(self):
-        self.id = uuid.uuid4()
-        self.name = None
-        self.folder = None
-        self.description = list[str]()
-        self.queries = list[Query]()
-        self.report = None
-        self.status = Literal["CREATED"]
+    def __init__(self, project_id: str | None = None, name: str | None = None, folder: str | None = None, description: list[str] | None = None, queries: list[Query] | None = None, report: str | None = None, status: Literal["CREATED"] = "CREATED", finish: bool = False):
+        self.project_id = project_id if project_id else str(uuid.uuid4()).lower()
+        self.name = name
+        self.folder = folder
+        self.description = description if description else list[str]()
+        self.queries = queries if queries else list[Query]()
+        self.report = report
+        self.status = status
+        self.finish = finish

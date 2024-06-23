@@ -8,7 +8,7 @@ import re
 
 is_linux = sys.platform.startswith("linux")
 is_win32 = sys.platform.startswith("win32")
-is_verbose = any(arg in sys.argv for arg in ["--verbose", "-v"])
+is_verbose = any(arg in sys.argv for arg in ["-v"])
 
 def static_init(cls):
     """

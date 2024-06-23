@@ -1,5 +1,8 @@
-setuptools
-crewai
-langgraph
-pygraphviz
-windows-curses; platform_system == "Windows"
+setuptools >= 70.1.0
+langchain >= 0.2.5
+langchain-openai >= 0.1.9
+langchain-anthropic >= 0.1.15
+langchain-mistralai >= 0.1.8
+langgraph >= 0.1.1
+pygraphviz >= 1.13
+windows-curses >= 2.3.3; platform_system == "Windows"

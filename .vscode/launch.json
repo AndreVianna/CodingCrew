@@ -26,17 +26,11 @@
             "args": "-s" ,
         },
         {
-            "pythonArgs": ["-X", "dev", "-v"],
             "name": "Verbose (Debug)",
             "type": "debugpy",
             "request": "launch",
             "program": "src/main.py",
-            "console": "externalTerminal",
-            "sudo": true,
-            "subProcess": true,
-            "autoReload": {
-              "enable": true
-            },
+            "console": "integratedTerminal",
             "args": "-v",
         },
         {

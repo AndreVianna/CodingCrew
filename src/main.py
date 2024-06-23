@@ -1,11 +1,8 @@
 """Entry point."""
-import sys  # pylint: disable=wrong-import-position
-# import asyncio
-
-from tasks.models import ProjectState
-from utils.general import is_verbose
-
 print("Starting...")
+
+import sys                                      # pylint: disable=wrong-import-position
+from utils.terminal import terminal             # pylint: disable=wrong-import-position
 
 # pylint: disable-next=missing-function-docstring
 # async def main():
@@ -18,8 +15,6 @@ if sys.version_info < (3, 11) or sys.version_info > (3, 12):
 
 if len(sys.argv) > 1:
     if any(arg in sys.argv for arg in ["-t"]):
-        from utils.terminal import terminal   # pylint: disable=import-outside-toplevel
-
         print("Add a text input:")
         text: str = terminal.read_text()
         print()
@@ -28,8 +23,6 @@ if len(sys.argv) > 1:
         sys.exit()
 
     if any(arg in sys.argv for arg in ["-l"]):
-        from utils.terminal import terminal   # pylint: disable=import-outside-toplevel
-
         keys = terminal.Key.list()
         keys.sort(key=lambda x: x[1])
         for key in keys:
@@ -37,8 +30,6 @@ if len(sys.argv) > 1:
         sys.exit()
 
     if any(arg in sys.argv for arg in ["-k"]):
-        from utils.terminal import terminal   # pylint: disable=import-outside-toplevel
-
         print("Press a key to display its code and name (press 'q' to finish):")
         key = terminal.read_key()
         while key != "q":
@@ -61,15 +52,17 @@ if len(sys.argv) > 1:
         sys.exit()
 
 if __name__ == "__main__":
-    from utils.terminal import terminal   # pylint: disable=import-outside-toplevel
-    import workflow                       # pylint: disable=import-outside-toplevel
+    from models.project_state import ProjectState   # pylint: disable=import-outside-toplevel
+    from utils.general import is_verbose            # pylint: disable=import-outside-toplevel, ungrouped-imports
+    import workflow                                 # pylint: disable=import-outside-toplevel, ungrouped-imports
 
     terminal.write_line("Building workflow...")
     wkf = workflow.build(is_verbose)
     terminal.write_line("Validating workflow...")
     wkf.validate()
     terminal.write_line("Executing workflow...")
-    result = wkf.invoke(input=ProjectState(), debug=is_verbose)
+    state=ProjectState()
+    result = wkf.invoke(input=state, debug=is_verbose)
     terminal.write_line("Workflow completed.")
     terminal.write_line("Result:")
     terminal.write_line(result)

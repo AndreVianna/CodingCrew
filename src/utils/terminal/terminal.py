@@ -220,3 +220,18 @@ def write_line(
             bold, dark, underline, blink, reverse, concealed.
     """
     return __terminal.write_line(text, foreground, background, styles)
+
+def repeat_until_confirmed(func, message: str | None = None, default: bool = True, allow_exit: bool = True):
+    while True:
+        func()
+        if can_proceed(message, default=default, allow_exit=allow_exit):
+            break
+
+def can_proceed(message: str | None = None, default: bool = True, allow_exit: bool = True) -> bool:
+    message = message if message else "Can we proceed?"
+    write(f"""{message} ({"[Yes]" if default else "Yes"}/{"[No]" if not default else "No"}{"/eXit" if allow_exit else ""}): """)
+    answer = read_line().lower()
+    if allow_exit and answer in ["exit", "x"]:
+        sys.exit(0)
+    answer = "yes" if not answer else answer
+    return answer in ["yes", "y"]
