@@ -8,12 +8,9 @@ import time
 from typing import Callable, Iterable, Literal, Optional, TypeVar
 import asyncio
 
-from .styles import Style
-
-from .terminal_action import Action as Action
 
 from ..common import is_linux, is_win32 # pylint: disable=relative-beyond-top-level
-from .colors import Color # pylint: disable=relative-beyond-top-level
+from .terminal_base import Style, Action, Color
 
 if is_linux:
     from .linux import Terminal, KeyMapping as Key # pylint: disable=relative-beyond-top-level, unused-import
@@ -112,8 +109,8 @@ __SPINNER_FRAMES: list[str] = [
     "\u23b8\u2003",
     "\u231c\u2003",
 ]
-__CHECK: Literal["\u2713"] = "\u2713"
-__FAIL: Literal["\u2717"] = "\u2717"
+__CHECK = "\u2713"
+__FAIL = "\u2717"
 
 async def start_spinner(text: str, stop: asyncio.Event):
     state = "RUNNING"
@@ -123,7 +120,7 @@ async def start_spinner(text: str, stop: asyncio.Event):
         frame_count = len(__SPINNER_FRAMES)
         current_frane = 0
         while not stop.is_set():
-            write(Action.MOVE_TO_COL_N.replace("#n", "1"))
+            __terminal.set_cursor_position(1)
             write(f" {__SPINNER_FRAMES[current_frane]} {text} {(time.time() - start):0.1f}s  ")
             current_frane = 0 if current_frane >= frame_count - 1 else current_frane + 1
             await asyncio.sleep(0.1)

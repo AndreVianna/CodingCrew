@@ -1,15 +1,15 @@
-from datetime import datetime
+import sys
 import os
-from os.path import expanduser
 import json
+from datetime import datetime
 
-from models.project_state import ProjectState
+from ..models.project_state import ProjectState
 
-from utils.common import to_snake_case, is_linux
-from utils.terminal.terminal import clear, set_style, write, write_line, read_line, read_text, repeat_until_confirmed
+from ..utils.common import to_snake_case, is_linux
+from ..utils.terminal.terminal import clear, set_style, write, write_line, read_line, read_text, repeat_until_confirmed
 
 def get_name_and_folder(state: ProjectState):
-    user_folder = expanduser("~") if is_linux else os.environ.get("USERPROFILE")
+    user_folder = os.path.expanduser("~") if is_linux else os.environ.get("USERPROFILE")
     default_folder = os.path.join(user_folder, "projects")
     write("Please, enter the project name: ")
     state.name = read_line()
@@ -37,7 +37,7 @@ def get_name_and_folder(state: ProjectState):
             choice = read_line()
             if choice.lower() in ["exit", "x"]:
                 write_line("Exiting the application.")
-                exit(0)
+                sys.exit(0)
             if not choice or choice.lower() in ["resume", "r", "new", "n"]:
                 choice = "n" if not choice else choice[0].lower()
                 break

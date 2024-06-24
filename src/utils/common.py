@@ -1,21 +1,15 @@
-# pylint: disable=missing-module-docstring,missing-class-docstring,missing-function-docstring
-"""
-Represents utility functions used throughout the application.
-"""
-
 import os
 import sys
 import re
-from typing import Optional
+from typing import Literal
+from functools import singledispatch
 
-from langchain.chat_models import init_chat_model
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.language_models import LanguageModelInput
-from langchain_core.runnables import RunnableConfig
+is_linux: bool = sys.platform.startswith("linux")
+is_win32: bool = sys.platform.startswith("win32")
+is_verbose: bool = any(arg in sys.argv for arg in ["-v"])
 
-is_linux = sys.platform.startswith("linux")
-is_win32 = sys.platform.startswith("win32")
-is_verbose = any(arg in sys.argv for arg in ["-v"])
+default_indent_size: Literal[4] = 4
+default_indent_char: Literal[" "] = " "
 
 def static_init(cls):
     """
@@ -24,20 +18,6 @@ def static_init(cls):
     if getattr(cls, "__static_init__", None):
         cls.__static_init__()
     return cls
-
-def ask_model(
-        messages: LanguageModelInput,
-        config: Optional[RunnableConfig] = None,
-        *,
-        stop: Optional[list[str]] = None,
-) -> str:
-    result = get_model().invoke(input=messages, config=config, stop=stop)
-    return StrOutputParser().invoke(result)
-
-def get_model():
-    model_provider = os.environ["MODEL_PROVIDER"]
-    model_name = os.environ[f"{model_provider.upper()}_MODEL"]
-    return init_chat_model(model_name, model_provider=model_provider, temperature=0)
 
 symbols = re.compile(r"\W")
 alpha_before_digit = re.compile(r"([A-Za-z])([0-9])")
@@ -66,26 +46,45 @@ def to_snake_case(name):
     name = name.strip("_")
     return name.lower()
 
+@singledispatch
 def normalize_text(text: str | list[str]) -> str:
-    lines = text.split("\n") if isinstance(text, str) else text
-    lines = remove_top_empty_lines(lines)
-    lines = remove_bottom_empty_lines(lines)
-    lines = merge_empty_lines(lines)
-    lines = align_left(lines)
-    lines = normalize_tabs(lines)
-    return "\n".join(lines)+"\n"
+    return __normalize_text(0, default_indent_size, default_indent_char, text)
 
-def remove_top_empty_lines(lines: list[str]) -> list[str]:
+@normalize_text.register
+def _(indent_level: int, text: str | list[str]) -> str:
+    return __normalize_text(indent_level, default_indent_size, default_indent_char, text)
+
+@normalize_text.register
+def _(indent_level: int, indent_char: str, text: str | list[str]) -> str:
+    return __normalize_text(indent_level, default_indent_size, indent_char, text)
+
+@normalize_text.register
+def _(indent_level: int, indent_size: int, text: str | list[str]) -> str:
+    return __normalize_text(indent_level, indent_size, default_indent_char, text)
+
+@normalize_text.register
+def _(indent_level: int, indent_size: int, indent_char: str, text: str | list[str]) -> str:
+    return __normalize_text(indent_level, indent_size, indent_char, text)
+
+def __normalize_text(indent_level: int, indent_size: int, indent_char: str, text: str | list[str]) -> str:
+    lines = text.split("\n") if isinstance(text, str) else text
+    lines = __remove_top_empty_lines(lines)
+    lines = __remove_bottom_empty_lines(lines)
+    lines = __merge_empty_lines(lines)
+    lines = __align_left(lines,  indent_level, indent_size, indent_char)
+    return os.linesep.join(lines)+os.linesep
+
+def __remove_top_empty_lines(lines: list[str]) -> list[str]:
     while lines and not lines[0].strip():
         lines.pop(0)
     return lines
 
-def remove_bottom_empty_lines(lines: list[str]) -> list[str]:
+def __remove_bottom_empty_lines(lines: list[str]) -> list[str]:
     while lines and not lines[-1].strip():
         lines.pop()
     return lines
 
-def merge_empty_lines(lines: list[str]) -> list[str]:
+def __merge_empty_lines(lines: list[str]) -> list[str]:
     if not lines:
         return lines
 
@@ -100,30 +99,23 @@ def merge_empty_lines(lines: list[str]) -> list[str]:
             previous_was_empty = True
     return result
 
-def align_left(lines: list[str]) -> list[str]:
+def __align_left(lines: list[str], indent_level: int = 0, indent_size: int = default_indent_size, indent_char: str = default_indent_char) -> list[str]:
+    indent_level = max(0, indent_level)
+    indent_size = max(1, indent_size)
     if not lines:
         return lines
 
-    offset = min(len(line) - len(line.lstrip()) for line in lines if line.strip())
-    if not offset:
-        return lines
-
     result = list[str]()
+    first_offset = len(lines[0]) - len(lines[0].lstrip())
     for line in [line.rstrip() for line in lines]:
-        result.append(line[offset:])
-    return result
-
-def normalize_tabs(lines: list[str]) -> list[str]:
-    if not lines:
-        return lines
-
-    result = list[str]()
-    for line in lines:
-        indent = ""
-        text = line.lstrip()
-        if text:
-            offset = len(line) - len(text)
-            level = (offset // 4) + (1 if offset % 4 else 0)
-            indent = " " * (4 * level)
-        result.append(indent + text)
+        striped_line = line.lstrip()
+        line_level = 0
+        line_offset = len(line) - len(striped_line)
+        if line_offset < first_offset:
+            raise ValueError("Inconsistent indentation in the input text.")
+        line_offset = line_offset - first_offset
+        if line_offset > 0:
+            line_level = (line_offset // indent_size) + (1 if line_offset % indent_size > 1 else 0)
+        indent = indent_char * (indent_size * (indent_level + line_level))
+        result.append(indent + striped_line)
     return result

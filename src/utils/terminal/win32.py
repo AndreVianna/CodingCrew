@@ -4,95 +4,19 @@ Tools that helps reading the console input from the user in Windows.
 """
 
 # pylint: disable=import-error
+# shows an error in the IDE when in Linux environment but works fine
 import msvcrt
-from typing import Optional
-
 # pylint: enable=import-error
-from ..common import static_init      # pylint: disable=relative-beyond-top-level
-from .terminal_base import TerminalBase       # pylint: disable=relative-beyond-top-level
 
+from ..common import static_init      # pylint: disable=relative-beyond-top-level
+from .terminal_base import BaseKeyMapping, BaseTerminal       # pylint: disable=relative-beyond-top-level
 
 @static_init
-class KeyMapping:
+class KeyMapping(BaseKeyMapping):
     """
     Represents a collection of key constants used for keyboard input handling.
     Each key is represented as a string literal.
     """
-
-    _name_of: dict[str, str] = dict[str, str]()
-
-    @classmethod
-    def __static_init__(cls):
-        members = [
-            attr
-            for attr in dir(cls)
-            if not callable(getattr(cls, attr)) and not attr.startswith("_")
-        ]
-        for member in members:
-            name = (
-                member.replace("CTRL_", "CTRL+")
-                .replace("ALT_", "ALT+")
-                .replace("SHIFT_", "SHIFT+")
-                .replace("_", " ")
-            )
-            value: str = getattr(cls, member)
-            if value not in cls._name_of.keys():
-                cls._name_of[value] = name
-            else:
-                cls._name_of[value] += f" | {name}"
-
-    @classmethod
-    def list(cls) -> list[(str, str)]:
-        result: list[(str, str)] = list[(str, str)]()
-        members = [
-            attr
-            for attr in dir(cls)
-            if not callable(getattr(cls, attr)) and not attr.startswith("_")
-        ]
-        for member in members:
-            value: str = getattr(cls, member)
-            entry = (cls._name_of[value], cls.code_of(value))
-            if entry not in result:
-                result.append(entry)
-        return result
-
-    @classmethod
-    def name_of(cls, char: str) -> str:
-        return cls._name_of[char]
-
-    @staticmethod
-    def code_of(char: str) -> str:
-        if char == "???":
-            return char
-        return "".join([f"\\x{ord(c):02x}" for c in char])
-
-    CTRL_A = "\x01"
-    CTRL_B = "\x02"
-    CTRL_C = "\x03"
-    CTRL_D = "\x04"
-    CTRL_E = "\x05"
-    CTRL_F = "\x06"
-    CTRL_G = "\x07"
-    CTRL_H = "\x08"
-    CTRL_I = "\x09"
-    CTRL_J = "\x0a"
-    CTRL_K = "\x0b"
-    CTRL_L = "\x0c"
-    CTRL_M = "\x0d"
-    CTRL_N = "\x0e"
-    CTRL_O = "\x0f"
-    CTRL_P = "\x10"
-    CTRL_Q = "\x11"
-    CTRL_R = "\x12"
-    CTRL_S = "\x13"
-    CTRL_T = "\x14"
-    CTRL_U = "\x15"
-    CTRL_V = "\x16"
-    CTRL_W = "\x17"
-    CTRL_X = "\x18"
-    CTRL_Y = "\x19"
-    CTRL_Z = "\x1a"
-
     SHIFT_TAB = "\x00\x0f"
 
     ALT_A = "\x00\x1e"
@@ -268,107 +192,14 @@ class KeyMapping:
     ALT_ENTER = "\x00\xa6"
 
 
-class Terminal(TerminalBase):
-    __exit_keys: list[str] = [KeyMapping.CTRL_ENTER]
-    __linebreak_keys: list[KeyMapping] = [KeyMapping.ENTER]
-    __backspace_keys: list[KeyMapping] = [KeyMapping.BACKSPACE]
+class Terminal(BaseTerminal):
+    def __init__(self):
+        self._exit_keys: list[str] = [KeyMapping.CTRL_ENTER]
+        self._linebreak_keys: list[KeyMapping] = [KeyMapping.ENTER]
+        self._backspace_keys: list[KeyMapping] = [KeyMapping.BACKSPACE]
+        self._arrow_keys = [KeyMapping.UP, KeyMapping.DOWN, KeyMapping.RIGHT, KeyMapping.LEFT]
 
-    def read_lines(self, previous_content: Optional[list[str]] = None) -> list[str]:
-        """
-        Reads a multipe lines from the user's input.
-        If one of the linebreak keys is pressed it ends a line (default: [ ENTER ]).
-        If one of the exit keys is pressed it ends a line AND finishes the input (default: [ CTRL+ENTER ]).
-
-        Args:
-            interrupt (bool): If set to True raises a KeyboardInterrupt when CTRL+C is presses (default: True).
-            linebreak_keys (Iterable[str]): The keys that will end a line.
-            exit_keys (Iterable[str]): The keys that will finish the input.
-
-        Returns:
-            list[str]: The lines entered by the user.
-        """
-        max_line_size = self._get_line_size()
-        max_line_size = self._get_line_size()
-        if previous_content:
-            for line in previous_content:
-                self.write_line(line)
-                line += "\n"
-                buffer_lines = [previous_content[i:i+max_line_size] for i in range(0, len(previous_content), max_line_size)]
-                buffer = list[str](buffer_lines)
-        else:
-            buffer = list[str]([""])
-        exit_options = [KeyMapping.name_of(key) for key in self.__exit_keys]
-        self._write_footer(exit_options)
-        while True:
-            key = self.read_key()
-            if key.isprintable():
-                self._handle_printable(buffer, key, max_line_size)
-            elif key in self.__backspace_keys:
-                self._handle_backspace(buffer)
-            elif key in self.__linebreak_keys:
-                self._handle_linebreak(buffer)
-            if key in self.__exit_keys:
-                break
-            self._write_footer(exit_options)
-
-        lines = list[str]()
-        line = ""
-        for entry in buffer:
-            line += entry
-            if line.endswith("\n"):
-                line = line.rstrip("\n")
-                lines.append(line)
-                line = ""
-        return lines
-
-    def read_line(self, previous_content: Optional[str] = None) -> str:
-        """
-        Reads a line from the from the user's input.
-        If one of the exit keys is pressed it finishes the input (default: [ ENTER, CTRL+ENTER ]).
-
-        Args:
-            interrupt (bool): If set to True raises a KeyboardInterrupt when CTRL+C is presses (default: True).
-            exit_keys (Iterable[str]): The keys that will finish the input.
-
-        Returns:
-            str: The line entered by the user.
-        """
-        max_line_size = self._get_line_size()
-        if previous_content:
-            previous_content = previous_content.strip()
-            self.write(previous_content)
-            buffer_lines = [previous_content[i:i+max_line_size] for i in range(0, len(previous_content), max_line_size)]
-            buffer = list[str](buffer_lines)
-        else:
-            buffer = list[str]([""])
-        while True:
-            key = self.read_key()
-            if key.isprintable():
-                self._handle_printable(buffer, key, max_line_size)
-            elif key in self.__backspace_keys:
-                self._handle_backspace(buffer)
-            elif key in self.__linebreak_keys:
-                self._handle_linebreak(buffer)
-                break
-
-        line = ""
-        for entry in buffer:
-            line += entry
-            if line.endswith("\n"):
-                line = line.rstrip("\n")
-                break
-        return line
-
-    def read_key(self) -> str:
-        """
-        Reads a single key press from the user.
-
-        Args:
-            interrupt (bool): If set to True raises a KeyboardInterrupt when CTRL+C is presses (default: True).
-
-        Returns:
-            str: The key pressed by the user.
-        """
+    def _read_char(self) -> str:
         ch: str = msvcrt.getwch()
         if ord(ch) in (0, 224):
             ch += msvcrt.getwch()

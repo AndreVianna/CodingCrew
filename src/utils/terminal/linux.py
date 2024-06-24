@@ -9,97 +9,18 @@ import termios
 
 from typing import Any, Optional
 
-from .Position import Position
-
-from .terminal_action import Action
-
 from ..common import static_init                          # pylint: disable=relative-beyond-top-level
-from .terminal_base import TerminalBase         # pylint: disable=relative-beyond-top-level
+from .terminal_base import BaseKeyMapping, BaseTerminal, Position         # pylint: disable=relative-beyond-top-level
 
 
 @static_init
-class KeyMapping:
+class KeyMapping(BaseKeyMapping):
     """
     Represents a collection of key constants used for keyboard input handling.
     Each key is represented as a string literal.
     """
-
-    _name_of: dict[str, str] = dict[str, str]()
-
-    @classmethod
-    def __static_init__(cls):
-        members = [
-            attr
-            for attr in dir(cls)
-            if not callable(getattr(cls, attr)) and not attr.startswith("_")
-        ]
-        for member in members:
-            name = (
-                member.replace("CTRL_", "CTRL+")
-                .replace("ALT_", "ALT+")
-                .replace("SHIFT_", "SHIFT+")
-                .replace("_", "")
-            )
-            value: str = getattr(cls, member)
-            if value not in cls._name_of.keys():
-                cls._name_of[value] = name
-            else:
-                cls._name_of[value] += f"|{name}"
-
-    @classmethod
-    def list(cls) -> list[(str, str)]:
-        result: list[(str, str)] = list[(str, str)]()
-        members = [
-            attr
-            for attr in dir(cls)
-            if not callable(getattr(cls, attr)) and not attr.startswith("_")
-        ]
-        for member in members:
-            value: str = getattr(cls, member)
-            entry = (cls._name_of[value], cls.code_of(value))
-            if entry not in result:
-                result.append(entry)
-        return result
-
-    @classmethod
-    def name_of(cls, char: str) -> str:
-        return cls._name_of[char]
-
-    @staticmethod
-    def code_of(char: str) -> str:
-        if char == "???":
-            return char
-        return "".join([f"\\x{ord(c):02x}" for c in char])
-
     CTRL_2 = "\x00"  # Need to find out the value
     CTRL_6 = "\x1e"
-
-    CTRL_A = "\x01"
-    CTRL_B = "\x02"
-    CTRL_C = "\x03"
-    CTRL_D = "\x04"
-    CTRL_E = "\x05"
-    CTRL_F = "\x06"
-    CTRL_G = "\x07"
-    CTRL_H = "\x08"
-    CTRL_I = "\x09"
-    CTRL_J = "\x0a"
-    CTRL_K = "\x0b"
-    CTRL_L = "\x0c"
-    CTRL_M = "\x0d"
-    CTRL_N = "\x0e"
-    CTRL_O = "\x0f"
-    CTRL_P = "\x10"
-    CTRL_Q = "\x11"
-    CTRL_R = "\x12"
-    CTRL_S = "\x13"
-    CTRL_T = "\x14"
-    CTRL_U = "\x15"
-    CTRL_V = "\x16"
-    CTRL_W = "\x17"
-    CTRL_X = "\x18"
-    CTRL_Y = "\x19"
-    CTRL_Z = "\x1a"
 
     CTRL_BACKSPACE = "\x08"
     TAB = "\x09"
@@ -313,127 +234,51 @@ class KeyMapping:
     CTRL_ALT_SHIFT_F12 = "\x1b[24;8~"
 
 
-class Terminal(TerminalBase):
-    __exit_keys: list[str] = [KeyMapping.CTRL_ENTER, KeyMapping.CTRL_D]
-    __linebreak_keys: list[KeyMapping] = [KeyMapping.ENTER, KeyMapping.CTRL_ENTER, KeyMapping.CTRL_D]
-    __backspace_keys: list[KeyMapping] = [KeyMapping.BACKSPACE]
-    __arrow_keys: list[KeyMapping] = [KeyMapping.UP, KeyMapping.DOWN, KeyMapping.RIGHT, KeyMapping.LEFT]
-
+class Terminal(BaseTerminal):
     __stdin: int
 
     def __init__(self):
         self.__stdin = sys.stdin.fileno()
+        self._exit_keys = [KeyMapping.CTRL_ENTER, KeyMapping.CTRL_D]
+        self._linebreak_keys = [KeyMapping.ENTER, KeyMapping.CTRL_ENTER, KeyMapping.CTRL_D]
+        self._backspace_keys = [KeyMapping.BACKSPACE]
+        self._arrow_keys = [KeyMapping.UP, KeyMapping.DOWN, KeyMapping.RIGHT, KeyMapping.LEFT]
 
     def read_lines(self, previous_content: Optional[list[str]] = None) -> list[str]:
-        """
-        Reads a multipe lines from the user's input.
-        If one of the linebreak keys is pressed it ends a line (default: [ ENTER ]).
-        If one of the exit keys is pressed it ends a line AND finishes the input (default: [ CTRL+ENTER, CTRL+D ]).
-
-        Returns:
-            list[str]: The lines entered by the user.
-        """
-        max_line_size = self._get_line_size()
-        buffer = list[str]()
-        if previous_content:
-            for line in previous_content:
-                line += "\n"
-                buffer_lines = [line[i:i+max_line_size] for i in range(0, len(line), max_line_size)]
-                buffer.extend(buffer_lines)
-            buffer[-1] = buffer[-1].rstrip("\n")
-        else:
-            buffer.append("")
-
-        # exit_options = [KeyMapping.name_of(key) for key in self.__exit_keys]
-        # self._write_footer(exit_options)
         old_settings = self.__start_read()
-        if (previous_content):
-            for line in previous_content[:-1]:
-                self.write_line(line)
-            self.write(previous_content[-1])
         try:
-            while True:
-                key = self.__read_key()
-                # self._write(Action.CLEAR_TO_END_OF_SCREEN)
-                if key.isprintable():
-                    self._handle_printable(buffer, key, max_line_size)
-                elif key in self.__backspace_keys:
-                    self._handle_backspace(buffer)
-                elif key in self.__linebreak_keys:
-                    self._handle_linebreak(buffer)
-                if key in self.__exit_keys:
-                    break
-                # self._write_footer(exit_options)
+            return super().read_lines(previous_content)
         finally:
             self.__end_read(old_settings)
 
-        lines = list[str]()
-        line = ""
-        for entry in buffer:
-            line += entry
-            if line.endswith("\n"):
-                line = line.rstrip("\n")
-                lines.append(line)
-                line = ""
-        return lines
 
     def read_line(self, previous_content: Optional[str] = None) -> str:
-        """
-        Reads a line from the from the user's input.
-        If one of the exit keys is pressed it finishes the input (default: [ ENTER, CTRL+ENTER, CTRL+D ]).
-
-        Args:
-            interrupt (bool): If set to True raises a KeyboardInterrupt when CTRL+C is presses (default: True).
-            exit_keys (Iterable[str]): The keys that will finish the input.
-
-        Returns:
-            str: The line entered by the user.
-        """
-        max_line_size = self._get_line_size()
-        if previous_content:
-            previous_content = previous_content.strip()
-            self.write(previous_content)
-            buffer_lines = [previous_content[i:i+max_line_size] for i in range(0, len(previous_content), max_line_size)]
-            buffer = list[str](buffer_lines)
-        else:
-            buffer = list[str]([""])
         old_settings = self.__start_read()
         try:
-            while True:
-                key = self.__read_key()
-                if key.isprintable():
-                    self._handle_printable(buffer, key, max_line_size)
-                elif key in self.__backspace_keys:
-                    self._handle_backspace(buffer)
-                elif key in self.__linebreak_keys:
-                    self._handle_linebreak(buffer)
-                    break
+            return super().read_line(previous_content)
         finally:
             self.__end_read(old_settings)
-
-        line = ""
-        for entry in buffer:
-            line += entry
-            if line.endswith("\n"):
-                line = line.rstrip("\n")
-                break
-        return line
 
     def read_key(self) -> str:
-        """
-        Reads a single key press from the user.
-
-        Args:
-            interrupt (bool): If set to True raises a KeyboardInterrupt when CTRL+C is presses (default: True).
-
-        Returns:
-            str: The key pressed by the user.
-        """
         old_settings = self.__start_read()
         try:
-            return self.__read_key()
+            return super().read_key()
         finally:
             self.__end_read(old_settings)
+
+    def _read_char(self) -> str:
+        ch = super()._read_char()
+        if ord(ch) == 27:
+            ch = "\x1b"
+            ch += super()._read_char()
+            code = super()._read_char()
+            ch += code
+            while code.isnumeric() or code == ";":
+                code = super()._read_char()
+                ch += code
+        if ch in KeyMapping.CTRL_C:
+            raise KeyboardInterrupt
+        return ch
 
     def __start_read(self, when: int = termios.TCSADRAIN) -> list[Any]:
         old_settings = termios.tcgetattr(self.__stdin)
@@ -443,31 +288,12 @@ class Terminal(TerminalBase):
     def __end_read(self, old_settings: list[Any]) -> None:
         termios.tcsetattr(self.__stdin, termios.TCSADRAIN, old_settings)
 
-    def __read_key(self) -> str:
-        ch = sys.stdin.read(1)
-        if ord(ch) == 27:
-            ch = "\x1b"
-            ch += sys.stdin.read(1)
-            code = sys.stdin.read(1)
-            ch += code
-            while code.isnumeric() or code == ";":
-                code = sys.stdin.read(1)
-                ch += code
-        if ch in KeyMapping.CTRL_C:
-            raise KeyboardInterrupt
-        return ch
-
-    def _get_cursor_position(self) -> Position:
+    def get_cursor_position(self) -> Position:
         """
-        Returns the current cursor position and the text at the cursor position.
+        Returns the current cursor position.
         """
-        buffer = ""
         old_settings = self.__start_read()
         try:
-            self._write(Action.GET_CURSOR_POS)
-            buffer = self.__read_key()
+            return super().get_cursor_position()
         finally:
             self.__end_read(old_settings)
-
-        values = buffer[2:-1].split(";")
-        return Position(values[0], 0 if len(values) < 2 else values[1])
