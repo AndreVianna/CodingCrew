@@ -4,11 +4,13 @@ import json
 from typing import Generic, Optional, TypeVar
 from pydantic import BaseModel
 
+# pylint: disable=import-error
 from langchain.chat_models import init_chat_model
 from langchain_core.language_models import LanguageModelInput
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableConfig
+# pylint: enable=import-error
 
 from ..models.project_state import ProjectState
 from ..utils.common import normalize_text
