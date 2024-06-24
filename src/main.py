@@ -53,7 +53,7 @@ if len(sys.argv) > 1:
 
 if __name__ == "__main__":
     from models.project_state import ProjectState   # pylint: disable=import-outside-toplevel
-    from utils.general import is_verbose            # pylint: disable=import-outside-toplevel, ungrouped-imports
+    from utils.common import is_verbose            # pylint: disable=import-outside-toplevel, ungrouped-imports
     import workflow                                 # pylint: disable=import-outside-toplevel, ungrouped-imports
 
     terminal.write_line("Building workflow...")

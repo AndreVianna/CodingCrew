@@ -5,11 +5,15 @@ Represents utility functions used throughout the application.
 
 import sys
 import time
-from typing import Callable, Iterable, Literal, TypeVar
+from typing import Callable, Iterable, Literal, Optional, TypeVar
 import asyncio
 
-from ..general import is_linux, is_win32 # pylint: disable=relative-beyond-top-level
-from .common import Color, Style, Action as Action # pylint: disable=relative-beyond-top-level
+from .styles import Style
+
+from .terminal_action import Action as Action
+
+from ..common import is_linux, is_win32 # pylint: disable=relative-beyond-top-level
+from .colors import Color # pylint: disable=relative-beyond-top-level
 
 if is_linux:
     from .linux import Terminal, KeyMapping as Key # pylint: disable=relative-beyond-top-level, unused-import
@@ -27,24 +31,24 @@ def clear() -> str:
     return __terminal.clear()
 
 
-def read_text() -> str:
+def read_text(previous_content: Optional[str] = None) -> str:
     """
     Allows the user to enter a multiline string ending by pressing Shift+Enter.
 
     Returns:
         str: The text entered by the user.
     """
-    return __terminal.read_text()
+    return __terminal.read_text(previous_content)
 
 
-def read_line() -> str:
+def read_line(previous_content: Optional[str] = None) -> str:
     """
     Allows the user to enter a single string.
 
     Returns:
         str: The line entered by the user.
     """
-    return __terminal.read_line()
+    return __terminal.read_line(previous_content)
 
 
 def read_key() -> str:

@@ -7,10 +7,14 @@ import sys
 import tty
 import termios
 
-from typing import Any
+from typing import Any, Optional
 
-from ..general import static_init                          # pylint: disable=relative-beyond-top-level
-from .common import TerminalBase, Position, Action         # pylint: disable=relative-beyond-top-level
+from .Position import Position
+
+from .terminal_action import Action
+
+from ..common import static_init                          # pylint: disable=relative-beyond-top-level
+from .terminal_base import TerminalBase         # pylint: disable=relative-beyond-top-level
 
 
 @static_init
@@ -320,7 +324,7 @@ class Terminal(TerminalBase):
     def __init__(self):
         self.__stdin = sys.stdin.fileno()
 
-    def read_lines(self) -> list[str]:
+    def read_lines(self, previous_content: Optional[list[str]] = None) -> list[str]:
         """
         Reads a multipe lines from the user's input.
         If one of the linebreak keys is pressed it ends a line (default: [ ENTER ]).
@@ -330,10 +334,23 @@ class Terminal(TerminalBase):
             list[str]: The lines entered by the user.
         """
         max_line_size = self._get_line_size()
-        buffer = list[str]([""])
+        buffer = list[str]()
+        if previous_content:
+            for line in previous_content:
+                line += "\n"
+                buffer_lines = [line[i:i+max_line_size] for i in range(0, len(line), max_line_size)]
+                buffer.extend(buffer_lines)
+            buffer[-1] = buffer[-1].rstrip("\n")
+        else:
+            buffer.append("")
+
         # exit_options = [KeyMapping.name_of(key) for key in self.__exit_keys]
         # self._write_footer(exit_options)
         old_settings = self.__start_read()
+        if (previous_content):
+            for line in previous_content[:-1]:
+                self.write_line(line)
+            self.write(previous_content[-1])
         try:
             while True:
                 key = self.__read_key()
@@ -360,7 +377,7 @@ class Terminal(TerminalBase):
                 line = ""
         return lines
 
-    def read_line(self) -> str:
+    def read_line(self, previous_content: Optional[str] = None) -> str:
         """
         Reads a line from the from the user's input.
         If one of the exit keys is pressed it finishes the input (default: [ ENTER, CTRL+ENTER, CTRL+D ]).
@@ -373,7 +390,13 @@ class Terminal(TerminalBase):
             str: The line entered by the user.
         """
         max_line_size = self._get_line_size()
-        buffer = list[str]([""])
+        if previous_content:
+            previous_content = previous_content.strip()
+            self.write(previous_content)
+            buffer_lines = [previous_content[i:i+max_line_size] for i in range(0, len(previous_content), max_line_size)]
+            buffer = list[str](buffer_lines)
+        else:
+            buffer = list[str]([""])
         old_settings = self.__start_read()
         try:
             while True:

@@ -3,8 +3,15 @@
 Represents utility functions used throughout the application.
 """
 
+import os
 import sys
 import re
+from typing import Optional
+
+from langchain.chat_models import init_chat_model
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.language_models import LanguageModelInput
+from langchain_core.runnables import RunnableConfig
 
 is_linux = sys.platform.startswith("linux")
 is_win32 = sys.platform.startswith("win32")
@@ -18,6 +25,19 @@ def static_init(cls):
         cls.__static_init__()
     return cls
 
+def ask_model(
+        messages: LanguageModelInput,
+        config: Optional[RunnableConfig] = None,
+        *,
+        stop: Optional[list[str]] = None,
+) -> str:
+    result = get_model().invoke(input=messages, config=config, stop=stop)
+    return StrOutputParser().invoke(result)
+
+def get_model():
+    model_provider = os.environ["MODEL_PROVIDER"]
+    model_name = os.environ[f"{model_provider.upper()}_MODEL"]
+    return init_chat_model(model_name, model_provider=model_provider, temperature=0)
 
 symbols = re.compile(r"\W")
 alpha_before_digit = re.compile(r"([A-Za-z])([0-9])")

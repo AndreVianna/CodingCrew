@@ -9,7 +9,7 @@ Returns:
 """
 
 from typing import Literal
-from tasks.models import ProjectState
+from models.project_state import ProjectState
 
 def create(state: ProjectState) -> Literal["FINISH"] | Literal["CONTINUE"]:
     """
@@ -21,6 +21,7 @@ def create(state: ProjectState) -> Literal["FINISH"] | Literal["CONTINUE"]:
     Returns:
         str: "FINISH" if there are no questions or "CONTINUE" if there are unanswered questions.
     """
-    if state["questions"] is None or state["questions"] == []:
+    pending_queries = filter(lambda q: not q.done, state.queries)
+    if state.status != "STARTED" or state.counter >= 3 or not pending_queries:
         return "FINISH"
     return "CONTINUE"

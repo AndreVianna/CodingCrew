@@ -3,11 +3,11 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import BaseModel
 
 from models.project_state import ProjectState
+from models.query import Query
 from utils.common import ask_model, normalize_text
 
 class Response(BaseModel):
-    description: str
-
+    queries: list[Query]
 
 def create(state: ProjectState) -> ProjectState:
     agent_description = """
@@ -15,18 +15,19 @@ def create(state: ProjectState) -> ProjectState:
         You are able to communicate effectively with both technical and non-technical stakeholders.
         This includes active listening, asking questions, and explaining technical concepts in simple terms.
         You are able to process and interpret the information from different sources to identify patterns, trends, and gaps in the information.
-        You are able to assess the validity and reliability of the sources.
-        You are attentive to details and able to identify inconsistencies in the information provided.
-        You are always thorough in your analysis to find any and all the information required to properly define a software development project.
-        You enjoy generating the most accurate and complete project descriptions possible.
+        You are able to assess the validity, reliability and completude of the information provided.
+        You are attentive to details and thorough in your analysis.
+        You enjoy asking questions about the project to make sure it is well defined.
         """
 
     task_description = """
-        Your goal is to generate an updated description of the project.
-        Your will analyze all the information provided about the project by the user.
+        The objective is to understand the description of the project and and the answers to the listed questions.
         Assess the validity and reliability of the information.
+        Use your expertise in system analysis assess the validity, reliability and completude of the information.
         Be attentive to details and identify inconsistencies in the information provided.
-        Make sure to try to cover all the most important aspects of the project, including but not limited to:
+        In the end, if necessary, you should ask additional questions to refine, complete and correct the project description.
+        Ask as many questions as necessary.
+        Make sure to consider all the important aspects of a software project, including but not limited to:
             - Major components, like a console application, API, library, web application, mobile application, desktop application, or background service;
             - OS and Platform of the project, like Windows, Linux, macOS, Android, iOS, or web;
             - Programming Languages, Frameworks, and/or Tools;
@@ -35,14 +36,17 @@ def create(state: ProjectState) -> ProjectState:
             - Major Features;
             - Constraints, Assumptions, and Risks;
             - Target Audience;
+            - System architecture, like layers, components, services, and data flows;
             - Security Requirements, like authentication, authorization, and data protection;
             - Data Management like data storage, or external data sources;
             - Externat Resources like services or APIs;
             - Design preferences, like colors, fonts, themes, layouts, navigation;
             - UI requiremtns, like pages, components, and navigation;
-        IMPORTANT! DO NOT ADD to the description any information not found in the previous description or answered questions.
-        IMPORTANT! DO NOT make assumptions and DO NOT add information that was not provided yet.
-        IMPORTANT! DO NOT add unanswered questions to the description.
+            - and more.
+        IMPORTANT! When asking a question, explain why you are asking it and what information you expect to get from that question.
+        IMPORTANT! For all the questions you ask you must provide the answer that you consider the most appropriated to that question.
+        IMPORTANT! You MUST NOT ASK a question that is already ANSWERED BY the CURRENT DESCRIPTION or the EXISTING ANSWERS.
+        IMPORTANT! You MUST NOT ASK a question that is NOT RELATED or RELEVANT to the PROJECT.
         """
 
     expected_result = """
@@ -53,25 +57,35 @@ def create(state: ProjectState) -> ProjectState:
         ```json
         {
             "$schema": "http://json-schema.org/draft-07/schema#",
-            "title": "Response schema",
+            "title": "Generated schema for Root",
             "type": "object",
             "properties": {
-                "description": {
-                    "type": "string"
+                "queries": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "question": {
+                                "type": "string"
+                            },
+                            "answer": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "question",
+                            "answer"
+                        ]
+                    }
                 }
             },
             "required": [
-                "description"
+                "queries"
             ]
         }
         ```
         IMPORTANT! All linebreaks with strings must be escaped with the character sequence '\\n'.
-        The JSON must contain the updated description.
-        The description MUST be clear, concise, and easy to understand.
-        IMPORTANT! The description MUST contain all the information gathered so far. It MUST be a complete and accurate description of the project.
-        IMPORTANT! The description MUST NOT contain unanswered questions or any information not provided by the user in the previous description or answered questions. You MUST NOT make assumptions.
-        IMPORTANT! The text of the description MUST be organized in chapters and bullet points using markdown syntax to help any person to understand the project.
-        IMPORTANT! The text of the description will be appended to a pre-existing document. So no need to add any title, preamble, or conclusion, just the content starting at LEVEL 3 of the markdown document.
+        IMPORTANT! If you DO NOT HAVE any QUESTIONS to ask, you MUST return the json with an EMPTY ARRAY of queries.
         """
 
     system_message = normalize_text(f"""
@@ -105,7 +119,7 @@ def create(state: ProjectState) -> ProjectState:
     user_message = normalize_text(f"""\
         Project Name: {state.name}
         Project Description:
-        {state.description[-1]}
+        {state.description[-1]}"
         {queries}
         """)
 
@@ -113,14 +127,17 @@ def create(state: ProjectState) -> ProjectState:
         SystemMessage(content=system_message),
         HumanMessage(content=user_message)
     ]
+
     model_response = ask_model(messages)
     response_json = json.loads(model_response)
     response = Response(**response_json)
-    state.description.append(response.description)
-    state.counter += 1
-    for query in state.queries:
-        query.done = True
+    state.queries.extend(response.queries)
     state_file = f"{state.folder}/state.json"
     with open(state_file, "w", encoding="utf-8") as state_file:
         state_file.write(state.to_json())
     return state
+
+def to_query(entry: dict[str, str]) -> Query:
+    result = Query()
+    result.__dict__ = entry
+    return result

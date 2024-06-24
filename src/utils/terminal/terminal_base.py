@@ -1,172 +1,17 @@
-# pylint: disable=missing-module-docstring,missing-class-docstring,missing-function-docstring
-"""
-Represents utility functions used throughout the application.
-"""
-
 import sys
 import curses
-from typing import Iterable, Literal
+from typing import Iterable, Optional
 
-from attr import dataclass
-
-from ..general import static_init, normalize_text        # pylint: disable=relative-beyond-top-level
-
-@static_init
-class Action:
-    """
-    Represents a collection of ansi escape codes used for manipulate the terminal.
-    """
-
-    _name_of: dict[str, str] = dict[str, str]()
-
-    @classmethod
-    def __static_init__(cls):
-        members = [
-            attr
-            for attr in dir(cls)
-            if not callable(getattr(cls, attr)) and not attr.startswith("_")
-        ]
-        for member in members:
-            name = (
-                member.replace("CTRL_", "CTRL+")
-                .replace("ALT_", "ALT+")
-                .replace("SHIFT_", "SHIFT+")
-                .replace("_", "")
-            )
-            value: str = getattr(cls, member)
-            if value not in cls._name_of.keys():
-                cls._name_of[value] = name
-            else:
-                cls._name_of[value] += f" | {name}"
-
-    @classmethod
-    def list(cls) -> list[(str, str)]:
-        result: list[(str, str)] = list[(str, str)]()
-        members = [
-            attr
-            for attr in dir(cls)
-            if not callable(getattr(cls, attr)) and not attr.startswith("_")
-        ]
-        for member in members:
-            value: str = getattr(cls, member)
-            entry = (cls._name_of[value], cls.code_of(value))
-            if entry not in result:
-                result.append(entry)
-        return result
-
-    @classmethod
-    def name_of(cls, char: str) -> str:
-        return cls._name_of[char]
-
-    @staticmethod
-    def code_of(char: str) -> str:
-        if char == "???":
-            return char
-        return "".join([f"\\x{ord(c):02x}" for c in char])
-
-    GET_CURSOR_POS = "\x1b[6n"  # reports as \x1b[#l;#cR
-
-    ADD_NEW_LINE = "\r\n"
-
-    MOVE_UP = "\x1b[A"
-    MOVE_UP_N = "\x1b[#nA"
-    MOVE_DOWN = "\x1b[B"
-    MOVE_DOWN_N = "\x1b[#nB"
-    MOVE_RIGHT = "\x1b[C"
-    MOVE_RIGHT_N = "\x1b[#nC"
-    MOVE_LEFT = "\x1b[D"
-    MOVE_LEFT_N = "\x1b[#nD"
-    # MOVE_DOWN_N_BOL     = "\x1b[#nE"
-    # MOVE_UP_N_BOL       = "\x1b[#nF"
-    # MOVE_TOP            = "\x1b[I"
-    # MOVE_TO_LINE_N      = "\x1b[#nI"
-    MOVE_TO_BEGIN_OF_LINE = "\x1b[E"
-    MOVE_TO_COL_N = "\x1b[#nG"
-    MOVE_TO_0_0 = "\x1b[H"
-    MOVE_TO_L_C = "\x1b[#l;#cH"
-
-    CLEAR_TO_END_OF_SCREEN = "\x1b[J"
-    CLEAR_FROM_BEBIN_OF_SCREEN = "\x1b[1J"
-    CLEAR_SCREEN = "\x1b[2J"
-    CLEAR_TO_END_OF_LINE = "\x1b[K"
-    CLEAR_FROM_BEGIN_OF_LINE = "\x1b[1K"
-    CLEAR_LINE = "\x1b[2K"
-
-
-Style = Literal[
-    "bold",
-    "dim",
-    "italic",
-    "underline",
-    "blink",
-    "reverse",
-    "conceal",
-    "strikethrough",
-]
-
-Color = Literal[
-    "black",
-    "grey",
-    "red",
-    "green",
-    "yellow",
-    "blue",
-    "magenta",
-    "cyan",
-    "light_grey",
-    "dark_grey",
-    "light_red",
-    "light_green",
-    "light_yellow",
-    "light_blue",
-    "light_magenta",
-    "light_cyan",
-    "white",
-]
-
-STYLES: dict[Style, int] = {
-    "bold": 1,
-    "dim": 2,
-    "italic": 3,
-    "underline": 4,
-    "blink": 5,
-    "reverse": 7,
-    "conceal": 8,
-    "strikethrough": 9,
-}
-
-COLORS: dict[Color, int] = {
-    "black": 30,
-    "red": 31,
-    "green": 32,
-    "yellow": 33,
-    "blue": 34,
-    "magenta": 35,
-    "cyan": 36,
-    "light_grey": 37,
-    "dark_grey": 90,
-    "light_red": 91,
-    "light_green": 92,
-    "light_yellow": 93,
-    "light_blue": 94,
-    "light_magenta": 95,
-    "light_cyan": 96,
-    "white": 97,
-}
+from utils.common import normalize_text
+from utils.terminal.terminal_action import Action
+from utils.terminal.colors import COLORS, Color
+from utils.terminal.Position import Position
+from utils.terminal.styles import STYLES, Style
 
 RESET = "\x1b[0m"
 
-@dataclass
-class Position:
-    line: int
-    column: int
-
-    def __init__(self, line: int, column: int):
-        self.line = line
-        self.column = column
-
 class TerminalBase:
-    def read_text(self) -> str:
+    def read_text(self, previous_content: Optional[str] = None) -> str:
         """
         Reads a text from the user's input.
         If one of the linebreak keys is pressed it ends a line (default: [ ENTER ]).
@@ -180,10 +25,11 @@ class TerminalBase:
         Returns:
             str: The text entered by the user.
         """
-        lines = self.read_lines()
+        previous_lines = previous_content.split("\n") if previous_content else None
+        lines = self.read_lines(previous_lines)
         return normalize_text(lines)
 
-    def read_lines(self) -> list[str]:
+    def read_lines(self, previous_content: Optional[list[str]] = None) -> list[str]:
         """
         Reads a multipe lines from the user's input.
         If one of the linebreak keys is pressed it ends a line (default: [ ENTER ]).
@@ -197,9 +43,9 @@ class TerminalBase:
         Returns:
             list[str]: The lines entered by the user.
         """
-        return list[str]()
+        return previous_content
 
-    def read_line(self) -> str:
+    def read_line(self, previous_content: Optional[str] = None) -> str:
         """
         Reads a line from the from the user's input.
         If one of the exit keys is pressed it finishes the input (default: [ ENTER, CTRL+ENTER, CTRL+D ]).
@@ -211,7 +57,7 @@ class TerminalBase:
         Returns:
             str: The line entered by the user.
         """
-        return ""
+        return previous_content
 
     def read_key(self) -> str:
         """

@@ -4,15 +4,10 @@ from models.query import Query
 from models.project_state import ProjectState
 
 from utils.terminal.terminal import read_text, write_line
-from utils.general import normalize_text
+from utils.common import normalize_text
 
 
 def create(state: ProjectState) -> ProjectState:
-    """
-    Queries the user for additional information to refine the project description.
-
-
-    """
     if state["questions"] is None or state["questions"] == []:
         return {
             **state,

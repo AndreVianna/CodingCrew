@@ -5,10 +5,11 @@ Tools that helps reading the console input from the user in Windows.
 
 # pylint: disable=import-error
 import msvcrt
+from typing import Optional
 
 # pylint: enable=import-error
-from ..general import static_init      # pylint: disable=relative-beyond-top-level
-from .common import TerminalBase       # pylint: disable=relative-beyond-top-level
+from ..common import static_init      # pylint: disable=relative-beyond-top-level
+from .terminal_base import TerminalBase       # pylint: disable=relative-beyond-top-level
 
 
 @static_init
@@ -272,7 +273,7 @@ class Terminal(TerminalBase):
     __linebreak_keys: list[KeyMapping] = [KeyMapping.ENTER]
     __backspace_keys: list[KeyMapping] = [KeyMapping.BACKSPACE]
 
-    def read_lines(self) -> list[str]:
+    def read_lines(self, previous_content: Optional[list[str]] = None) -> list[str]:
         """
         Reads a multipe lines from the user's input.
         If one of the linebreak keys is pressed it ends a line (default: [ ENTER ]).
@@ -287,7 +288,15 @@ class Terminal(TerminalBase):
             list[str]: The lines entered by the user.
         """
         max_line_size = self._get_line_size()
-        buffer = list[str]([""])
+        max_line_size = self._get_line_size()
+        if previous_content:
+            for line in previous_content:
+                self.write_line(line)
+                line += "\n"
+                buffer_lines = [previous_content[i:i+max_line_size] for i in range(0, len(previous_content), max_line_size)]
+                buffer = list[str](buffer_lines)
+        else:
+            buffer = list[str]([""])
         exit_options = [KeyMapping.name_of(key) for key in self.__exit_keys]
         self._write_footer(exit_options)
         while True:
@@ -312,7 +321,7 @@ class Terminal(TerminalBase):
                 line = ""
         return lines
 
-    def read_line(self) -> str:
+    def read_line(self, previous_content: Optional[str] = None) -> str:
         """
         Reads a line from the from the user's input.
         If one of the exit keys is pressed it finishes the input (default: [ ENTER, CTRL+ENTER ]).
@@ -325,7 +334,13 @@ class Terminal(TerminalBase):
             str: The line entered by the user.
         """
         max_line_size = self._get_line_size()
-        buffer = list[str]([""])
+        if previous_content:
+            previous_content = previous_content.strip()
+            self.write(previous_content)
+            buffer_lines = [previous_content[i:i+max_line_size] for i in range(0, len(previous_content), max_line_size)]
+            buffer = list[str](buffer_lines)
+        else:
+            buffer = list[str]([""])
         while True:
             key = self.read_key()
             if key.isprintable():
