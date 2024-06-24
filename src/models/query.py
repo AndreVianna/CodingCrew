@@ -1,15 +1,6 @@
-import json
-from pydantic import BaseModel
+from .serializable import Serializable
 
-
-class Query(BaseModel):
+class Query(Serializable):
     question: str
     answer: str
     done: bool = False
-
-    def to_json(self):
-        return json.dumps(
-            self,
-            default=lambda o: o.__dict__,
-            sort_keys=True,
-            indent=4)

@@ -1,14 +1,13 @@
-import json
 import os
 import uuid
 from typing import Literal
-from pydantic import BaseModel
 
-from src.utils.common import normalize_text
+from ..utils.common import normalize_text
 
+from .serializable import Serializable
 from .query import Query
 
-class ProjectState(BaseModel):
+class ProjectState(Serializable):
     project_id: str = str(uuid.uuid4()).lower()
     name: str = ""
     folder: str = ""
@@ -21,13 +20,6 @@ class ProjectState(BaseModel):
         "DESCRIPTION_UPDATED",
         "REPORT_GENERATED",
     ] = "CREATED"
-
-    def to_json(self) -> str:
-        return json.dumps(
-            self,
-            default=lambda o: o.__dict__,
-            sort_keys=True,
-            indent=4)
 
     def to_user_message(self) -> str:
         queries: str = ""
