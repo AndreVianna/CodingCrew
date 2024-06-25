@@ -3,14 +3,13 @@ import time
 from typing import Callable, Iterable, Literal, Optional, TypeVar
 import asyncio
 
-
-from ..common import is_linux, is_win32 # pylint: disable=relative-beyond-top-level
-from .terminal_base import Style, Action, Color
+from .common import is_linux, is_win32 # pylint: disable=relative-beyond-top-level
+from .base_terminal import Style, ActionKeyMapping, Color
 
 if is_linux:
-    from .linux import Terminal, KeyMapping as Key # pylint: disable=relative-beyond-top-level, unused-import
+    from .linux_terminal import Terminal, KeyMapping as Key # pylint: disable=relative-beyond-top-level, unused-import
 elif is_win32:
-    from .win32 import Terminal, KeyMapping as Key # pylint: disable=relative-beyond-top-level, unused-import
+    from .win32_terminal import Terminal, KeyMapping as Key # pylint: disable=relative-beyond-top-level, unused-import
 else:
     raise OSError(f"{sys.platform} is not supported.")
 
@@ -52,48 +51,6 @@ def read_key() -> str:
     """
     return __terminal.read_key()
 
-_R = TypeVar("_R")
-
-async def wait_for(func: Callable[[], _R],
-             /,
-             text: str | None = None,
-             timeout: float = 5.0,
-             raise_timeout_error: bool = True) -> _R | None:
-    """
-    Waits for the callback to return asynchronously and displays a spinner.
-
-    Args:
-        callback: The callback function to wait for.
-
-    Returns:
-        The result of the callback function.
-    """
-    if timeout <= 0:
-        raise ValueError("Timeout must be greater than 0.")
-
-    text = "Processing" if text is None else text
-
-    stop_spinner = asyncio.Event()
-    long_run: asyncio.Task[_R] = asyncio.create_task(asyncio.to_thread(func))
-    spinner: asyncio.Task[None] = asyncio.create_task(start_spinner(text, stop_spinner))
-    combined = asyncio.wait([long_run, spinner], timeout=timeout, return_when=asyncio.FIRST_COMPLETED)
-    try:
-        await combined
-        if long_run.done():
-            stop_spinner.set()
-        else:
-            long_run.cancel()
-            spinner.cancel()
-            if raise_timeout_error:
-                raise asyncio.TimeoutError("The operation timed out!")
-        return long_run.result() if long_run.done() else None
-    except asyncio.CancelledError:
-        spinner.cancel()
-        return None
-    finally:
-        await spinner
-        combined.close()
-
 __SPINNER_FRAMES: list[str] = [
     "\u2594\u2594",
     "\u2003\u231d",
@@ -116,7 +73,7 @@ async def start_spinner(text: str, stop: asyncio.Event):
         current_frane = 0
         while not stop.is_set():
             __terminal.set_cursor_position(1)
-            write(f" {__SPINNER_FRAMES[current_frane]} {text} {(time.time() - start):0.1f}s  ")
+            __terminal.write(f" {__SPINNER_FRAMES[current_frane]} {text} {(time.time() - start):0.1f}s  ")
             current_frane = 0 if current_frane >= frame_count - 1 else current_frane + 1
             await asyncio.sleep(0.1)
         state = "STOPPED"
@@ -129,18 +86,18 @@ async def start_spinner(text: str, stop: asyncio.Event):
         await end_spinner(state, time.time() - start)
 
 async def end_spinner(state: Literal["STOPPED", "TIMEOUT", "ERROR"], ellapsed: float) -> None:
-    write(Action.MOVE_TO_COL_N.replace("#n", "1"))
+    __terminal.write(ActionKeyMapping.MOVE_TO_COL_N.replace("#n", "1"))
     if state == "STOPPED":
         symbol = set_style(__CHECK, "green")
-        write(f" {symbol}  Done. Ellapsed time: {ellapsed:0.1f}s")
+        __terminal.write(f" {symbol}  Done. Ellapsed time: {ellapsed:0.1f}s")
     elif state == "TIMEOUT":
         symbol = set_style(__FAIL, "red")
-        write(f" {symbol}  Timeout! Ellapsed time: {ellapsed:0.1f}s")
+        __terminal.write(f" {symbol}  Timeout! Ellapsed time: {ellapsed:0.1f}s")
     else:
         symbol = set_style(__FAIL, "red")
-        write(f" {symbol}  Error! Ellapsed time: {ellapsed:0.1f}s")
-    write(Action.CLEAR_TO_END_OF_LINE)
-    write_line()
+        __terminal.write(f" {symbol}  Error! Ellapsed time: {ellapsed:0.1f}s")
+    __terminal.write(ActionKeyMapping.CLEAR_TO_END_OF_LINE)
+    __terminal.write_line()
 
 
 def set_style(
@@ -217,17 +174,34 @@ def write_line(
     """
     return __terminal.write_line(text, foreground, background, styles)
 
-def repeat_until_confirmed(func, message: str | None = None, default: bool = True, allow_exit: bool = True):
-    while True:
-        func()
-        if can_proceed(message, default=default, allow_exit=allow_exit):
-            break
+R = TypeVar("R")
 
-def can_proceed(message: str | None = None, default: bool = True, allow_exit: bool = True) -> bool:
-    message = message if message else "Can we proceed?"
-    write(f"""{message} ({"[Yes]" if default else "Yes"}/{"[No]" if not default else "No"}{"/eXit" if allow_exit else ""}): """)
+def do_until_confirmed(func: Callable[[], R], /, message: str | None = None, continue_on: Literal["y", "n"] = "y", allow_exit: bool = True) -> R:
+    result = func()
+    while __show_yes_or_no_question(message, default_answer=continue_on, allow_exit=allow_exit) == continue_on:
+        result = func()
+    return result
+
+def request_confirmation(message: str | None = None, default_answer: Literal["y", "n"] = "y", allow_exit: bool = True) -> Literal["y", "n"]:
+    while __show_yes_or_no_question(message, default_answer, allow_exit) == default_answer:
+        pass
+
+def __show_yes_or_no_question(message: str | None, default_answer: Literal["y", "n"], allow_exit: bool) -> Literal["y", "n"] | None:
+    message = message if message else "Continue?"
+    yes_option = "[Yes]" if default_answer == "y" else "Yes"
+    no_option = "/[No]" if default_answer == "n" else "/No"
+    exit_option = "/eXit" if allow_exit else ""
+    write(f"""{message} ({yes_option}{no_option}{exit_option}) """)
     answer = read_line().lower()
-    if allow_exit and answer in ["exit", "x"]:
-        sys.exit(0)
-    answer = "yes" if not answer else answer
-    return answer in ["yes", "y"]
+    match answer:
+        case None:
+            return default_answer
+        case "yes", "y":
+            return "y"
+        case "no", "n":
+            return "n"
+        case "exit", "x":
+            if allow_exit:
+                sys.exit(0)
+    __terminal.write_line("Error: Invalid answer. Please try again.", "red")
+    return None

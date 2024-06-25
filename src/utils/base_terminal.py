@@ -3,7 +3,7 @@ import curses
 from typing import Iterable, Literal, Optional
 from dataclasses import dataclass
 
-from ..common import static_init, normalize_text
+from .common import static_init, normalize_text
 
 RESET = "\x1b[0m"
 
@@ -81,7 +81,7 @@ class Position:
         return iter((self.line, self.column))
 
 @static_init
-class BaseKeyMapping:
+class BaseMapping:
     """
     Represents a collection of key constants used for keyboard input handling.
     Each key is represented as a string literal.
@@ -134,6 +134,7 @@ class BaseKeyMapping:
             return char
         return "".join([f"\\x{ord(c):02x}" for c in char])
 
+class CommonKeyMapping(BaseMapping):
     CTRL_A = "\x01"
     CTRL_B = "\x02"
     CTRL_C = "\x03"
@@ -161,59 +162,7 @@ class BaseKeyMapping:
     CTRL_Y = "\x19"
     CTRL_Z = "\x1a"
 
-@static_init
-class Action:
-    """
-    Represents a collection of ansi escape codes used for manipulate the terminal.
-    """
-
-    _name_of: dict[str, str] = dict[str, str]()
-
-    @classmethod
-    def __static_init__(cls):
-        members = [
-            attr
-            for attr in dir(cls)
-            if not callable(getattr(cls, attr)) and not attr.startswith("_")
-        ]
-        for member in members:
-            name = (
-                member.replace("CTRL_", "CTRL+")
-                .replace("ALT_", "ALT+")
-                .replace("SHIFT_", "SHIFT+")
-                .replace("_", "")
-            )
-            value: str = getattr(cls, member)
-            if value not in cls._name_of.keys():
-                cls._name_of[value] = name
-            else:
-                cls._name_of[value] += f" | {name}"
-
-    @classmethod
-    def list(cls) -> list[(str, str)]:
-        result: list[(str, str)] = list[(str, str)]()
-        members = [
-            attr
-            for attr in dir(cls)
-            if not callable(getattr(cls, attr)) and not attr.startswith("_")
-        ]
-        for member in members:
-            value: str = getattr(cls, member)
-            entry = (cls._name_of[value], cls.code_of(value))
-            if entry not in result:
-                result.append(entry)
-        return result
-
-    @classmethod
-    def name_of(cls, char: str) -> str:
-        return cls._name_of[char]
-
-    @staticmethod
-    def code_of(char: str) -> str:
-        if char == "???":
-            return char
-        return "".join([f"\\x{ord(c):02x}" for c in char])
-
+class ActionKeyMapping(BaseMapping):
     GET_CURSOR_POS = "\x1b[6n"  # reports as \x1b[#l;#cR
 
     ADD_NEW_LINE = "\r\n"
@@ -334,8 +283,8 @@ class BaseTerminal:
 
         This function clears the terminal screen by executing the appropriate operating system's command
         """
-        self._write(Action.CLEAR_SCREEN)
-        self._write(Action.MOVE_TO_0_0)
+        self._write(ActionKeyMapping.CLEAR_SCREEN)
+        self._write(ActionKeyMapping.MOVE_TO_0_0)
 
     def format(
         self,
@@ -418,13 +367,13 @@ class BaseTerminal:
         writes a formated text with the operating system's line separator character at the end.
         """
         self.write(text, foreground, background, styles)
-        self._write(Action.ADD_NEW_LINE)
+        self._write(ActionKeyMapping.ADD_NEW_LINE)
 
     def get_cursor_position(self) -> Position:
         """
         Returns the current cursor position.
         """
-        self.__write(Action.GET_CURSOR_POS)
+        self.__write(ActionKeyMapping.GET_CURSOR_POS)
         if ord(self.__read_char()) != 27:
             raise ValueError("Invalid cursor position response.")
         self.__read_char() # skip next
@@ -451,10 +400,10 @@ class BaseTerminal:
         Sets the cursor position.
         """
         if isinstance(position, Position):
-            code = Action.MOVE_TO_L_C.replace("#l", str(position.line)).replace("#c", str(position.column))
+            code = ActionKeyMapping.MOVE_TO_L_C.replace("#l", str(position.line)).replace("#c", str(position.column))
         else:
             position = min(max(position, 1), self.get_line_size()) if position else 1
-            code = Action.MOVE_TO_COL_N.replace("#n", str(position))
+            code = ActionKeyMapping.MOVE_TO_COL_N.replace("#n", str(position))
         sys.stdout.write(code)
 
     def get_line_size(self):
@@ -480,9 +429,9 @@ class BaseTerminal:
 
     def _write_footer(self, exit_options: list[str]) -> None:
         pos = self.get_cursor_position()
-        self._write(Action.CLEAR_TO_END_OF_SCREEN)
-        self._write(Action.ADD_NEW_LINE)
-        self._write(Action.ADD_NEW_LINE)
+        self._write(ActionKeyMapping.CLEAR_TO_END_OF_SCREEN)
+        self._write(ActionKeyMapping.ADD_NEW_LINE)
+        self._write(ActionKeyMapping.ADD_NEW_LINE)
         exit_options = " or ".join(
             [" or ".join(
                 [(
@@ -494,8 +443,8 @@ class BaseTerminal:
             f"You can add multiple lines. Press {exit_options} to submit.",
             styles=["dim"],
         )
-        self._write(Action.MOVE_UP_N.replace("#n", "2"))
-        self._write(Action.MOVE_TO_COL_N.replace("#n", f"{pos.column}"))
+        self._write(ActionKeyMapping.MOVE_UP_N.replace("#n", "2"))
+        self._write(ActionKeyMapping.MOVE_TO_COL_N.replace("#n", f"{pos.column}"))
 
     def __handle_user_multiline_input(self, buffer: list[str], max_line_size: int) -> None:
         while True:
@@ -534,17 +483,17 @@ class BaseTerminal:
     def __handle_backspace(self, buffer: list[str]) -> None:
         if buffer[-1]:
             buffer[-1] = buffer[-1][:-1]
-            self._write(Action.MOVE_LEFT)
+            self._write(ActionKeyMapping.MOVE_LEFT)
         elif not buffer[-1] and len(buffer) > 1:
             buffer.pop()
-            self._write(Action.MOVE_UP)
+            self._write(ActionKeyMapping.MOVE_UP)
             if buffer[-1].endswith("\n"):
                 buffer[-1] = buffer[-1].rstrip("\n")
             if buffer[-1]:
-                self._write(Action.MOVE_TO_COL_N.replace("#n", str(len(buffer[-1]))))
+                self._write(ActionKeyMapping.MOVE_TO_COL_N.replace("#n", str(len(buffer[-1]))))
                 buffer[-1] = buffer[-1][:-1]
-        self._write(Action.CLEAR_TO_END_OF_LINE)
+        self._write(ActionKeyMapping.CLEAR_TO_END_OF_LINE)
 
     def __add_new_line(self, buffer: list[str]) -> None:
         buffer.append("")
-        self._write(Action.ADD_NEW_LINE)
+        self._write(ActionKeyMapping.ADD_NEW_LINE)

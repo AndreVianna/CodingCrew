@@ -5,11 +5,12 @@ from typing import Generic, Optional, Type, TypeVar
 from pydantic import BaseModel
 
 # pylint: disable=import-error
-from langchain.chat_models import init_chat_model
 from langchain_core.language_models import LanguageModelInput
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableConfig
+from langchain_anthropic import ChatAnthropic
+from langchain_openai import ChatOpenAI
 # pylint: enable=import-error
 
 from models.project_state import ProjectState
@@ -59,9 +60,15 @@ class BaseAgentTask(BaseTask[S], Generic[S, R]):
         return self.response_type(**response_json)
 
     def __get_model(self):
-        model_provider = os.environ["MODEL_PROVIDER"]
-        model_name = os.environ[f"{model_provider.upper()}_MODEL"]
-        return init_chat_model(model_name, model_provider=model_provider, temperature=0)
+        model_provider = os.environ["MODEL_PROVIDER"].upper()
+        model_name = os.environ[f"{model_provider}_MODEL"]
+        match model_provider:
+            case "OPENAI":
+                return ChatOpenAI(model_name, temperature=0)
+            case "ANTHROPIC":
+                return ChatAnthropic(model_name, temperature=0)
+            case _:
+                raise ValueError(f"Invalid model provider: {model_provider}")
 
     def _update_state(self, response: R, state: S) -> S: # pylint: disable=unused-argument
         return state

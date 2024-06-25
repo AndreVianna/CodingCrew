@@ -8,15 +8,11 @@ Tools that helps reading the console input from the user in Windows.
 import msvcrt
 # pylint: enable=import-error
 
-from ..common import static_init      # pylint: disable=relative-beyond-top-level
-from .terminal_base import BaseKeyMapping, BaseTerminal       # pylint: disable=relative-beyond-top-level
+from .common import static_init
+from .base_terminal import CommonKeyMapping, BaseTerminal
 
 @static_init
-class KeyMapping(BaseKeyMapping):
-    """
-    Represents a collection of key constants used for keyboard input handling.
-    Each key is represented as a string literal.
-    """
+class KeyMapping(CommonKeyMapping):
     SHIFT_TAB = "\x00\x0f"
 
     ALT_A = "\x00\x1e"

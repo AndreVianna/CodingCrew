@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from tasks.base_analysis_task import BaseAnalysisTask
+from nodes.base_analysis_task import BaseAnalysisTask
 
 from models.project_state import ProjectState
 
@@ -9,7 +9,7 @@ from .common import JsonResponseFormat
 class UpdateDescriptionResponse(BaseModel):
     description: str
 
-class UpdateDescriptionTask(BaseAnalysisTask[ProjectState, UpdateDescriptionResponse]):
+class UpdateDescription(BaseAnalysisTask[ProjectState, UpdateDescriptionResponse]):
     def __init__(self) -> None:
         goal = """
             Your goal is to generate an updated description of the project.

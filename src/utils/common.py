@@ -2,7 +2,6 @@ import os
 import sys
 import re
 from typing import Literal
-from functools import singledispatch
 
 is_linux: bool = sys.platform.startswith("linux")
 is_win32: bool = sys.platform.startswith("win32")
@@ -12,9 +11,6 @@ default_indent_size: Literal[4] = 4
 default_indent_char: Literal[" "] = " "
 
 def static_init(cls):
-    """
-    Initializes the static members of a class.
-    """
     if getattr(cls, "__static_init__", None):
         cls.__static_init__()
     return cls
@@ -25,17 +21,7 @@ digit_before_alpha = re.compile(r"([0-9])([A-Za-z])")
 char_before_upper = re.compile(r"(.)([A-Z][a-z]+)")
 lower_before_upper = re.compile(r"([a-z])([A-Z])")
 
-
 def to_snake_case(name):
-    """
-    Converts a given string to snake case.
-
-    Args:
-        name (str): The string to be converted.
-
-    Returns:
-        str: The converted string in snake case.
-    """
     name = symbols.sub("_", name)
     name = alpha_before_digit.sub(r"\1_\2", name)
     name = digit_before_alpha.sub(r"\1_\2", name)
@@ -88,6 +74,9 @@ def __align_left(lines: list[str], indent_level: int = 0, indent_size: int = def
     result = list[str]()
     first_offset = len(lines[0]) - len(lines[0].lstrip())
     for line in [line.rstrip() for line in lines]:
+        if not line:
+            result.append(line)
+            continue
         striped_line = line.lstrip()
         line_level = 0
         line_offset = len(line) - len(striped_line)

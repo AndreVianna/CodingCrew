@@ -9,7 +9,7 @@ from .common import JsonResponseFormat
 class GenerateQuestionsResponse(BaseModel):
     queries: list[Query]
 
-class GenerateQuestionsTask(BaseAnalysisTask[ProjectState, GenerateQuestionsResponse]):
+class GenerateQuestions(BaseAnalysisTask[ProjectState, GenerateQuestionsResponse]):
     def __init__(self) -> None:
         goal = """
             The objective is to understand the current project definition provided by the USER.

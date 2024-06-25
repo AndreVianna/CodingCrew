@@ -9,16 +9,12 @@ import termios
 
 from typing import Any, Optional
 
-from ..common import static_init                          # pylint: disable=relative-beyond-top-level
-from .terminal_base import BaseKeyMapping, BaseTerminal, Position         # pylint: disable=relative-beyond-top-level
+from .common import static_init
+from .base_terminal import CommonKeyMapping, BaseTerminal, Position
 
 
 @static_init
-class KeyMapping(BaseKeyMapping):
-    """
-    Represents a collection of key constants used for keyboard input handling.
-    Each key is represented as a string literal.
-    """
+class KeyMapping(CommonKeyMapping):
     CTRL_2 = "\x00"  # Need to find out the value
     CTRL_6 = "\x1e"
 
