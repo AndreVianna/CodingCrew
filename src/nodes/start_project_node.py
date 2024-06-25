@@ -3,10 +3,10 @@ import os
 import json
 from datetime import datetime
 
-from ..models.project_state import ProjectState
+from models.project_state import ProjectState
 
-from ..utils.common import to_snake_case, is_linux
-from ..utils.terminal.terminal import clear, set_style, write, write_line, read_line, read_text, repeat_until_confirmed
+from utils.common import to_snake_case, is_linux
+from utils.terminal.terminal import clear, set_style, write, write_line, read_line, read_text, repeat_until_confirmed
 
 def get_name_and_folder(state: ProjectState):
     user_folder = os.path.expanduser("~") if is_linux else os.environ.get("USERPROFILE")
@@ -23,25 +23,26 @@ def get_name_and_folder(state: ProjectState):
     project_folder = os.path.join(base_folder, to_snake_case(state.name))
 
     choice = "n"
-    runs = [entry for entry in os.listdir(project_folder) if os.path.isdir(os.path.join(project_folder, entry)) and entry != state.project_id]
-    runs.sort(key=lambda run: os.path.getmtime(os.path.join(project_folder, run)), reverse=True)
-    last_run = runs[0] if runs else None
-    if last_run:
-        choice = "x"
-        formatted_last_run = set_style(last_run, "cyan")
-        delta = datetime.now() - datetime.fromtimestamp(os.path.getmtime(os.path.join(project_folder, last_run)))
-        formatted_delta = set_style(f"{delta.days} days " if delta.days else "" + f"{':'.join(str(delta).split(':')[:2])}h", "cyan")
-        write_line(F"There is a pre-existing project run in the folder '{formatted_last_run}', created {formatted_delta} ago.")
-        while choice and choice.lower() not in ["resume", "r", "new", "n"]:
-            write("Do you want to resume the previous run or start a new one? (Resume/[New]/eXit) ")
-            choice = read_line()
-            if choice.lower() in ["exit", "x"]:
-                write_line("Exiting the application.")
-                sys.exit(0)
-            if not choice or choice.lower() in ["resume", "r", "new", "n"]:
-                choice = "n" if not choice else choice[0].lower()
-                break
-            write_line(set_style("Invalid choice!", "red"))
+    if os.path.exists(project_folder):
+        runs = [entry for entry in os.listdir(project_folder) if os.path.isdir(os.path.join(project_folder, entry)) and entry != state.project_id]
+        runs.sort(key=lambda run: os.path.getmtime(os.path.join(project_folder, run)), reverse=True)
+        last_run = runs[0] if runs else None
+        if last_run:
+            choice = "x"
+            formatted_last_run = set_style(last_run, "cyan")
+            delta = datetime.now() - datetime.fromtimestamp(os.path.getmtime(os.path.join(project_folder, last_run)))
+            formatted_delta = set_style(f"{delta.days} days " if delta.days else "" + f"{':'.join(str(delta).split(':')[:2])}h", "cyan")
+            write_line(F"There is a pre-existing project run in the folder '{formatted_last_run}', created {formatted_delta} ago.")
+            while choice and choice.lower() not in ["resume", "r", "new", "n"]:
+                write("Do you want to resume the previous run or start a new one? (Resume/[New]/eXit) ")
+                choice = read_line()
+                if choice.lower() in ["exit", "x"]:
+                    write_line("Exiting the application.")
+                    sys.exit(0)
+                if not choice or choice.lower() in ["resume", "r", "new", "n"]:
+                    choice = "n" if not choice else choice[0].lower()
+                    break
+                write_line(set_style("Invalid choice!", "red"))
     if choice == "r":
         state_folder = os.path.join(project_folder, last_run)
         write_line(f"Resuming previous run located at: '{set_style(state_folder, 'cyan')}'.")

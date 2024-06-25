@@ -12,15 +12,15 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableConfig
 # pylint: enable=import-error
 
-from ..models.project_state import ProjectState
-from ..utils.common import normalize_text
+from models.project_state import ProjectState
+from utils.common import normalize_text
 
 from .common import JsonResponseFormat, get_system_message
 
-S = TypeVar("S", ProjectState)
-R = TypeVar("R", BaseModel)
+S = TypeVar("S", ProjectState, ProjectState)
+R = TypeVar("R", BaseModel, BaseModel)
 
-class BaseTask(Generic[S, R], BaseModel):
+class BaseTask(BaseModel, Generic[S, R]):
     agent: str
     goal: str
     description: str

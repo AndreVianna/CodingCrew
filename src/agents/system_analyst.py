@@ -1,8 +1,9 @@
 from pydantic import BaseModel
-from ..utils.common import normalize_text
+
+from utils.common import normalize_text
 
 class SystemAnalyst(BaseModel):
-    description: str
+    description: str = ""
 
     def __init__(self) -> str:
         super().__init__()

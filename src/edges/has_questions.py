@@ -1,5 +1,6 @@
 from typing import Literal
-from ..models.project_state import ProjectState
+
+from models.project_state import ProjectState
 
 def create(state: ProjectState) -> Literal["FINISH", "CONTINUE"]:
     pending_queries = filter(lambda q: not q.done, state.queries)

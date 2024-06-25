@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
-from ..models.project_state import ProjectState
-from ..models.query import Query
+from models.project_state import ProjectState
+from models.query import Query
 
 from .base_analysis_task import BaseAnalysisTask
 from .common import JsonResponseFormat

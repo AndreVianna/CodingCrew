@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from pydantic import BaseModel
 
-from ..utils.common import normalize_text
+from utils.common import normalize_text
 
 class JsonResponseFormat(BaseModel):
     json_schema: str | None = None

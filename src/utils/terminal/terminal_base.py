@@ -263,19 +263,6 @@ class BaseTerminal:
         return normalize_text(lines)
 
     def read_lines(self, previous_content: Optional[list[str]] = None) -> list[str]:
-        """
-        Reads a multipe lines from the user's input.
-        If one of the linebreak keys is pressed it ends a line (default: [ ENTER ]).
-        If one of the exit keys is pressed it ends a line AND finishes the input (default: [ CTRL+ENTER, CTRL+D ]).
-
-        Args:
-            interrupt (bool): If set to True raises a KeyboardInterrupt when CTRL+C is presses (default: True).
-            linebreak_keys (Iterable[str]): The keys that will end a line.
-            exit_keys (Iterable[str]): The keys that will finish the input.
-
-        Returns:
-            list[str]: The lines entered by the user.
-        """
         max_line_size = self.get_line_size()
         buffer = list[str]()
         if previous_content:
@@ -284,16 +271,15 @@ class BaseTerminal:
                 buffer_lines = [line[i:i+max_line_size] for i in range(0, len(line), max_line_size)]
                 buffer.extend(buffer_lines)
             buffer[-1] = buffer[-1].rstrip("\n")
+            for line in previous_content[:-1]:
+                self.write_line(line)
+            self.write(previous_content[-1])
         else:
             buffer.append("")
 
         # exit_options = [KeyMapping.name_of(key) for key in self._exit_keys]
         # self._write_footer(exit_options)
-        if previous_content:
-            for line in previous_content[:-1]:
-                self.write_line(line)
-            self.write(previous_content[-1])
-            self.__handle_user_multiline_input(buffer, max_line_size)
+        self.__handle_user_multiline_input(buffer, max_line_size)
 
         lines = list[str]()
         line = ""
@@ -306,17 +292,6 @@ class BaseTerminal:
         return lines
 
     def read_line(self, previous_content: Optional[str] = None) -> str:
-        """
-        Reads a line from the from the user's input.
-        If one of the exit keys is pressed it finishes the input (default: [ ENTER, CTRL+ENTER, CTRL+D ]).
-
-        Args:
-            interrupt (bool): If set to True raises a KeyboardInterrupt when CTRL+C is presses (default: True).
-            exit_keys (Iterable[str]): The keys that will finish the input.
-
-        Returns:
-            str: The line entered by the user.
-        """
         max_line_size = self.get_line_size()
         buffer = list[str]()
         if previous_content:
@@ -325,15 +300,12 @@ class BaseTerminal:
                 buffer_lines = [line[i:i+max_line_size] for i in range(0, len(line), max_line_size)]
                 buffer.extend(buffer_lines)
             buffer[-1] = buffer[-1].rstrip("\n")
-        else:
-            buffer.append("")
-
-        if previous_content:
             for line in previous_content[:-1]:
                 self.write_line(line)
             self.write(previous_content[-1])
         else:
-            buffer = list[str]([""])
+            buffer.append("")
+
         self.__handle_user_singleline_input(buffer, max_line_size)
 
         line = ""

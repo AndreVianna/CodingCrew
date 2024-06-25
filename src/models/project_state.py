@@ -2,7 +2,7 @@ import os
 import uuid
 from typing import Literal
 
-from ..utils.common import normalize_text
+from utils.common import normalize_text
 
 from .serializable import Serializable
 from .query import Query

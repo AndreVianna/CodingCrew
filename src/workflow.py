@@ -4,9 +4,9 @@ from dotenv import load_dotenv
 from langgraph.graph import StateGraph, END
 # pylint: enable=import-error
 
-from .models.project_state import ProjectState
-from .nodes import start_project_node, update_description_node, generate_questions_node # , query_user, has_answers
-from .edges import has_questions
+from models.project_state import ProjectState
+from nodes import start_project_node, update_description_node, generate_questions_node # , query_user, has_answers
+from edges import has_questions
 
 load_dotenv()
 

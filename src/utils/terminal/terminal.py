@@ -1,8 +1,3 @@
-# pylint: disable=missing-module-docstring,missing-class-docstring,missing-function-docstring
-"""
-Represents utility functions used throughout the application.
-"""
-
 import sys
 import time
 from typing import Callable, Iterable, Literal, Optional, TypeVar

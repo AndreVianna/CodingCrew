@@ -1,7 +1,7 @@
 print("Starting...")
 
-import sys                                       # pylint: disable=wrong-import-position
-from .utils.terminal import terminal             # pylint: disable=wrong-import-position
+import sys                                      # pylint: disable=wrong-import-position
+from utils.terminal import terminal             # pylint: disable=wrong-import-position
 
 # pylint: disable-next=missing-function-docstring
 # async def main():
@@ -41,7 +41,7 @@ if len(sys.argv) > 1:
 
     if any(arg in sys.argv for arg in ["-g"]):
         import os        # pylint: disable=import-outside-toplevel
-        from . import workflow  # pylint: disable=import-outside-toplevel
+        import workflow  # pylint: disable=import-outside-toplevel
 
         print("Generating graph...")
         temp = workflow.build()
@@ -51,9 +51,9 @@ if len(sys.argv) > 1:
         sys.exit()
 
 if __name__ == "__main__":
-    from .models.project_state import ProjectState   # pylint: disable=import-outside-toplevel
-    from .utils.common import is_verbose            # pylint: disable=import-outside-toplevel, ungrouped-imports
-    from . import workflow                                 # pylint: disable=import-outside-toplevel, ungrouped-imports
+    from models.project_state import ProjectState   # pylint: disable=import-outside-toplevel
+    from utils.common import is_verbose            # pylint: disable=import-outside-toplevel, ungrouped-imports
+    import workflow                                 # pylint: disable=import-outside-toplevel, ungrouped-imports
 
     terminal.write_line("Building workflow...")
     wkf = workflow.build(is_verbose)

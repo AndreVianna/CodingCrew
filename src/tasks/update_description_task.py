@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 
-from src.tasks.base_analysis_task import BaseAnalysisTask
+from tasks.base_analysis_task import BaseAnalysisTask
 
-from ..models.project_state import ProjectState
+from models.project_state import ProjectState
 
 from .common import JsonResponseFormat
 
