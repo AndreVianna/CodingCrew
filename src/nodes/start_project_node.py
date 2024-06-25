@@ -65,7 +65,7 @@ def get_description(state: ProjectState):
     write_line("Next we will proceed to the analysis of the project description.")
 
 
-def create(state: ProjectState) -> ProjectState:
+def execute(state: ProjectState) -> ProjectState:
     clear()
     name = set_style("Project Builder", "yellow", styles=["bold"])
     write_line(f"Welcome to {name}.", styles=["bold"])

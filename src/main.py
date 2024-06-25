@@ -1,7 +1,6 @@
-"""Entry point."""
 print("Starting...")
 
-import sys                                      # pylint: disable=wrong-import-position
+import sys                                       # pylint: disable=wrong-import-position
 from .utils.terminal import terminal             # pylint: disable=wrong-import-position
 
 # pylint: disable-next=missing-function-docstring

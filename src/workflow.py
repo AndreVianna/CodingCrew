@@ -13,9 +13,9 @@ load_dotenv()
 def build(is_debugging: bool = False):
     workflow = StateGraph(ProjectState)
 
-    workflow.add_node("start_project", start_project_node.create)
-    workflow.add_node("update_description", update_description_node.create)
-    workflow.add_node("generate_questions", generate_questions_node.create)
+    workflow.add_node("start_project", start_project_node.execute)
+    workflow.add_node("update_description", update_description_node.execute)
+    workflow.add_node("generate_questions", generate_questions_node.execute)
 
     workflow.set_entry_point("start_project")
     workflow.add_edge("start_project", "update_description")
