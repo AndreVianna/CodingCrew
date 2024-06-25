@@ -178,15 +178,17 @@ R = TypeVar("R")
 
 def do_until_confirmed(func: Callable[[], R], /, message: str | None = None, continue_on: Literal["y", "n"] = "y", allow_exit: bool = True) -> R:
     result = func()
-    while __show_yes_or_no_question(message, default_answer=continue_on, allow_exit=allow_exit) == continue_on:
+    while __show_yes_or_no_question(message, default_answer=continue_on, allow_exit=allow_exit) != continue_on:
         result = func()
     return result
 
-def request_confirmation(message: str | None = None, default_answer: Literal["y", "n"] = "y", allow_exit: bool = True) -> Literal["y", "n"]:
-    while __show_yes_or_no_question(message, default_answer, allow_exit) == default_answer:
-        pass
+def request_confirmation(message: str | None = None, default_answer: Literal["y", "n"] = "y", allow_exit: bool = True) -> Literal["y"] | Literal["n"]:
+    answer = __show_yes_or_no_question(message, default_answer, allow_exit)
+    while not answer:
+        answer = __show_yes_or_no_question(message, default_answer, allow_exit)
+    return answer
 
-def __show_yes_or_no_question(message: str | None, default_answer: Literal["y", "n"], allow_exit: bool) -> Literal["y", "n"] | None:
+def __show_yes_or_no_question(message: str | None, default_answer: Literal["y", "n"], allow_exit: bool) -> Literal["y"] | Literal["n"] | None:
     message = message if message else "Continue?"
     yes_option = "[Yes]" if default_answer == "y" else "Yes"
     no_option = "/[No]" if default_answer == "n" else "/No"
@@ -205,3 +207,12 @@ def __show_yes_or_no_question(message: str | None, default_answer: Literal["y", 
                 sys.exit(0)
     __terminal.write_line("Error: Invalid answer. Please try again.", "red")
     return None
+
+def wait_for_key(message: str | None = None, allow_exit: bool = True) -> None:
+    message = message if message else "Press aby key to continue."
+    if allow_exit:
+        message += " (or press 'x' to exit)"
+    write(message)
+    answer = read_key()
+    if allow_exit and answer == "x":
+        sys.exit(0)
