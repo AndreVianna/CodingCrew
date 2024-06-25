@@ -1,5 +1,5 @@
 
-from typing import Generic, TypeVar
+from typing import Generic, Type, TypeVar
 from pydantic import BaseModel
 
 from agents.system_analyst import SystemAnalyst
@@ -7,15 +7,15 @@ from models.project_state import ProjectState
 from utils.common import normalize_text
 
 from .common import JsonResponseFormat
-from .base_task import BaseTask
+from .base_agent_task import BaseAgentTask
 
 S = TypeVar("S", ProjectState, ProjectState)
 R = TypeVar("R", BaseModel, BaseModel)
 
-class BaseAnalysisTask(BaseTask[S, R], Generic[S, R]):
-    def __init__(self, goal: str, response_format: JsonResponseFormat | None = None) -> None:
+class BaseAnalysisTask(BaseAgentTask[S, R], Generic[S, R]):
+    def __init__(self, goal: str, response_type: Type[R], response_format: JsonResponseFormat | None = None) -> None:
         agent = SystemAnalyst()
-        super().__init__(agent.description, goal, response_format)
+        super().__init__(agent.description, goal, response_type, response_format)
         self.description = normalize_text("""
             Use your expertise in system analysis assess the validity, reliability and completude of the information.
             Be attentive to details and identify inconsistencies in the information provided.
@@ -36,7 +36,4 @@ class BaseAnalysisTask(BaseTask[S, R], Generic[S, R]):
                 - UI requiremtns, like pages, components, and navigation;
                 - and more.
             """) + \
-            super().description
-
-    def execute(self, state: ProjectState) -> ProjectState:
-        return state
+            self.description

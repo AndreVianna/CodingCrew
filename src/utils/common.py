@@ -46,27 +46,7 @@ def to_snake_case(name):
     name = name.strip("_")
     return name.lower()
 
-@singledispatch
-def normalize_text(text: str | list[str]) -> str:
-    return __normalize_text(0, default_indent_size, default_indent_char, text)
-
-@normalize_text.register
-def _(indent_level: int, text: str | list[str]) -> str:
-    return __normalize_text(indent_level, default_indent_size, default_indent_char, text)
-
-@normalize_text.register
-def _(indent_level: int, indent_char: str, text: str | list[str]) -> str:
-    return __normalize_text(indent_level, default_indent_size, indent_char, text)
-
-@normalize_text.register
-def _(indent_level: int, indent_size: int, text: str | list[str]) -> str:
-    return __normalize_text(indent_level, indent_size, default_indent_char, text)
-
-@normalize_text.register
-def _(indent_level: int, indent_size: int, indent_char: str, text: str | list[str]) -> str:
-    return __normalize_text(indent_level, indent_size, indent_char, text)
-
-def __normalize_text(indent_level: int, indent_size: int, indent_char: str, text: str | list[str]) -> str:
+def normalize_text(text: str | list[str], /, indent_level: int = 0, indent_size: int = default_indent_size, indent_char: str = default_indent_char) -> str:
     lines = text.split("\n") if isinstance(text, str) else text
     lines = __remove_top_empty_lines(lines)
     lines = __remove_bottom_empty_lines(lines)

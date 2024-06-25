@@ -31,7 +31,7 @@ class UpdateDescriptionTask(BaseAnalysisTask[ProjectState, UpdateDescriptionResp
                 ]
             }
             """)
-        super().__init__(goal, response_format)
+        super().__init__(goal, UpdateDescriptionResponse, response_format)
 
     def _update_state(self, response: UpdateDescriptionResponse, state: ProjectState) -> ProjectState:
         state.description.append(response.description)

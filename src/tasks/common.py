@@ -13,11 +13,10 @@ class JsonResponseFormat(BaseModel):
 
     def to_string(self) -> str:
         text: str = normalize_text("""\
-            # Expected Response Format
             Your final answer MUST be in a JSON format.
             IMPORTANT! It MUST contain only the JSON object, no title, preamble, conclusion or additional information.
             IMPORTANT! All linebreaks within strings must be escaped with the character sequence '\\n'.
-            IMPORTANT! All double quotes within strings must be escaped with the character sequence '\\\\"'.
+            IMPORTANT! All double quotes within strings must be escaped with the character sequence '\\"'.
             IMPORTANT! All strings should use UTF-8 encoding.""")
         if self.json_schema:
             text += normalize_text("""\

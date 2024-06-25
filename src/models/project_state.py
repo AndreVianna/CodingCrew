@@ -28,9 +28,9 @@ class ProjectState(Serializable):
             for i, query in enumerate(self.queries):
                 queries += normalize_text(f"""\
                     Question {i+1}:
-                        {normalize_text(indent_level=6, text=query.question)}
+                        {normalize_text(query.question, indent_level=6)}
                     Answer:
-                        {normalize_text(indent_level=6, text=query.answer)}
+                        {normalize_text(query.answer, indent_level=6)}
 
                     """)
 

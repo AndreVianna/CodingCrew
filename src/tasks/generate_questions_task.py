@@ -51,7 +51,7 @@ class GenerateQuestionsTask(BaseAnalysisTask[ProjectState, GenerateQuestionsResp
             ]
         }
         """)
-        super().__init__(goal, response_format)
+        super().__init__(goal, GenerateQuestionsResponse, response_format)
 
     def _update_state(self, response: GenerateQuestionsResponse, state: ProjectState) -> ProjectState:
         state.queries.extend(response.queries)
