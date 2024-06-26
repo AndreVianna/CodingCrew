@@ -6,16 +6,15 @@ from agents.system_analyst import SystemAnalyst
 from models.project_state import ProjectState
 from utils.common import normalize_text
 
-from .common import JsonResponseFormat
-from .base_agent_task import BaseAgentTask
+from .base_json_agent_task import BaseJsonAgentTask
 
 S = TypeVar("S", ProjectState, ProjectState)
 R = TypeVar("R", BaseModel, BaseModel)
 
-class BaseAnalysisTask(BaseAgentTask[S, R], Generic[S, R]):
-    def __init__(self, goal: str, response_type: Type[R], response_format: JsonResponseFormat | None = None) -> None:
+class BaseAnalysisTask(BaseJsonAgentTask[S, R], Generic[S, R]):
+    def __init__(self, goal: str, response_type: Type[R], allow_markdown: bool = False) -> None:
         agent = SystemAnalyst()
-        super().__init__(agent.description, goal, response_type, response_format)
+        super().__init__(agent.description, goal, response_type)
         self.description = normalize_text("""
             Use your expertise in system analysis assess the validity, reliability and completude of the information.
             Be attentive to details and identify inconsistencies in the information provided.

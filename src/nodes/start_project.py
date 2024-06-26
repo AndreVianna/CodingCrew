@@ -1,8 +1,8 @@
 import re
-import sys
 import os
 import json
 from datetime import datetime
+import sys
 
 from models.project_state import ProjectState
 
@@ -17,15 +17,14 @@ class StartProject(BaseTask[ProjectState]):
 
     @classmethod
     def __static_init__(cls):
-        __project_name_regex = re.compile(r"^[A-Za-z][A-Za-z0-9\s_-]*$")
+        cls.__project_name_regex = re.compile(r"^[A-Za-z][A-Za-z0-9\s_-]*$")
 
     def execute(self, state: ProjectState) -> ProjectState:
         self.__show_intruduction()
         workspace_folder = self.__confirm_workspace()
-        project_name = self.__get_project_name()
-        self.__load_or_create_project(workspace_folder, project_name, state)
-        self.__add_or_update_project_description(state)
-        terminal.wait_for_key()
+        state.name = self.__get_project_name()
+        self.__load_or_create_project(workspace_folder, state)
+        self.__get_project_description(state)
         self.__create_or_update_project(state)
         self.__show_conclusion()
         return state
@@ -48,21 +47,17 @@ class StartProject(BaseTask[ProjectState]):
     def __confirm_workspace(self) -> str:
         workspace_folder: str = os.path.expanduser( os.environ["WORKSPACE_FOLDER"].replace("~", "$HOMEPATH").replace("/", "\\")) if is_win32 else \
                                 os.path.expanduser( os.environ["WORKSPACE_FOLDER"].replace("$HOMEPATH", "~").replace("\\", "/"))
-        formatted = terminal.set_style(workspace_folder, "cyan")
-        terminal.write_line(f"The current workpace is located at '{formatted}'.")
-        return terminal.do_until_confirmed(lambda: self.__ask_for_wokspace_folder(workspace_folder), "Is that OK?")
-
-    def __ask_for_wokspace_folder(self, workspace_folder: str) -> str:
         while True:
-            terminal.write_line("To store the project in a different folder, please provide the new path or leave empty to proceed.")
+            formatted = terminal.set_style(workspace_folder, "cyan")
+            terminal.write(f"Workspace folder ({formatted}): ")
             new_folder = terminal.read_line()
             if not new_folder:
                 return workspace_folder
             if not os.path.isdir(new_folder):
                 terminal.write_line("Error: The provided folder does not exist!", "red")
                 continue
-            terminal.write_line(f"The project will be stored in '{terminal.set_style(new_folder, 'cyan')}'.")
-            return new_folder
+            terminal.write_line(f"The select workspace folder is '{terminal.set_style(new_folder, 'cyan')}'.")
+            return new_folder or workspace_folder
 
     def __get_project_name(self) -> str:
         return terminal.do_until_confirmed(self.__ask_for_project_name, "Is that correct?")
@@ -76,14 +71,12 @@ class StartProject(BaseTask[ProjectState]):
                 terminal.write_line("Error: Invalid project name!", "red")
                 terminal.write_line("The name must start with a letter and contain only letters, digits, spaces, underscores, and hyphens.")
                 continue
-            terminal.write_line(f"The project name is '{terminal.set_style(project_name, 'cyan')}'.")
             break
         return project_name
 
-    def __load_or_create_project(self, workspace_folder: str, project_name: str, state: ProjectState) -> None:
-        state.name = project_name
-        project_folder = os.path.join(workspace_folder, to_snake_case(state.name))
-
+    def __load_or_create_project(self, workspace_folder: str, state: ProjectState) -> None:
+        project_folder_name = to_snake_case(state.name)
+        project_folder = os.path.join(workspace_folder, project_folder_name)
         previous_run: str = ""
         if os.path.isdir(project_folder):
             previous_run = self.__select_previous_run(state, project_folder)
@@ -112,11 +105,7 @@ class StartProject(BaseTask[ProjectState]):
         resume = terminal.request_confirmation("Do you want to resume the previous run?")
         return last_run if resume == "y" else None
 
-    def __add_or_update_project_description(self, state):
-        terminal.do_until_confirmed(lambda: self.__ask_for_project_description(state))
-        terminal.write_line()
-
-    def __ask_for_project_description(self, state: ProjectState):
+    def __get_project_description(self, state: ProjectState):
         terminal.write_line("Please provide a detailed description of the project:")
         previous_description = state.description[-1] if state.description else None
         description = terminal.read_text(previous_description)
@@ -128,7 +117,6 @@ class StartProject(BaseTask[ProjectState]):
     def __create_or_update_project(self, state):
         state.status = "STARTED"
         os.makedirs(state.folder, exist_ok=True)
-        state_file = f"{state.folder}/state.json"
-        with open(state_file, "w", encoding="utf-8") as state_file:
-            json.dump(state.__dict__, state_file)
-
+        path = f"{state.folder}/state.json"
+        with open(path, "w", encoding="utf-8") as state_file:
+            json.dump(state, state_file, default=str)

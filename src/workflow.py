@@ -5,7 +5,7 @@ from langgraph.graph import StateGraph, END
 # pylint: enable=import-error
 
 from models.project_state import ProjectState
-from edges import has_questions
+from edges import can_ask_questions, has_questions
 from nodes.generate_questions import GenerateQuestions
 from nodes.start_project import StartProject
 from nodes.update_description import UpdateDescription
@@ -25,7 +25,13 @@ def build(is_debugging: bool = False):
 
     workflow.set_entry_point("start_project")
     workflow.add_edge("start_project", "update_description")
-    workflow.add_edge("update_description", "generate_questions")
+    workflow.add_conditional_edges(
+        "update_description",
+        can_ask_questions.check,
+        {
+            "CONTINUE": "generate_questions",
+            "FINISH": END,
+        })
     workflow.add_conditional_edges(
         "generate_questions",
         has_questions.check,

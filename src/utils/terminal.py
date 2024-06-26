@@ -194,22 +194,21 @@ def __show_yes_or_no_question(message: str | None, default_answer: Literal["y", 
     no_option = "/[No]" if default_answer == "n" else "/No"
     exit_option = "/eXit" if allow_exit else ""
     write(f"""{message} ({yes_option}{no_option}{exit_option}) """)
-    answer = read_line().lower()
+    answer = read_line().lower().strip()
     match answer:
-        case None:
+        case "" | None:
             return default_answer
-        case "yes", "y":
+        case "yes" | "y":
             return "y"
-        case "no", "n":
+        case "no" | "n":
             return "n"
-        case "exit", "x":
-            if allow_exit:
-                sys.exit(0)
+        case "exit" | "x" if allow_exit:
+            sys.exit(0)
     __terminal.write_line("Error: Invalid answer. Please try again.", "red")
     return None
 
 def wait_for_key(message: str | None = None, allow_exit: bool = True) -> None:
-    message = message if message else "Press aby key to continue."
+    message = message if message else "Press any key to continue."
     if allow_exit:
         message += " (or press 'x' to exit)"
     write(message)
