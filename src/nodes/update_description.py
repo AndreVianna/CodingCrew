@@ -1,31 +1,13 @@
 import json
 from typing import ClassVar
-from pydantic import BaseModel
 
-from nodes.base_analysis_task import BaseAnalysisTask
+from models import UpdateDescriptionState
+from responses import UpdateDescriptionResponse
 
-from models.project_state import ProjectState
-from utils.common import normalize_text
+from .base_analysis_task import BaseAnalysisTask
 
-class UpdateDescriptionResponse(BaseModel):
-    description: str
-    json_schema: ClassVar[str] = normalize_text("""\
-        {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "title": "Response schema",
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                }
-            },
-            "required": [
-                "description"
-            ]
-        }
-        """)
-
-class UpdateDescription(BaseAnalysisTask[ProjectState, UpdateDescriptionResponse]):
+class UpdateDescription(BaseAnalysisTask[UpdateDescriptionState, UpdateDescriptionResponse]):
+    name: ClassVar[str] = "update_description"
     def __init__(self) -> None:
         goal = """
             Your goal is to generate an updated description of the project.
@@ -37,10 +19,10 @@ class UpdateDescription(BaseAnalysisTask[ProjectState, UpdateDescriptionResponse
             Each BULLET POINT MUST HAVE a TITLE and a short description explaining that topic, how it is related to the project and the solution adopted.
             The description can be as long as necessary. DO NOT WORRY about the length of the chapters or bullet point text.
             """
-        super().__init__(goal, UpdateDescriptionResponse, allow_markdown=True)
+        super().__init__(goal, UpdateDescriptionResponse)
 
-    def _update_state(self, response: UpdateDescriptionResponse, state: ProjectState) -> ProjectState:
-        state.description.append(response.description)
+    def _update_state(self, state: UpdateDescriptionState, response: UpdateDescriptionResponse) -> UpdateDescriptionResponse:
+        state.description = response.description
         state.counter += 1
         for query in state.queries:
             query.done = True

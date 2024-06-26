@@ -1,18 +1,19 @@
 
 from typing import Generic, Type, TypeVar
-from pydantic import BaseModel
 
-from agents.system_analyst import SystemAnalyst
-from models.project_state import ProjectState
 from utils.common import normalize_text
 
-from .base_json_agent_task import BaseJsonAgentTask
+from agents import SystemAnalyst
+from models import BaseState
+from responses import BaseAgentResponse
 
-S = TypeVar("S", ProjectState, ProjectState)
-R = TypeVar("R", BaseModel, BaseModel)
+from .base_agent_task_with_json_response import BaseJsonAgentTask
+
+S = TypeVar("S", bound=BaseState)
+R = TypeVar("R", bound=BaseAgentResponse)
 
 class BaseAnalysisTask(BaseJsonAgentTask[S, R], Generic[S, R]):
-    def __init__(self, goal: str, response_type: Type[R], allow_markdown: bool = False) -> None:
+    def __init__(self, goal: str, response_type: Type[R]) -> None:
         agent = SystemAnalyst()
         super().__init__(agent.description, goal, response_type)
         self.description = normalize_text("""

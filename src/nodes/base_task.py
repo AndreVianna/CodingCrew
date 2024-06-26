@@ -1,10 +1,21 @@
-from typing import Generic, TypeVar
+from typing import ClassVar, Generic, Self, TypeVar
 from pydantic import BaseModel
 
-from models.project_state import ProjectState
+from models import BaseState
 
-S = TypeVar("S", ProjectState, ProjectState)
+S = TypeVar("S", bound=BaseState)
 
 class BaseTask(BaseModel, Generic[S]):
-    def execute(self, state: S) -> S:
-        return state
+    state: S = None
+    name: ClassVar[str] = None
+
+    def __init__(self, state: S) -> None:
+        super().__init__()
+        self.state = state
+
+    @classmethod
+    def run(cls, state: S) -> S:
+        return cls(state)._execute()
+
+    def _execute(self) -> S:
+        return self.state

@@ -1,8 +1,16 @@
-from typing import Literal
+# pylint: disable=import-error
+from langgraph.graph import END
+# pylint: enable=import-error
 
-from models.project_state import ProjectState
+from models import UpdateDescriptionState
+from nodes import GenerateQuestions
 
-def check(state: ProjectState) -> Literal["FINISH", "CONTINUE"]:
-    if state.status != "STARTED" or state.counter >= 3:
-        return "FINISH"
-    return "CONTINUE"
+from .base_edge import BaseEdge
+
+class CanAskQuestions(BaseEdge[UpdateDescriptionState, str]):
+    @classmethod
+    def check(cls, state: UpdateDescriptionState) -> str:
+        super().check(state)
+        if state.status != "STARTED" or state.counter >= 3:
+            return GenerateQuestions.name
+        return END

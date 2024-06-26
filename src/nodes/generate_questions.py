@@ -1,47 +1,13 @@
 import json
 from typing import ClassVar
-from pydantic import BaseModel
 
-from models.project_state import ProjectState
-from models.query import Query
-from utils.common import normalize_text
+from models import UpdateDescriptionState
+from responses import GenerateQuestionsResponse
 
 from .base_analysis_task import BaseAnalysisTask
 
-class GenerateQuestionsResponse(BaseModel):
-    queries: list[Query]
-    json_schema: ClassVar[str] = normalize_text("""\
-        {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "title": "Generated schema for Root",
-            "type": "object",
-            "properties": {
-                "queries": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "question": {
-                                "type": "string"
-                            },
-                            "answer": {
-                                "type": "string"
-                            }
-                        },
-                        "required": [
-                            "question",
-                            "answer"
-                        ]
-                    }
-                }
-            },
-            "required": [
-                "queries"
-            ]
-        }
-        """)
-
-class GenerateQuestions(BaseAnalysisTask[ProjectState, GenerateQuestionsResponse]):
+class GenerateQuestions(BaseAnalysisTask[UpdateDescriptionState, GenerateQuestionsResponse]):
+    name: ClassVar[str] = "generate_questions"
     def __init__(self) -> None:
         goal = """
             The objective is to understand the current project definition provided by the USER.
@@ -53,9 +19,9 @@ class GenerateQuestions(BaseAnalysisTask[ProjectState, GenerateQuestionsResponse
             IMPORTANT! For all the questions you ask you must provide the answer that you consider the most appropriated to that question.
             IMPORTANT! If the project definition does not provide enough information for you to answer the question properly you most respond with: "According to the current definition, the project does not support that functionality." .
             """
-        super().__init__(goal, GenerateQuestionsResponse, allow_markdown=True)
+        super().__init__(goal, GenerateQuestionsResponse)
 
-    def _update_state(self, response: GenerateQuestionsResponse, state: ProjectState) -> ProjectState:
+    def _update_state(self, state: UpdateDescriptionState, response: GenerateQuestionsResponse) -> UpdateDescriptionState:
         state.queries.extend(response.queries)
         state_file = f"{state.folder}/state.json"
         with open(state_file, "w", encoding="utf-8") as state_file:

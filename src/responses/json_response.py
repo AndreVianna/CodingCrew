@@ -2,9 +2,9 @@ import os
 
 from utils.common import normalize_text
 
-from .base_response import BaseResponse
+from .base_agent_response import BaseAgentResponse
 
-class JsonResponse(BaseResponse):
+class JsonResponse(BaseAgentResponse):
     json_schema: str = ""
 
     def __init__(self, json_schema: str) -> None:

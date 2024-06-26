@@ -1,14 +1,15 @@
 print("Starting...")
 
-import sys                             # pylint: disable=wrong-import-position
-from utils import terminal             # pylint: disable=wrong-import-position
+# pylint: disable=wrong-import-position
+import sys
 
-# pylint: disable-next=missing-function-docstring
-# async def main():
+from utils import terminal
+# pylint: enable=wrong-import-position
+
 if sys.platform not in ["linux", "win32"]:
     print(f"The '{sys.platform}' is not supported.")
     sys.exit(1)
-if sys.version_info < (3, 11) or sys.version_info > (3, 12):
+if sys.version_info < (3, 11) or sys.version_info >= (3, 12):
     print(f"This applicaiton requires Python 3.11+. Found: {sys.version}.")
     sys.exit(1)
 
@@ -40,8 +41,10 @@ if len(sys.argv) > 1:
         sys.exit()
 
     if any(arg in sys.argv for arg in ["-g"]):
-        import os        # pylint: disable=import-outside-toplevel
-        import workflow  # pylint: disable=import-outside-toplevel
+        # pylint: disable=import-outside-toplevel, ungrouped-imports
+        import os
+        import workflow
+        # pylint: enable=import-outside-toplevel, ungrouped-imports
 
         print("Generating graph...")
         temp = workflow.build()
@@ -51,20 +54,21 @@ if len(sys.argv) > 1:
         sys.exit()
 
 if __name__ == "__main__":
-    from models.project_state import ProjectState   # pylint: disable=import-outside-toplevel
-    from utils.common import is_verbose            # pylint: disable=import-outside-toplevel, ungrouped-imports
-    import workflow                                 # pylint: disable=import-outside-toplevel, ungrouped-imports
+    # pylint: disable=import-outside-toplevel, ungrouped-imports
+    import os
+    import workflow
+    from utils.common import is_win32, is_verbose
+    from models import BaseState
+    # pylint: enable=import-outside-toplevel, ungrouped-imports
 
     terminal.write_line("Building workflow...")
     wkf = workflow.build(is_verbose)
     terminal.write_line("Validating workflow...")
     wkf.validate()
     terminal.write_line("Executing workflow...")
-    state=ProjectState()
+    workspace: str = os.path.expanduser( os.environ["WORKSPACE_FOLDER"].replace("~", "$HOMEPATH").replace("/", "\\")) if is_win32 else \
+                     os.path.expanduser( os.environ["WORKSPACE_FOLDER"].replace("$HOMEPATH", "~").replace("\\", "/"))
+    state=BaseState(workspace)
     result = wkf.invoke(input=state, debug=is_verbose)
-    terminal.write_line("Workflow completed.")
-    terminal.write_line("Result:")
-    terminal.write_line(result)
-
-
-# asyncio.run(main(), debug=is_verbose)
+    terminal.write_line()
+    terminal.write_line("Workflow completed.", "green")
