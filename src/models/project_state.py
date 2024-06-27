@@ -1,5 +1,3 @@
-import os
-
 from dataclasses import dataclass
 
 from utils.common import normalize_text
@@ -8,14 +6,15 @@ from .base_state import BaseState
 
 @dataclass
 class Project(BaseState):
-    name: str = ""
-    description: str = ""
+    name: str = None
+    description: str = None
 
-    def __init__(self, base: BaseState, name: str, folder: str, description: str) -> None:
-        super().__init__(base.workspace, base.run, base.step, base.status)
-        self.name = name or self.name
-        self.folder = folder or self.folder
-        self.description = description or self.description
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.name = kwargs.get("name")
+        if not self.name:
+            raise ValueError("The project name is required.")
+        self.description = kwargs.get("description")
 
     def __str__(self) -> str:
         return normalize_text(f"""\

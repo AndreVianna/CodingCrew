@@ -1,4 +1,4 @@
-from typing import ClassVar, Generic, Self, TypeVar
+from typing import ClassVar, Generic, TypeVar
 from pydantic import BaseModel
 
 from models import BaseState
@@ -15,7 +15,8 @@ class BaseTask(BaseModel, Generic[S]):
 
     @classmethod
     def run(cls, state: S) -> S:
-        return cls(state)._execute()
+        instance = cls(state)
+        return instance._execute()
 
     def _execute(self) -> S:
         return self.state

@@ -68,7 +68,7 @@ if __name__ == "__main__":
     terminal.write_line("Executing workflow...")
     workspace: str = os.path.expanduser( os.environ["WORKSPACE_FOLDER"].replace("~", "$HOMEPATH").replace("/", "\\")) if is_win32 else \
                      os.path.expanduser( os.environ["WORKSPACE_FOLDER"].replace("$HOMEPATH", "~").replace("\\", "/"))
-    state=BaseState(workspace)
+    state=BaseState(workspace=workspace)
     result = wkf.invoke(input=state, debug=is_verbose)
     terminal.write_line()
     terminal.write_line("Workflow completed.", "green")

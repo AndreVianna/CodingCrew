@@ -1,3 +1,4 @@
+from datetime import timedelta
 import os
 import sys
 import re
@@ -39,6 +40,17 @@ def normalize_text(text: str | list[str], /, indent_level: int = 0, indent_size:
     lines = __merge_empty_lines(lines)
     lines = __align_left(lines,  indent_level, indent_size, indent_char)
     return os.linesep.join(lines)+os.linesep
+
+def format_duration(delta: timedelta):
+    days_text = f"{delta.days} days " if delta.days > 1 else "1 day " if delta.days else None
+    hours = delta.seconds // 3600
+    hours_text = f"{hours} hours " if hours > 1 else "1 hour " if hours else None
+    minutes = (delta.seconds // 60) % 60
+    minutes_text = f"{minutes} minutes" if minutes > 1 else "1 minute" if minutes else None
+    parts = [filter(None, [days_text,hours_text,minutes_text])]
+    part_count = len(parts)
+    period = parts[0] if part_count == 1 else f"{parts[0]} and {parts[1]}" if part_count == 2 else f"{parts[0]}, {parts[1]}, and {parts[2]}"
+    return period
 
 def __remove_top_empty_lines(lines: list[str]) -> list[str]:
     while lines and not lines[0].strip():

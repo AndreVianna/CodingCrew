@@ -8,8 +8,8 @@ class Query(BaseModel):
     answer: str
     done: bool = False
 
-    def __init__(self, question: str | None = None, answer: str | None = None, done: bool | None = None) -> None:
+    def __init__(self, **kwargs) -> None:
         super().__init__()
-        self.question = question or self.question
-        self.answer = answer or self.answer
-        self.done = done or self.done
+        self.question = kwargs.get("question")
+        self.answer = kwargs.get("answwer")
+        self.done = kwargs.get("done") or self.done
