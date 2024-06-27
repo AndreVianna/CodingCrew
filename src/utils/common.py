@@ -17,20 +17,30 @@ def static_init(cls):
     return cls
 
 symbols = re.compile(r"\W")
+duplicated = re.compile(r"_+")
+alpha_before_upper = re.compile(r"([a-z0-9])([A-Z])")
 alpha_before_digit = re.compile(r"([A-Za-z])([0-9])")
-digit_before_alpha = re.compile(r"([0-9])([A-Za-z])")
-char_before_upper = re.compile(r"(.)([A-Z][a-z]+)")
-lower_before_upper = re.compile(r"([a-z])([A-Z])")
+digit_before_alpha = re.compile(r"([0-9])([a-z])")
 
-def to_snake_case(name):
+def delete_tree(folder: str) -> None:
+    if not os.path.isdir(folder):
+        return
+    for root, dirs, files in os.walk(folder, topdown=False):
+        for name in files:
+            os.remove(os.path.join(root, name))
+        for name in dirs:
+            os.rmdir(os.path.join(root, name))
+    os.rmdir(folder)
+
+def snake_case(name: str | None) -> str | None:
+    if not name:
+        return name
+    name = name.strip()
     name = symbols.sub("_", name)
+    name = duplicated.sub("_", name)
+    name = alpha_before_upper.sub(r"\1_\2", name)
     name = alpha_before_digit.sub(r"\1_\2", name)
     name = digit_before_alpha.sub(r"\1_\2", name)
-    name = char_before_upper.sub(r"\1_\2", name)
-    name = lower_before_upper.sub(r"\1_\2", name)
-    while "__" in name:
-        name = name.replace("__", "_")
-    name = name.strip("_")
     return name.lower()
 
 def normalize_text(text: str | list[str], /, indent_level: int = 0, indent_size: int = default_indent_size, indent_char: str = default_indent_char) -> str:
@@ -42,12 +52,12 @@ def normalize_text(text: str | list[str], /, indent_level: int = 0, indent_size:
     return os.linesep.join(lines)+os.linesep
 
 def format_duration(delta: timedelta):
-    days_text = f"{delta.days} days " if delta.days > 1 else "1 day " if delta.days else None
+    days_text = f"""{delta.days}{" days" if delta.days > 1 else " day"}""" if delta.days else None
     hours = delta.seconds // 3600
-    hours_text = f"{hours} hours " if hours > 1 else "1 hour " if hours else None
+    hours_text = f"""{hours}{" hours" if hours > 1 else " hour"}""" if hours else None
     minutes = (delta.seconds // 60) % 60
-    minutes_text = f"{minutes} minutes" if minutes > 1 else "1 minute" if minutes else None
-    parts = [filter(None, [days_text,hours_text,minutes_text])]
+    minutes_text = f"""{minutes}{" minutes" if minutes > 1 else "minute"}""" if minutes else None
+    parts = [p for p in [days_text,hours_text,minutes_text] if p]
     part_count = len(parts)
     period = parts[0] if part_count == 1 else f"{parts[0]} and {parts[1]}" if part_count == 2 else f"{parts[0]}, {parts[1]}, and {parts[2]}"
     return period

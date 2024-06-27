@@ -3,13 +3,13 @@ import time
 from typing import Callable, Iterable, Literal, Optional, TypeVar
 import asyncio
 
-from .common import is_linux, is_win32 # pylint: disable=relative-beyond-top-level
+from .common import is_linux, is_win32
 from .base_terminal import Style, ActionKeyMapping, Color
 
 if is_linux:
-    from .linux_terminal import Terminal, KeyMapping as Key # pylint: disable=relative-beyond-top-level, unused-import
+    from .linux_terminal import Terminal, KeyMapping as Key # pylint: disable=unused-import
 elif is_win32:
-    from .win32_terminal import Terminal, KeyMapping as Key # pylint: disable=relative-beyond-top-level, unused-import
+    from .win32_terminal import Terminal, KeyMapping as Key # pylint: disable=unused-import
 else:
     raise OSError(f"{sys.platform} is not supported.")
 

@@ -12,7 +12,7 @@ from .base_agent_task_with_json_response import BaseJsonAgentTask
 S = TypeVar("S", bound=BaseState)
 R = TypeVar("R", bound=BaseAgentResponse)
 
-class BaseAnalysisTask(BaseJsonAgentTask[S, R], Generic[S, R]):
+class BaseAnalysisTask(BaseJsonAgentTask[S, R], Generic[S, R]): # pylint: disable=too-few-public-methods
     def __init__(self, goal: str, response_type: Type[R]) -> None:
         agent = SystemAnalyst()
         super().__init__(agent.description, goal, response_type)

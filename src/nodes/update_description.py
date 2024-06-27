@@ -6,7 +6,7 @@ from responses import UpdateDescriptionResponse
 
 from .base_analysis_task import BaseAnalysisTask
 
-class UpdateDescription(BaseAnalysisTask[UpdateDescriptionState, UpdateDescriptionResponse]):
+class UpdateDescription(BaseAnalysisTask[UpdateDescriptionState, UpdateDescriptionResponse]): # pylint: disable=too-few-public-methods
     name: ClassVar[str] = "update_description"
     def __init__(self) -> None:
         goal = """

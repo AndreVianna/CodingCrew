@@ -6,7 +6,7 @@ from responses import GenerateQuestionsResponse
 
 from .base_analysis_task import BaseAnalysisTask
 
-class GenerateQuestions(BaseAnalysisTask[UpdateDescriptionState, GenerateQuestionsResponse]):
+class GenerateQuestions(BaseAnalysisTask[UpdateDescriptionState, GenerateQuestionsResponse]): # pylint: disable=too-few-public-methods
     name: ClassVar[str] = "generate_questions"
     def __init__(self) -> None:
         goal = """

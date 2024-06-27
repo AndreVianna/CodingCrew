@@ -3,15 +3,15 @@ from typing import ClassVar
 import re
 from datetime import datetime
 
-from models import BaseState, Project
+from models import BaseState, ProjectState
 
-from utils.common import normalize_text, static_init, to_snake_case, format_duration
+from utils.common import delete_tree, normalize_text, static_init, snake_case, format_duration
 from utils import terminal
 
 from .base_task import BaseTask
 
 @static_init
-class StartProject(BaseTask[BaseState]):
+class StartProject(BaseTask[BaseState]): # pylint: disable=too-few-public-methods
     name: ClassVar[str] = "start_project"
     __project_name_regex: ClassVar[re.Pattern[str]] = re.compile(r"^[A-Za-z][A-Za-z0-9\s_-]*$")
 
@@ -19,11 +19,11 @@ class StartProject(BaseTask[BaseState]):
         super().__init__(state)
         self.state = state
 
-    def _execute(self) -> Project:
+    def _execute(self) -> ProjectState:
         self.__show_introduction()
         self.__confirm_workspace()
-        name = self.__request_project_name()
-        self.__load_previous_or_create_new_project(name)
+        self.__request_project_name()
+        self.__load_previous_or_create_new_project()
         if self.state.status != "NEW":
             return self.state
         self.__request_project_description()
@@ -60,61 +60,70 @@ class StartProject(BaseTask[BaseState]):
             terminal.write_line(f"The select workspace folder is '{terminal.set_style(new_folder, 'cyan')}'.")
             self.state.workspace = new_folder or self.state.workspace
 
-    def __request_project_name(self) -> str:
-        return terminal.do_until_confirmed(self.__ask_for_project_name, "Is that correct?")
+    def __request_project_name(self) -> None:
+        name = terminal.do_until_confirmed(self.___ask_for_project_name, "Is that correct?")
+        self.state = ProjectState(name=name, **self.state.__dict__)
 
-    def __ask_for_project_name(self) -> str:
-        project_name: str = ""
+    def ___ask_for_project_name(self) -> str:
+        name: str = ""
         while True:
             terminal.write("Please, enter the project name: ")
-            project_name = terminal.read_line()
-            if project_name and re.match(self.__project_name_regex, project_name):
+            name = terminal.read_line()
+            if name and re.match(self.__project_name_regex, name):
                 break
             terminal.write_line("Error: Invalid project name!", "red")
             terminal.write_line("The name must start with a letter and contain only letters, digits, spaces, underscores, and hyphens.")
-        return project_name
+        project_folder = os.path.join(self.state.workspace, snake_case(name))
+        formatted = terminal.set_style(project_folder, "cyan")
+        terminal.write_line(f"Project location: '{formatted}'.")
+        return name
 
-    def __load_previous_or_create_new_project(self, name: str) -> None:
-        project_folder = os.path.join(self.state.workspace, to_snake_case(name))
-        self.state.folder = os.path.join(project_folder, self.state.run)
-        previous_run = self.__find_latest_run(self.state, project_folder)
-        if not previous_run:
-            terminal.write_line(f"Starting new run located at: '{terminal.set_style(self.state.folder, 'cyan')}'.")
+    def __load_previous_or_create_new_project(self) -> None:
+        state_file = self.___find_previous_state_file()
+        if not state_file:
+            terminal.write_line("Starting new run...")
             return
 
-        run_folder = os.path.join(project_folder, previous_run)
-        last_step_file = self.__find_last_step(run_folder)
-        if not last_step_file:
-            os.rmdir(run_folder)
-            terminal.write_line(f"Starting new run located at: '{terminal.set_style(self.state.folder, 'cyan')}'.")
-            return
+        terminal.write_line("Loading previous run...")
+        self.state = ProjectState.create_from_file(state_file)
 
-        last_step = int(last_step_file.split(".")[0])
-        terminal.write_line(f"Loading step {last_step} from previous run located at '{terminal.set_style(run_folder, 'cyan')}'...")
-        state_file = os.path.join(run_folder, last_step_file)
-        self.state = Project.load_from(state_file)
-
-    def __find_latest_run(self, state: BaseState, project_folder: str) -> str | None:
-        if not os.path.isdir(project_folder):
+    def ___find_previous_state_file(self) -> str | None:
+        latest_run = self.____find_latest_run()
+        if not latest_run:
             return None
 
-        runs = [entry for entry in os.listdir(project_folder) if os.path.isdir(os.path.join(project_folder, entry)) and entry != state.run]
+        run_folder = os.path.join(self.state.folder, latest_run)
+        last_step_file = self.____find_last_step(run_folder)
+        if not last_step_file:
+            delete_tree(latest_run)
+            return None
+
+        step_info = last_step_file.split(".")
+        age = datetime.now() - datetime.strptime(latest_run, "%Y%m%dT%H%M%S")
+        age = terminal.set_style(format_duration(age), "cyan")
+        status = step_info[1].upper()
+        if status == "FINISHED":
+            return None
+        status = terminal.set_style(status, "cyan")
+
+        terminal.write_line(f"A previous run of this project created {age} ago with status '{status}' was found.")
+        resume = terminal.request_confirmation("Do you want to resume that run?")
+        return os.path.join(run_folder, last_step_file) if resume == "y" else None
+
+    def ____find_latest_run(self) -> str | None:
+        folder = self.state.folder
+        if not os.path.isdir(folder):
+            return None
+
+        runs = next(os.walk(folder))[1]
         if not runs:
             return None
+        return runs[-1]
 
-        runs.sort(key=lambda run: os.path.getmtime(os.path.join(project_folder, run)))
-        last_run = runs[-1]
-
-        formatted_last_run = terminal.set_style(os.path.join(project_folder, last_run), "cyan")
-        delta = datetime.now() - datetime.fromtimestamp(os.path.getmtime(os.path.join(project_folder, last_run)))
-        duration = terminal.set_style(format_duration(delta), "cyan")
-        terminal.write_line(f"There is a pre-existing project run in the folder '{formatted_last_run}', created {duration} ago.")
-
-        resume = terminal.request_confirmation("Do you want to resume this run?")
-        return last_run if resume == "y" else None
-
-    def __find_last_step(self, run_folder: str) -> int | None:
-        steps = [entry for entry in os.listdir(run_folder) if os.path.isfile(os.path.join(run_folder, entry))]
+    def ____find_last_step(self, folder: str) -> str | None:
+        entries = os.walk(folder)
+        entry = next(entries, None)
+        steps = entry[2] if entry else None
         return steps[-1] if steps else None
 
     def __request_project_description(self) -> None:

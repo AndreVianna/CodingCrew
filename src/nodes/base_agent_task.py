@@ -21,7 +21,7 @@ from .base_task import BaseTask
 S = TypeVar("S", bound=BaseState)
 R = TypeVar("R", bound=BaseAgentResponse)
 
-class BaseAgentTask(BaseTask[S], Generic[S]):
+class BaseAgentTask(BaseTask[S], Generic[S]): # pylint: disable=too-few-public-methods
     agent: str = ""
     goal: str = ""
     description: str = ""

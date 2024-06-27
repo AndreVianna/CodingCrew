@@ -3,11 +3,11 @@ import os
 
 from utils.common import normalize_text
 
-from .project_state import Project
+from .project_state import ProjectState
 from .query_model import Query
 
 @dataclass
-class UpdateDescriptionState(Project):
+class UpdateDescriptionState(ProjectState):
     counter: int = 0
     queries: list[Query] = []
 

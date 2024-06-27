@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from langgraph.graph import StateGraph
 # pylint: enable=import-error
 
-from models import BaseState, UpdateDescriptionState
+from models import BaseState
 from nodes import StartProject, UpdateDescription, GenerateQuestions
 from edges import CanAskQuestions, HasQuestions
 

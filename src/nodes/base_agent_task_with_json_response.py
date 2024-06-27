@@ -16,7 +16,7 @@ from .base_agent_task import BaseAgentTask
 S = TypeVar("S", bound=BaseState)
 R = TypeVar("R", BaseModel, BaseModel)
 
-class BaseJsonAgentTask(BaseAgentTask[S], Generic[S, R]):
+class BaseJsonAgentTask(BaseAgentTask[S], Generic[S, R]): # pylint: disable=too-few-public-methods
     response_type: Type[R] | None = None
     json_schema: str = ""
 
