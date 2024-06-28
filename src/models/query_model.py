@@ -10,6 +10,6 @@ class Query(BaseModel):
 
     def __init__(self, **kwargs) -> None:
         super().__init__()
-        self.question = kwargs.get("question")
-        self.answer = kwargs.get("answwer")
-        self.done = kwargs.get("done") or self.done
+        self.question = str(kwargs.get("question"))
+        self.answer = str(kwargs.get("answwer"))
+        self.done = bool(kwargs.get("done")) or self.done

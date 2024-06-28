@@ -8,14 +8,14 @@ from pydantic import BaseModel
 
 @dataclass
 class BaseState(BaseModel):
-    workspace: str = None
+    workspace: str = ""
     run: str = str(datetime.now().strftime("%Y%m%dT%H%M%S"))
     step: int = 0
     status: str = "NEW"
 
     def __init__(self, **kwargs) -> None:
         super().__init__()
-        self.workspace = kwargs.get("workspace")
+        self.workspace = str(kwargs.get("workspace"))
         if not self.workspace:
             raise ValueError("The workspace folder is required.")
         if not os.path.isdir(self.workspace):

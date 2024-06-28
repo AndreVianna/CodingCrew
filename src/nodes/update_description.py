@@ -1,14 +1,14 @@
 import json
 from typing import ClassVar
 
-from models import UpdateDescriptionState
+from models import ProjectState, UpdateDescriptionState
 from responses import UpdateDescriptionResponse
 
 from .base_analysis_task import BaseAnalysisTask
 
 class UpdateDescription(BaseAnalysisTask[UpdateDescriptionState, UpdateDescriptionResponse]): # pylint: disable=too-few-public-methods
     name: ClassVar[str] = "update_description"
-    def __init__(self) -> None:
+    def __init__(self, state: ProjectState) -> None:
         goal = """
             Your goal is to generate an updated description of the project.
             You MUST analyze all the project definition provided by the USER, including the PROJECT DESCRIPTION and the ANSWERS to the previous questions.

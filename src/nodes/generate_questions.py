@@ -10,7 +10,7 @@ class GenerateQuestions(BaseAnalysisTask[UpdateDescriptionState, GenerateQuestio
     name: ClassVar[str] = "generate_questions"
     def __init__(self) -> None:
         goal = """
-            The objective is to understand the current project definition provided by the USER.
+            Your goal is to understand the current project definition provided by the USER.
             The project definition is composed by the project description and the answers to the previous questions.
             After the analysis you should, IF NECESSARY, ask additional questions to refine, complete and correct the project definition.
             IMPORTANT! You DO NOT ASK a question that is NOT RELATED nor RELEVANT to the PROJECT.

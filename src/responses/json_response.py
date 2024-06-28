@@ -1,26 +1,30 @@
 import os
+from typing import ClassVar
 
 from utils.common import normalize_text
 
-from .base_agent_response import BaseAgentResponse
+from .base_response import BaseResponse
 
-class JsonResponse(BaseAgentResponse):
-    json_schema: str = ""
+class JsonResponse(BaseResponse):
+    json_schema: ClassVar[str] = ""
 
-    def __init__(self, json_schema: str) -> None:
-        super().__init__()
-        self.json_schema = json_schema
+    @classmethod
+    def __get_schema(cls) -> str:
+        if not JsonResponse.json_schema:
+            return ""
+        return normalize_text("""\
+            Here is the JSON schema for the answer:
+            ```json""") + \
+            normalize_text(cls.json_schema) + \
+            "```" + os.linesep
 
-    def __str__(self) -> str:
-        text: str = normalize_text("""\
+    @classmethod
+    def get_prompt(cls) -> str:
+        return normalize_text("""\
             # Expected Response
             IMPORTANT! Your answer MUST be in a JSON format.
             IMPORTANT! The answer MUST contain ONLY the JSON object. It MUST NOT contain any title, preamble, conclusion, analysis or any additional information.
             IMPORTANT! All linebreaks within strings must be escaped with the character sequence '\\n'.
             IMPORTANT! All double quotes within strings must be escaped with the character sequence '\\"'.
-            IMPORTANT! All strings MUST use UTF-8 encoding.
-            Here is the JSON schema for the answer:
-            ```json""") + \
-            normalize_text(self.json_schema) + \
-            "```" + os.linesep
-        return text
+            IMPORTANT! All strings MUST use UTF-8 encoding.""") + \
+            cls.__get_schema()

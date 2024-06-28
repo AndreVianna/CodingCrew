@@ -32,9 +32,9 @@ def delete_tree(folder: str) -> None:
             os.rmdir(os.path.join(root, name))
     os.rmdir(folder)
 
-def snake_case(name: str | None) -> str | None:
+def snake_case(name: str | None) -> str:
     if not name:
-        return name
+        return ""
     name = name.strip()
     name = symbols.sub("_", name)
     name = duplicated.sub("_", name)

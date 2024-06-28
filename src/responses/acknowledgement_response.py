@@ -1,8 +1,8 @@
 from utils.common import normalize_text
 
-from .base_agent_response import BaseAgentResponse
+from .base_response import BaseResponse
 
-class AcknowledgementResponse(BaseAgentResponse):
+class AcknowledgementResponse(BaseResponse):
     def __str__(self) -> str:
         text: str = normalize_text("""\
             # Expected Response

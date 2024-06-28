@@ -1,4 +1,4 @@
-from responses.base_agent_response import BaseAgentResponse
+from responses.base_response import BaseResponse
 from responses.json_response import JsonResponse
 from responses.markdown_response import MarkdownResponse
 from responses.acknowledgement_response import AcknowledgementResponse

@@ -1,13 +1,11 @@
-from pydantic import BaseModel
 
 from utils.common import normalize_text
 
-class SystemAnalyst(BaseModel):
-    description: str = ""
+from .base_agent import BaseAgent
 
-    def __init__(self) -> str:
-        super().__init__()
-        self.description = normalize_text("""
+class SystemAnalyst(BaseAgent):
+    def __str__(self) -> str:
+        return  normalize_text("""\
             You are a Senior System Analyst and an expert in system analysis.
             You are able to communicate effectively with both technical and non-technical stakeholders.
             This includes active listening, asking questions, and explaining technical concepts in simple terms.

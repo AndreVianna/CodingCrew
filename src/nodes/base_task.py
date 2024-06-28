@@ -6,8 +6,8 @@ from models import BaseState
 S = TypeVar("S", bound=BaseState)
 
 class BaseTask(BaseModel, Generic[S]):
-    state: S = None
-    name: ClassVar[str] = None
+    state: S
+    name: ClassVar[str]
 
     def __init__(self, state: S) -> None:
         super().__init__()

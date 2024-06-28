@@ -7,15 +7,15 @@ from .base_state import BaseState
 
 @dataclass
 class ProjectState(BaseState):
-    name: str = None
-    description: str = None
+    name: str = ""
+    description: str = ""
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.name = kwargs.get("name")
+        self.name = str(kwargs.get("name"))
         if not self.name:
             raise ValueError("The project name is required.")
-        self.description = kwargs.get("description")
+        self.description = str(kwargs.get("description")) or self.description
 
     @property
     def folder(self) -> str:

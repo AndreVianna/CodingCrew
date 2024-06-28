@@ -5,18 +5,18 @@ from utils.common import normalize_text
 
 from agents import SystemAnalyst
 from models import BaseState
-from responses import BaseAgentResponse
+from responses import BaseResponse
 
-from .base_agent_task_with_json_response import BaseJsonAgentTask
+from .base_json_agent_task import BaseJsonAgentTask
 
 S = TypeVar("S", bound=BaseState)
-R = TypeVar("R", bound=BaseAgentResponse)
+R = TypeVar("R", bound=BaseResponse)
 
 class BaseAnalysisTask(BaseJsonAgentTask[S, R], Generic[S, R]): # pylint: disable=too-few-public-methods
     def __init__(self, goal: str, response_type: Type[R]) -> None:
         agent = SystemAnalyst()
         super().__init__(agent.description, goal, response_type)
-        self.description = normalize_text("""
+        self.instructions = normalize_text("""
             Use your expertise in system analysis assess the validity, reliability and completude of the information.
             Be attentive to details and identify inconsistencies in the information provided.
             Make sure to consider all the important aspects of a software project, including but not limited to:
@@ -36,4 +36,4 @@ class BaseAnalysisTask(BaseJsonAgentTask[S, R], Generic[S, R]): # pylint: disabl
                 - UI requiremtns, like pages, components, and navigation;
                 - and more.
             """) + \
-            self.description
+            self.instructions

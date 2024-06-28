@@ -14,19 +14,17 @@ from responses import JsonResponse
 from .base_agent_task import BaseAgentTask
 
 S = TypeVar("S", bound=BaseState)
-R = TypeVar("R", BaseModel, BaseModel)
+R = TypeVar("R", bound=JsonResponse)
 
 class BaseJsonAgentTask(BaseAgentTask[S], Generic[S, R]): # pylint: disable=too-few-public-methods
-    response_type: Type[R] | None = None
-    json_schema: str = ""
+    response_type: R
 
-    def __init__(self, agent: str, goal: str, response_type: Type[R], allow_markdown: bool = False) -> None:
-        super().__init__(agent, goal, allow_markdown)
+    def __init__(self, goal: str, response_type: Type[R]) -> None:
+        super().__init__(goal=goal)
         self.response_type = response_type
-        self.json_schema = response_type.json_schema
 
     def _execute(self, state: S) -> S:
-        messages = [SystemMessage(content=self._get_system_message(self.agent, self.description, self.goal))]
+        messages = [SystemMessage(content=self._get_system_message(self.agent, self.instructions, self.goal))]
         self._ask_model_to_acknowledge(messages, state.describe())
         response = self._ask_model_for_text(messages, "PROCEED")
         response = self.__ask_model_for_json(messages)
