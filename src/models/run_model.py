@@ -7,7 +7,7 @@ from typing import Self
 from pydantic import BaseModel
 
 @dataclass
-class BaseState(BaseModel):
+class RunModel(BaseModel):
     workspace: str = ""
     run: str = str(datetime.now().strftime("%Y%m%dT%H%M%S"))
     step: int = 0

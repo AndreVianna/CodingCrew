@@ -3,23 +3,23 @@ from typing import ClassVar
 import re
 from datetime import datetime
 
-from models import BaseState, ProjectState
+from models import RunModel, Project
 
 from utils.common import delete_tree, normalize_text, static_init, snake_case, format_duration
 from utils import terminal
 
-from .base_task import BaseTask
+from .base_node import BaseNode
 
 @static_init
-class StartProject(BaseTask[BaseState]): # pylint: disable=too-few-public-methods
+class StartProject(BaseNode[RunModel]): # pylint: disable=too-few-public-methods
     name: ClassVar[str] = "start_project"
     __project_name_regex: ClassVar[re.Pattern[str]] = re.compile(r"^[A-Za-z][A-Za-z0-9\s_-]*$")
 
-    def __init__(self, state: BaseState) -> None:
+    def __init__(self, state: RunModel) -> None:
         super().__init__(state)
         self.state = state
 
-    def _execute(self) -> ProjectState:
+    def _execute(self) -> Project:
         self.__show_introduction()
         self.__confirm_workspace()
         self.__request_project_name()
@@ -62,7 +62,7 @@ class StartProject(BaseTask[BaseState]): # pylint: disable=too-few-public-method
 
     def __request_project_name(self) -> None:
         name = terminal.do_until_confirmed(self.___ask_for_project_name, "Is that correct?")
-        self.state = ProjectState(name=name, **self.state.__dict__)
+        self.state = Project(name=name, **self.state.__dict__)
 
     def ___ask_for_project_name(self) -> str:
         name: str = ""
@@ -85,7 +85,7 @@ class StartProject(BaseTask[BaseState]): # pylint: disable=too-few-public-method
             return
 
         terminal.write_line("Loading previous run...")
-        self.state = ProjectState.create_from_file(state_file)
+        self.state = Project.create_from_file(state_file)
 
     def ___find_previous_state_file(self) -> str | None:
         latest_run = self.____find_latest_run()

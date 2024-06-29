@@ -1,5 +1,5 @@
-from models.base_state import BaseState
-from models.project_state import ProjectState
-from models.update_description_state import UpdateDescriptionState
+from models.run_model import RunModel
+from models.project_model import Project
+from models.analysis_model import AnalysisModel
 
 from models.query_model import Query

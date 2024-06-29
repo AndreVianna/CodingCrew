@@ -6,10 +6,10 @@ from pydantic import BaseModel
 class Query(BaseModel):
     question: str
     answer: str
-    done: bool = False
+    done: bool
 
-    def __init__(self, **kwargs) -> None:
-        super().__init__()
-        self.question = str(kwargs.get("question"))
-        self.answer = str(kwargs.get("answwer"))
-        self.done = bool(kwargs.get("done")) or self.done
+    def __init__(self, question: str, answer: str, done: bool = False, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.question = question
+        self.answer = answer
+        self.done = done

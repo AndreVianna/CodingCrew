@@ -2,9 +2,9 @@ from typing import Generic, Hashable, TypeVar
 
 from pydantic import BaseModel
 
-from models.base_state import BaseState
+from models.run_model import RunModel
 
-S = TypeVar("S", bound=BaseState)
+S = TypeVar("S", bound=RunModel)
 R = TypeVar("R", Hashable, list[Hashable])
 
 class BaseEdge(BaseModel, Generic[S, R]):

@@ -2,5 +2,5 @@ from pydantic import BaseModel
 
 class BaseResponse(BaseModel):
     @classmethod
-    def get_prompt(cls) -> str:
-        return ""
+    def prompt(cls, **kwargs) -> str:
+        raise NotImplementedError

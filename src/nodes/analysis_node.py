@@ -1,22 +1,21 @@
 
-from typing import Generic, Type, TypeVar
+from typing import Generic, TypeVar
 
 from utils.common import normalize_text
 
 from agents import SystemAnalyst
-from models import BaseState
+from models import RunModel
 from responses import BaseResponse
 
-from .base_json_agent_task import BaseJsonAgentTask
+from .ai_node import AINode
 
-S = TypeVar("S", bound=BaseState)
+S = TypeVar("S", bound=RunModel)
 R = TypeVar("R", bound=BaseResponse)
 
-class BaseAnalysisTask(BaseJsonAgentTask[S, R], Generic[S, R]): # pylint: disable=too-few-public-methods
-    def __init__(self, goal: str, response_type: Type[R]) -> None:
-        agent = SystemAnalyst()
-        super().__init__(agent.description, goal, response_type)
-        self.instructions = normalize_text("""
+class AnalysisNode(AINode[S, SystemAnalyst, R], Generic[S, R]): # pylint: disable=too-few-public-methods
+    def __init__(self, state: S, goal: str, **kwargs) -> None:
+        super().__init__(state, SystemAnalyst(), **kwargs)
+        self.preamble = normalize_text("""
             Use your expertise in system analysis assess the validity, reliability and completude of the information.
             Be attentive to details and identify inconsistencies in the information provided.
             Make sure to consider all the important aspects of a software project, including but not limited to:
@@ -36,4 +35,7 @@ class BaseAnalysisTask(BaseJsonAgentTask[S, R], Generic[S, R]): # pylint: disabl
                 - UI requiremtns, like pages, components, and navigation;
                 - and more.
             """) + \
-            self.instructions
+            self.preamble
+
+    def _update_state(self, state: S, response: R) -> S: # pylint: disable=unused-argument
+        pass

@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from typing import Generic, TypeVar
+from typing import Generic, Literal, Optional, TypeVar
 
 # pylint: disable=import-error
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
@@ -14,41 +14,55 @@ from utils import terminal
 from utils.common import normalize_text, is_verbose
 
 from agents import BaseAgent, DefaultAgent
-from models import BaseState
-from responses import BaseResponse, AcknowledgementResponse, MarkdownResponse
+from models import RunModel
+from responses import BaseResponse, SingleWordResponse, TextResponse
 
-from .base_task import BaseTask
+from .base_node import BaseNode
 
-S = TypeVar("S", bound=BaseState)
+S = TypeVar("S", bound=RunModel)
 A = TypeVar("A", bound=BaseAgent)
 R = TypeVar("R", bound=BaseResponse)
 
-class BaseAgentTask(BaseTask[S], Generic[S, A, R]): # pylint: disable=too-few-public-methods
-    agent: A
-    goal: str = ""
-    instructions: str = ""
+class AINode(BaseNode[S], Generic[S, A, R]): # pylint: disable=too-few-public-methods
+    agent: A = DefaultAgent()
+    goal: str = "Your goal is to help the user to achieve the best answer."
+    use_preamble: bool = True
+    preamble_type: Literal["None", "Default", "Custom"] = "Default"
+    preamble: str = normalize_text("""\
+        This is a complex task that requires careful analysis.
+        Let's do it step-by-step to arrive the best answer.""")
 
-    def __init__(self, state: S, agent: A, **kwargs) -> None:
-        super().__init__(state)
-        self.agent = agent or DefaultAgent()
-        self.goal = kwargs.get("goal") or normalize_text("""\
-            Help the user to achieve the best answer.""")
-        self.instructions = kwargs.get("instructions") or normalize_text("""\
-            IMPORTANT! This taks is complex let's do it step-by step to arrive the best answer.""")
+    def __init__(self,
+                 state: S,
+                 agent: Optional[A] = None,
+                 goal: Optional[str] = None,
+                 preamble_type: Literal["None", "Default", "Custom"] = "Default",
+                 preamble: Optional[str] = None,
+                 **kwargs) -> None:
+        super().__init__(state, **kwargs)
+        self.agent = agent or self.agent
+        self.goal = goal or self.goal
+        match preamble_type:
+            case "None":
+                self.preamble = ""
+            case "Custom" if not preamble:
+                raise ValueError("Preamble text is required when preamble type is 'Custom'.")
+            case "Custom":
+                self.preamble = preamble
 
     def _execute(self, state: S) -> S:
-        messages = [SystemMessage(content=self._get_system_message(self.agent, self.instructions, self.goal))]
+        messages = [SystemMessage(content=self._get_system_message())]
         self._ask_model_to_acknowledge(messages, state.describe())
         response = self._ask_model_for_text(messages, "PROCEED")
         return self._update_state(state, response)
 
     def _ask_model_for_text(self, messages: LanguageModelInput, content: str) -> str:
-        response_format = MarkdownResponse() if self.allow_markdown else BaseResponse()
+        response_format = TextResponse() if self.allow_markdown else BaseResponse()
         messages.append(HumanMessage(content=self._get_user_message(content, response_format)))
         return self._ask_model(messages)
 
     def _ask_model_to_acknowledge(self, messages: LanguageModelInput, content: str) -> bool:
-        messages.append(HumanMessage(content=self._get_user_message(content, AcknowledgementResponse())))
+        messages.append(HumanMessage(content=self._get_user_message(content, SingleWordResponse())))
         response_text = self._ask_model(messages)
         return response_text == "ACKNOWLEDGE"
 
@@ -96,10 +110,10 @@ class BaseAgentTask(BaseTask[S], Generic[S, A, R]): # pylint: disable=too-few-pu
             """)
         agent = normalize_text(str(self.agent))
         goal = "# Goal" + os.linesep + normalize_text(self.goal)
-        instructions = "# Instructions" + os.linesep + normalize_text(self.instructions)
+        instructions = "# Instructions" + os.linesep + normalize_text(self.preamble)
         return generics + agent + goal + instructions
 
-    def _get_user_message(self, content: str, response_format: BaseResponse, examples: str | None = None) -> str:
+    def _get_user_message(self, content: str, response_format: R, examples: str | None = None) -> str:
         content = normalize_text(content)
         examples = ("# Examples" + os.linesep + normalize_text(examples)) if examples else ""
         return content + examples + str(response_format)

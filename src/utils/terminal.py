@@ -202,7 +202,7 @@ def __show_yes_or_no_question(message: str | None, default_answer: Literal["y", 
             return "y"
         case "no" | "n":
             return "n"
-        case "exit" | "x" if allow_exit:
+        case ("exit" | "x") if allow_exit:
             sys.exit(0)
     __terminal.write_line("Error: Invalid answer. Please try again.", "red")
     return None

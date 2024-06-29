@@ -1,20 +1,24 @@
 from dataclasses import dataclass
 import os
+from typing import Optional
 
 from utils.common import normalize_text
 
-from .project_state import ProjectState
+from .project_model import Project
+from .run_model import RunModel
 from .query_model import Query
 
 @dataclass
-class UpdateDescriptionState(ProjectState):
+class AnalysisModel(RunModel):
+    project: Project = None
     counter: int = 0
     queries: list[Query] = []
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, project: Project, counter: Optional[int] = 0, queries: Optional[list[Query]] = None, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.counter = kwargs.get("counter") or self.counter
-        self.queries = kwargs.get("queries") or self.queries
+        self.project = project
+        self.counter = counter or self.counter
+        self.queries = queries or self.queries
 
     def __str__(self) -> str:
         queries: str = ""

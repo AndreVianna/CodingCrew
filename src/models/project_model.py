@@ -1,21 +1,22 @@
 from dataclasses import dataclass
 import os
+from typing import Optional
 
 from utils.common import normalize_text, snake_case
 
-from .base_state import BaseState
+from .run_model import RunModel
 
 @dataclass
-class ProjectState(BaseState):
-    name: str = ""
-    description: str = ""
+class Project(RunModel):
+    name: str = None
+    description: str = None
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, name: str, description: Optional[str] = "", **kwargs) -> None:
         super().__init__(**kwargs)
-        self.name = str(kwargs.get("name"))
-        if not self.name:
+        if not name:
             raise ValueError("The project name is required.")
-        self.description = str(kwargs.get("description")) or self.description
+        self.name = name
+        self.description = description or self.description
 
     @property
     def folder(self) -> str:
