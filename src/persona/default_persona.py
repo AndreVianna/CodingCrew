@@ -1,9 +1,10 @@
 from utils.common import normalize_text
 
-from .base_agent import BaseAgent
+from .base_persona import BasePersona
 
-class DefaultAgent(BaseAgent):
-    def __str__(self) -> str:
+class DefaultPersona(BasePersona):
+    @classmethod
+    def prompt(cls) -> str:
         return  normalize_text("""\
             You are a helpful assistant.
             You are able to understand and respond to user requests.

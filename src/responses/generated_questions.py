@@ -6,35 +6,16 @@ from models import Query
 
 from .json_response import JsonResponse
 
-class GeneratesQuestions(JsonResponse):
-    queries: list[Query]
-    _schema: ClassVar[str] = normalize_text("""\
+class GeneratedQueries(JsonResponse):
+    schema: ClassVar[str] = normalize_text("""\
     {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "title": "Generated schema for Root",
-        "type": "object",
-        "properties": {
-            "queries": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "question": {
-                            "type": "string"
-                        },
-                        "answer": {
-                            "type": "string"
-                        }
-                    },
-                    "required": [
-                        "question",
-                        "answer"
-                    ]
-                }
-            }
-        },
-        "required": [
-            "queries"
-        ]
+        "$schema": "https://json-schema.org/draft/2020-12/schema#",
+        "$id": "https://schema.com/queries.json",
+        "title": "Generated queries",
+        "type": "array",
+        "items": {
+            "$ref": "https://schema.com/query.json"
+        }
     }
-    """)
+    """) + \
+    Query.schema

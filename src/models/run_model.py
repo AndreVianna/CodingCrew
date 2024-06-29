@@ -1,29 +1,28 @@
 import os
 import glob
 import json
-from datetime import datetime
+
+from typing import Self, Optional
 from dataclasses import dataclass
-from typing import Self
+from datetime import datetime
+
 from pydantic import BaseModel
 
 @dataclass
 class RunModel(BaseModel):
-    workspace: str = ""
-    run: str = str(datetime.now().strftime("%Y%m%dT%H%M%S"))
-    step: int = 0
-    status: str = "NEW"
-
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, workspace: str, run: Optional[str] = None, step: Optional[int] = 0, status: Optional[str] = None) -> None:
         super().__init__()
-        self.workspace = str(kwargs.get("workspace"))
-        if not self.workspace:
+        if not workspace:
             raise ValueError("The workspace folder is required.")
-        if not os.path.isdir(self.workspace):
+        if not os.path.isdir(workspace):
             raise ValueError("Invalid workspace folder.")
+        if step < 0:
+            raise ValueError("The step must be a non-negative integer.")
 
-        self.run = kwargs.get("run") or self.run
-        self.step = kwargs.get("step") or self.step
-        self.status = kwargs.get("status") or self.status
+        self.workspace = workspace
+        self.run: str = run or str(datetime.now().strftime("%Y%m%dT%H%M%S"))
+        self.step = step
+        self.status: str = status or "NEW"
 
     @property
     def type(self) -> str:

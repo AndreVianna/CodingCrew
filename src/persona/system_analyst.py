@@ -1,10 +1,10 @@
-
 from utils.common import normalize_text
 
-from .base_agent import BaseAgent
+from .base_persona import BasePersona
 
-class SystemAnalyst(BaseAgent):
-    def __str__(self) -> str:
+class SystemAnalyst(BasePersona):
+    @classmethod
+    def prompt(cls) -> str:
         return  normalize_text("""\
             You are a Senior System Analyst and an expert in system analysis.
             You are able to communicate effectively with both technical and non-technical stakeholders.

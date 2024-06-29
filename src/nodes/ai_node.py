@@ -8,40 +8,38 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.language_models import LanguageModelInput
 from langchain_anthropic import ChatAnthropic
 from langchain_openai import ChatOpenAI
+from pydantic import BaseModel
 # pylint: enable=import-error
 
 from utils import terminal
 from utils.common import normalize_text, is_verbose
 
-from agents import BaseAgent, DefaultAgent
+from persona import BasePersona, DefaultPersona
 from models import RunModel
-from responses import BaseResponse, SingleWordResponse, TextResponse
+from responses import BaseResponse, YesNoResponse, TextResponse
 
 from .base_node import BaseNode
 
-S = TypeVar("S", bound=RunModel)
-A = TypeVar("A", bound=BaseAgent)
+IS = TypeVar("IS", bound=BaseModel)
+FS = TypeVar("FS", bound=BaseModel)
+A = TypeVar("A", bound=BasePersona)
 R = TypeVar("R", bound=BaseResponse)
 
-class AINode(BaseNode[S], Generic[S, A, R]): # pylint: disable=too-few-public-methods
-    agent: A = DefaultAgent()
-    goal: str = "Your goal is to help the user to achieve the best answer."
-    use_preamble: bool = True
-    preamble_type: Literal["None", "Default", "Custom"] = "Default"
-    preamble: str = normalize_text("""\
-        This is a complex task that requires careful analysis.
-        Let's do it step-by-step to arrive the best answer.""")
-
+class AINode[IS, A, R, FS](BaseNode[IS, FS]): # pylint: disable=too-few-public-methods
     def __init__(self,
-                 state: S,
+                 state: IS,
                  agent: Optional[A] = None,
                  goal: Optional[str] = None,
                  preamble_type: Literal["None", "Default", "Custom"] = "Default",
-                 preamble: Optional[str] = None,
-                 **kwargs) -> None:
-        super().__init__(state, **kwargs)
-        self.agent = agent or self.agent
-        self.goal = goal or self.goal
+                 preamble: Optional[str] = None) -> None:
+        super().__init__(state)
+        use_preamble: bool = True
+        preamble: str = normalize_text("""\
+            This is a complex task that requires careful analysis.
+            Let's do it step-by-step to arrive the best answer.""")
+
+        self.agent = agent or DefaultPersona()
+        self.goal = goal or "Your goal is to help the user to achieve the best answer."
         match preamble_type:
             case "None":
                 self.preamble = ""
@@ -50,7 +48,7 @@ class AINode(BaseNode[S], Generic[S, A, R]): # pylint: disable=too-few-public-me
             case "Custom":
                 self.preamble = preamble
 
-    def _execute(self, state: S) -> S:
+    def _execute(self, state: IS) -> FS:
         messages = [SystemMessage(content=self._get_system_message())]
         self._ask_model_to_acknowledge(messages, state.describe())
         response = self._ask_model_for_text(messages, "PROCEED")
@@ -101,7 +99,7 @@ class AINode(BaseNode[S], Generic[S, A, R]): # pylint: disable=too-few-public-me
             case _:
                 raise ValueError(f"Invalid model provider: {model_provider}")
 
-    def _update_state(self, state: S, response: R) -> S: # pylint: disable=unused-argument
+    def _update_state(self, state: IS, response: R) -> FS: # pylint: disable=unused-argument
         raise NotImplementedError()
 
     def _get_system_message(self) -> str:

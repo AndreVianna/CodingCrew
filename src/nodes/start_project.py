@@ -11,13 +11,13 @@ from utils import terminal
 from .base_node import BaseNode
 
 @static_init
-class StartProject(BaseNode[RunModel]): # pylint: disable=too-few-public-methods
+class StartProject(BaseNode[RunModel, Project]): # pylint: disable=too-few-public-methods
     name: ClassVar[str] = "start_project"
     __project_name_regex: ClassVar[re.Pattern[str]] = re.compile(r"^[A-Za-z][A-Za-z0-9\s_-]*$")
 
     def __init__(self, state: RunModel) -> None:
         super().__init__(state)
-        self.state = state
+        self.final_state = Project(run=self.initial_state.run, name="project_1")
 
     def _execute(self) -> Project:
         self.__show_introduction()
@@ -62,7 +62,7 @@ class StartProject(BaseNode[RunModel]): # pylint: disable=too-few-public-methods
 
     def __request_project_name(self) -> None:
         name = terminal.do_until_confirmed(self.___ask_for_project_name, "Is that correct?")
-        self.state = Project(name=name, **self.state.__dict__)
+        self.final_state = Project(run=self.initial_state, name=name, **self.state.__dict__)
 
     def ___ask_for_project_name(self) -> str:
         name: str = ""
@@ -85,7 +85,7 @@ class StartProject(BaseNode[RunModel]): # pylint: disable=too-few-public-methods
             return
 
         terminal.write_line("Loading previous run...")
-        self.state = Project.create_from_file(state_file)
+        self.final_state = Project.create_from_file(state_file)
 
     def ___find_previous_state_file(self) -> str | None:
         latest_run = self.____find_latest_run()

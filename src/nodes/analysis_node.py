@@ -1,20 +1,23 @@
 
 from typing import Generic, TypeVar
 
+from pydantic import BaseModel
+
 from utils.common import normalize_text
 
-from agents import SystemAnalyst
+from persona import SystemAnalyst
 from models import RunModel
 from responses import BaseResponse
 
 from .ai_node import AINode
 
-S = TypeVar("S", bound=RunModel)
+IS = TypeVar("IS", bound=BaseModel)
+FS = TypeVar("FS", bound=BaseModel)
 R = TypeVar("R", bound=BaseResponse)
 
-class AnalysisNode(AINode[S, SystemAnalyst, R], Generic[S, R]): # pylint: disable=too-few-public-methods
-    def __init__(self, state: S, goal: str, **kwargs) -> None:
-        super().__init__(state, SystemAnalyst(), **kwargs)
+class AnalysisNode[IS, R, FS](AINode[IS, SystemAnalyst, R]): # pylint: disable=too-few-public-methods
+    def __init__(self, state: IS, goal: str) -> None:
+        super().__init__(state, SystemAnalyst())
         self.preamble = normalize_text("""
             Use your expertise in system analysis assess the validity, reliability and completude of the information.
             Be attentive to details and identify inconsistencies in the information provided.
@@ -37,5 +40,5 @@ class AnalysisNode(AINode[S, SystemAnalyst, R], Generic[S, R]): # pylint: disabl
             """) + \
             self.preamble
 
-    def _update_state(self, state: S, response: R) -> S: # pylint: disable=unused-argument
+    def _update_state(self, state: IS, response: R) -> FS: # pylint: disable=unused-argument
         pass

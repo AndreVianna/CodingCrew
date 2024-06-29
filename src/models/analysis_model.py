@@ -1,24 +1,23 @@
-from dataclasses import dataclass
 import os
-from typing import Optional
+
+from dataclasses import dataclass
+
+from pydantic import BaseModel
 
 from utils.common import normalize_text
 
 from .project_model import Project
-from .run_model import RunModel
 from .query_model import Query
 
-@dataclass
-class AnalysisModel(RunModel):
+@dataclass(frozen=True)
+class AnalysisModel(BaseModel):
     project: Project = None
     counter: int = 0
     queries: list[Query] = []
 
-    def __init__(self, project: Project, counter: Optional[int] = 0, queries: Optional[list[Query]] = None, **kwargs) -> None:
+    def __init__(self, project: Project, **kwargs) -> None:
         super().__init__(**kwargs)
         self.project = project
-        self.counter = counter or self.counter
-        self.queries = queries or self.queries
 
     def __str__(self) -> str:
         queries: str = ""

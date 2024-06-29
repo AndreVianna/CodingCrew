@@ -9,7 +9,7 @@ from utils import terminal
 if sys.platform not in ["linux", "win32"]:
     print(f"The '{sys.platform}' is not supported.")
     sys.exit(1)
-if sys.version_info < (3, 11) or sys.version_info >= (3, 12):
+if sys.version_info < (3, 12) or sys.version_info >= (3, 13):
     print(f"This applicaiton requires Python 3.11+. Found: {sys.version}.")
     sys.exit(1)
 

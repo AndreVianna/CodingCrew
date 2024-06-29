@@ -24,7 +24,7 @@ def clear() -> str:
 
 def read_text(previous_content: Optional[str] = None) -> str:
     """
-    Allows the user to enter a multiline string ending by pressing Shift+Enter.
+    Allows the user to enter a multi-line string ending by pressing Shift+Enter.
 
     Returns:
         str: The text entered by the user.
@@ -107,7 +107,7 @@ def set_style(
     styles: Iterable[Style] | None = None,
 ) -> str:
     """
-    returns a formated text.
+    returns a formatted text.
 
     Args:
         text (str): The text to be formatted.

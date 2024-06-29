@@ -196,7 +196,7 @@ class BaseTerminal:
     def read_text(self, previous_content: Optional[str] = None) -> str:
         """
         Reads a text from the user's input.
-        If one of the linebreak keys is pressed it ends a line (default: [ ENTER ]).
+        If one of the line-break keys is pressed it ends a line (default: [ ENTER ]).
         If one of the exit keys is pressed it finishes the input (default: [ CTRL+ENTER ]).
 
         Args:
@@ -294,7 +294,7 @@ class BaseTerminal:
         styles: Iterable[Style] | None = None,
     ) -> str:
         """
-        returns a formated text.
+        returns a formatted text.
 
         Args:
             text (str): The text to be formatted.
@@ -336,7 +336,7 @@ class BaseTerminal:
         styles: Iterable[Style] | None = None,
     ) -> None:
         """
-        Writes a formated text.
+        Writes a formatted text.
 
         Args:
             text (str): The prompt to display to the user.
@@ -364,7 +364,7 @@ class BaseTerminal:
         styles: Iterable[Style] | None = None,
     ) -> None:
         """
-        writes a formated text with the operating system's line separator character at the end.
+        writes a formatted text with the operating system's line separator character at the end.
         """
         self.write(text, foreground, background, styles)
         self._write(ActionKeyMapping.ADD_NEW_LINE)
