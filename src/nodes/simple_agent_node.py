@@ -1,9 +1,10 @@
 from typing import TypeVar
 
 from pydantic import BaseModel
-from nodes import AgentNode
 from personas import BasePersona
 from responses import BaseResponse
+
+from .agent_node import AgentNode
 
 State = TypeVar("State", bound=BaseModel)
 AgentPersona = TypeVar("AgentPersona", bound=BasePersona)

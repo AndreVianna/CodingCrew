@@ -2,9 +2,9 @@ from typing import Generic, Literal, TypeVar
 
 from pydantic import BaseModel
 
-from models.run_model import RunModel
+from models.run_model import Run
 
-State = TypeVar("State", bound=RunModel)
+State = TypeVar("State", bound=Run)
 Result = TypeVar("Result", Literal, list[Literal])
 
 class ChoiceEdge(BaseModel, Generic[State, Result]):

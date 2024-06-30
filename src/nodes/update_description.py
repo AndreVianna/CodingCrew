@@ -1,15 +1,15 @@
-import json
 from typing import ClassVar
 
-from models import Project, UpdateDescriptionModel
-from responses import UpdatedDescription
 from utils.common import normalize_text
 
-from .simple_analysis_node import SimpleAnalysisNode
+from states import AnalysisState
+from responses import UpdatedDescription
 
-class UpdateDescription(SimpleAnalysisNode[UpdateDescriptionModel, UpdatedDescription]): # pylint: disable=too-few-public-methods
+from .simple_analyst_agent_node import SimpleAnalystAgentNode
+
+class UpdateDescription(SimpleAnalystAgentNode[AnalysisState, UpdatedDescription]): # pylint: disable=too-few-public-methods
     name: ClassVar[str] = "update_description"
-    def __init__(self, state: Project) -> None:
+    def __init__(self, state: AnalysisState) -> None:
         super().__init__(state, goal = normalize_text("""\
             Your goal is to generate an updated description of the project.
             You MUST analyze all the project definition provided by the USER, including the PROJECT DESCRIPTION and the ANSWERS to the previous questions.
@@ -21,12 +21,11 @@ class UpdateDescription(SimpleAnalysisNode[UpdateDescriptionModel, UpdatedDescri
             The description can be as long as necessary. DO NOT WORRY about the length of the chapters or bullet point text.
             """))
 
-    def _create_final_state(self, response: UpdatedDescription) -> UpdateDescriptionModel:
-        self.state.description = response.description
-        self.state.counter += 1
-        for query in self.state.queries:
-            query.done = True
-        state_file = f"{self.state.folder}/state.json"
-        with open(state_file, "w", encoding="utf-8") as state_file:
-            json.dump(self.state, state_file)
-        return self.state
+    def _create_result(self, response: UpdatedDescription) -> AnalysisState:
+        result = AnalysisState(self.state, self.state.queries, self.state.counter)
+        result.project.description = response.description
+        result.counter += 1
+        for query in filter(lambda x: not x.processed, result.queries):
+            query.processed = True
+        result.save()
+        return result

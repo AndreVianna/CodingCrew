@@ -9,9 +9,9 @@ from utils.common import normalize_text
 
 from .base_response import BaseResponse
 
-J = TypeVar("J", bound=BaseModel)
+Response = TypeVar("Response", bound=BaseModel)
 
-class JsonResponse[J](BaseResponse):
+class JsonResponse[Response](BaseResponse):
     schema: ClassVar[str] = ""
     @classmethod
     def definition(cls, schema: Optional[str] = None) -> str:
@@ -50,7 +50,7 @@ class JsonResponse[J](BaseResponse):
         if not schema:
             raise ValueError("JSON schema is required for JSON response format.")
         try:
-            self.value = json.loads(answer())
-            jsonschema.validate(self.value, json.loads(self._schema))
+            self.value: Response = json.loads(answer)
+            jsonschema.validate(self.value, json.loads(schema))
         except jsonschema.ValidationError as exc:
             raise ValueError("The answer does not match the defined schema.") from exc

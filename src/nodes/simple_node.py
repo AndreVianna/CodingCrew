@@ -2,7 +2,7 @@ from typing import ClassVar, TypeVar
 
 from pydantic import BaseModel
 
-from nodes.base_node import BaseNode
+from .base_node import BaseNode
 
 State = TypeVar("State", bound=BaseModel)
 

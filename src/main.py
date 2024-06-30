@@ -58,7 +58,7 @@ if __name__ == "__main__":
     import os
     import workflow
     from utils.common import is_win32, is_verbose
-    from models import RunModel
+    from states import BaseState
     # pylint: enable=import-outside-toplevel, ungrouped-imports
 
     terminal.write_line("Building workflow...")
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     terminal.write_line("Executing workflow...")
     workspace: str = os.path.expanduser( os.environ["WORKSPACE_FOLDER"].replace("~", "$HOMEPATH").replace("/", "\\")) if is_win32 else \
                      os.path.expanduser( os.environ["WORKSPACE_FOLDER"].replace("$HOMEPATH", "~").replace("\\", "/"))
-    state=RunModel(workspace=workspace)
+    state=BaseState(workspace)
     result = wkf.invoke(input=state, debug=is_verbose)
     terminal.write_line()
     terminal.write_line("Workflow completed.", "green")

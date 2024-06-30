@@ -3,5 +3,5 @@ from responses.json_response import JsonResponse
 from responses.text_response import TextResponse
 from responses.yes_no_response import YesNoResponse
 from responses.confirmation_response import ConfirmationResponse
-from responses.generated_questions import GeneratedQueries
+from responses.generated_queries import GeneratedQueries
 from responses.updated_description import UpdatedDescription

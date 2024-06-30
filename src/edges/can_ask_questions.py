@@ -1,14 +1,14 @@
 from langgraph.graph import END
 
-from models import UpdateDescriptionModel
-from nodes import GenerateQuestions
+from states import AnalysisState
+from nodes import GenerateQueries
 
 from .choice_edge import ChoiceEdge
 
-class CanAskQuestions(ChoiceEdge[UpdateDescriptionModel, str]):
+class CanAskQuestions(ChoiceEdge[AnalysisState, str]):
     @classmethod
-    def check(cls, state: UpdateDescriptionModel) -> str:
+    def check(cls, state: AnalysisState) -> str:
         super().check(state)
         if state.status != "STARTED" or state.counter >= 3:
-            return GenerateQuestions.name
+            return GenerateQueries.name
         return END

@@ -1,3 +1,4 @@
+import os
 from typing import ClassVar
 from dataclasses import dataclass
 
@@ -11,7 +12,7 @@ from .query_model import Query
 class Queries(BaseModel):
     def __init__(self, queries: list[Query]) -> None:
         super().__init__()
-        self.queries = queries
+        self.items = queries
 
     schema: ClassVar[str] = normalize_text("""\
     {
@@ -25,3 +26,11 @@ class Queries(BaseModel):
     }
     """) + \
     Query.schema
+
+    def __str__(self) -> str:
+        if not self.items:
+            return ""
+        queries = "## Questions:" + os.linesep
+        for query in self.items:
+            queries += str(query)
+        return queries
