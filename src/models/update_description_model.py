@@ -1,6 +1,7 @@
 import os
 
 from dataclasses import dataclass
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -10,14 +11,12 @@ from .project_model import Project
 from .query_model import Query
 
 @dataclass(frozen=True)
-class AnalysisModel(BaseModel):
-    project: Project = None
-    counter: int = 0
-    queries: list[Query] = []
-
-    def __init__(self, project: Project, **kwargs) -> None:
-        super().__init__(**kwargs)
+class UpdateDescriptionModel(BaseModel):
+    def __init__(self, project: Project, counter: Optional[int] = 0, queries: Optional[list[Query]] = None) -> None:
+        super().__init__()
         self.project = project
+        self.counter = counter
+        self.queries = queries or list[Query]()
 
     def __str__(self) -> str:
         queries: str = ""

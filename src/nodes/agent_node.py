@@ -1,39 +1,35 @@
 import os
 from datetime import datetime
-from typing import Generic, Literal, Optional, TypeVar
+from typing import Literal, Optional, TypeVar
 
-# pylint: disable=import-error
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.language_models import LanguageModelInput
 from langchain_anthropic import ChatAnthropic
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
-# pylint: enable=import-error
 
 from utils import terminal
 from utils.common import normalize_text, is_verbose
 
-from persona import BasePersona, DefaultPersona
-from models import RunModel
-from responses import BaseResponse, YesNoResponse, TextResponse
+from personas import BasePersona, DefaultPersona
+from responses import BaseResponse, ConfirmationResponse, TextResponse
 
 from .base_node import BaseNode
 
-IS = TypeVar("IS", bound=BaseModel)
-FS = TypeVar("FS", bound=BaseModel)
-A = TypeVar("A", bound=BasePersona)
-R = TypeVar("R", bound=BaseResponse)
+InitialState = TypeVar("InitialState", bound=BaseModel)
+AgentPersona = TypeVar("AgentPersona", bound=BasePersona)
+AgentResponse = TypeVar("AgentResponse", bound=BaseResponse)
+ResultState = TypeVar("ResultState", bound=BaseModel)
 
-class AINode[IS, A, R, FS](BaseNode[IS, FS]): # pylint: disable=too-few-public-methods
+class AgentNode[InitialState, AgentPersona, AgentResponse, ResultState](BaseNode[InitialState, ResultState]): # pylint: disable=too-few-public-methods
     def __init__(self,
-                 state: IS,
-                 agent: Optional[A] = None,
+                 state: InitialState,
+                 agent: Optional[AgentPersona] = None,
                  goal: Optional[str] = None,
                  preamble_type: Literal["None", "Default", "Custom"] = "Default",
                  preamble: Optional[str] = None) -> None:
         super().__init__(state)
-        use_preamble: bool = True
         preamble: str = normalize_text("""\
             This is a complex task that requires careful analysis.
             Let's do it step-by-step to arrive the best answer.""")
@@ -48,21 +44,21 @@ class AINode[IS, A, R, FS](BaseNode[IS, FS]): # pylint: disable=too-few-public-m
             case "Custom":
                 self.preamble = preamble
 
-    def _execute(self, state: IS) -> FS:
+    def _execute(self) -> ResultState:
         messages = [SystemMessage(content=self._get_system_message())]
-        self._ask_model_to_acknowledge(messages, state.describe())
+        self._ask_model_to_acknowledge(messages, self.state.describe())
         response = self._ask_model_for_text(messages, "PROCEED")
-        return self._update_state(state, response)
+        return self._create_result(response)
 
     def _ask_model_for_text(self, messages: LanguageModelInput, content: str) -> str:
-        response_format = TextResponse() if self.allow_markdown else BaseResponse()
+        response_format = TextResponse.definition()
         messages.append(HumanMessage(content=self._get_user_message(content, response_format)))
         return self._ask_model(messages)
 
-    def _ask_model_to_acknowledge(self, messages: LanguageModelInput, content: str) -> bool:
-        messages.append(HumanMessage(content=self._get_user_message(content, SingleWordResponse())))
+    def _ask_model_to_confirm(self, messages: LanguageModelInput, content: str) -> bool:
+        messages.append(HumanMessage(content=self._get_user_message(content, ConfirmationResponse.definition())))
         response_text = self._ask_model(messages)
-        return response_text == "ACKNOWLEDGE"
+        return response_text.upper() == "YES"
 
     def _ask_model(self, messages: LanguageModelInput) -> str:
         response = ""
@@ -99,7 +95,7 @@ class AINode[IS, A, R, FS](BaseNode[IS, FS]): # pylint: disable=too-few-public-m
             case _:
                 raise ValueError(f"Invalid model provider: {model_provider}")
 
-    def _update_state(self, state: IS, response: R) -> FS: # pylint: disable=unused-argument
+    def _create_result(self, response: AgentResponse) -> ResultState: # pylint: disable=unused-argument
         raise NotImplementedError()
 
     def _get_system_message(self) -> str:
@@ -111,7 +107,7 @@ class AINode[IS, A, R, FS](BaseNode[IS, FS]): # pylint: disable=too-few-public-m
         instructions = "# Instructions" + os.linesep + normalize_text(self.preamble)
         return generics + agent + goal + instructions
 
-    def _get_user_message(self, content: str, response_format: R, examples: str | None = None) -> str:
+    def _get_user_message(self, content: str, response_format: AgentResponse, examples: str | None = None) -> str:
         content = normalize_text(content)
         examples = ("# Examples" + os.linesep + normalize_text(examples)) if examples else ""
         return content + examples + str(response_format)

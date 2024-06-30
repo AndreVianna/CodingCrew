@@ -4,11 +4,11 @@ from pydantic import BaseModel
 
 from models.run_model import RunModel
 
-S = TypeVar("S", bound=RunModel)
-R = TypeVar("R", Literal, list[Literal])
+State = TypeVar("State", bound=RunModel)
+Result = TypeVar("Result", Literal, list[Literal])
 
-class BaseEdge(BaseModel, Generic[S, R]):
+class ChoiceEdge(BaseModel, Generic[State, Result]):
     @classmethod
-    def check(cls, state: S) -> R:
+    def check(cls, state: State) -> Result:
         if not state:
             raise ValueError("State is required!")

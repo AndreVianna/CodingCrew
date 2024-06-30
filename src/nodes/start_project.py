@@ -17,20 +17,20 @@ class StartProject(BaseNode[RunModel, Project]): # pylint: disable=too-few-publi
 
     def __init__(self, state: RunModel) -> None:
         super().__init__(state)
-        self.final_state = Project(run=self.initial_state.run, name="project_1")
+        self.final_state = Project(run=self.state.run, name="project_1")
 
     def _execute(self) -> Project:
         self.__show_introduction()
         self.__confirm_workspace()
-        self.__request_project_name()
-        self.__load_previous_or_create_new_project()
-        if self.state.status != "NEW":
-            return self.state
-        self.__request_project_description()
-        self.state.status = "STARTED"
-        self.state.save()
+        name = self.__request_project_name()
+        project = self.__load_previous_or_create_new_project(name)
+        if project.run.status != "NEW":
+            return project
+        project.description = self.__request_project_description()
+        project.run.status = "STARTED"
+        project.save()
         self.__show_conclusion()
-        return self.state
+        return project
 
     def __show_introduction(self):
         terminal.clear()
@@ -57,12 +57,11 @@ class StartProject(BaseNode[RunModel, Project]): # pylint: disable=too-few-publi
             if not os.path.isdir(new_folder):
                 terminal.write_line("Error: The provided folder does not exist!", "red")
                 continue
-            terminal.write_line(f"The select workspace folder is '{terminal.set_style(new_folder, 'cyan')}'.")
+            terminal.write_line(f"""The select workspace folder is '{terminal.set_style(new_folder, "cyan")}'.""")
             self.state.workspace = new_folder or self.state.workspace
 
-    def __request_project_name(self) -> None:
-        name = terminal.do_until_confirmed(self.___ask_for_project_name, "Is that correct?")
-        self.final_state = Project(run=self.initial_state, name=name, **self.state.__dict__)
+    def __request_project_name(self) -> str:
+        return terminal.do_until_confirmed(self.___ask_for_project_name, "Is that correct?")
 
     def ___ask_for_project_name(self) -> str:
         name: str = ""
@@ -78,14 +77,14 @@ class StartProject(BaseNode[RunModel, Project]): # pylint: disable=too-few-publi
         terminal.write_line(f"Project location: '{formatted}'.")
         return name
 
-    def __load_previous_or_create_new_project(self) -> None:
+    def __load_previous_or_create_new_project(self, name: str) -> Project:
         state_file = self.___find_previous_state_file()
         if not state_file:
             terminal.write_line("Starting new run...")
-            return
+            return Project(self.state, name)
 
         terminal.write_line("Loading previous run...")
-        self.final_state = Project.create_from_file(state_file)
+        return Project.create_from_file(state_file)
 
     def ___find_previous_state_file(self) -> str | None:
         latest_run = self.____find_latest_run()
@@ -126,6 +125,6 @@ class StartProject(BaseNode[RunModel, Project]): # pylint: disable=too-few-publi
         steps = entry[2] if entry else None
         return steps[-1] if steps else None
 
-    def __request_project_description(self) -> None:
+    def __request_project_description(self) -> str:
         terminal.write_line("Please provide a detailed description of the project:")
-        self.state.description = terminal.read_text(self.state.description)
+        return terminal.read_text(self.state.description)

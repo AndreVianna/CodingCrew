@@ -1,15 +1,15 @@
 import json
 from typing import ClassVar
 
-from models import Project, AnalysisModel
+from models import Project, UpdateDescriptionModel
 from responses import UpdatedDescription
 from utils.common import normalize_text
 
-from .analysis_node import AnalysisNode
+from .simple_analysis_node import SimpleAnalysisNode
 
-class UpdateDescription(AnalysisNode[AnalysisModel, UpdatedDescription]): # pylint: disable=too-few-public-methods
+class UpdateDescription(SimpleAnalysisNode[UpdateDescriptionModel, UpdatedDescription]): # pylint: disable=too-few-public-methods
     name: ClassVar[str] = "update_description"
-    def __init__(self, state: Project, **kwargs) -> None:
+    def __init__(self, state: Project) -> None:
         super().__init__(state, goal = normalize_text("""\
             Your goal is to generate an updated description of the project.
             You MUST analyze all the project definition provided by the USER, including the PROJECT DESCRIPTION and the ANSWERS to the previous questions.
@@ -19,14 +19,14 @@ class UpdateDescription(AnalysisNode[AnalysisModel, UpdatedDescription]): # pyli
             Each CHAPTER MUST HAVE BULLET POINTS representing the main aspects of the application.
             Each BULLET POINT MUST HAVE a TITLE and a short description explaining that topic, how it is related to the project and the solution adopted.
             The description can be as long as necessary. DO NOT WORRY about the length of the chapters or bullet point text.
-            """), **kwargs)
+            """))
 
-    def _update_state(self, state: AnalysisModel, response: UpdatedDescription) -> UpdatedDescription:
-        state.description = response.description
-        state.counter += 1
-        for query in state.queries:
+    def _create_final_state(self, response: UpdatedDescription) -> UpdateDescriptionModel:
+        self.state.description = response.description
+        self.state.counter += 1
+        for query in self.state.queries:
             query.done = True
-        state_file = f"{state.folder}/state.json"
+        state_file = f"{self.state.folder}/state.json"
         with open(state_file, "w", encoding="utf-8") as state_file:
-            json.dump(state, state_file)
-        return state
+            json.dump(self.state, state_file)
+        return self.state

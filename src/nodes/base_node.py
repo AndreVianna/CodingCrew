@@ -1,20 +1,19 @@
 from typing import ClassVar, TypeVar
 from pydantic import BaseModel
 
-IS = TypeVar("IS", bound=BaseModel)
-FS = TypeVar("FS", bound=BaseModel)
+InitialState = TypeVar("InitialState", bound=BaseModel)
+ResultState = TypeVar("ResultState", bound=BaseModel)
 
-class BaseNode[IS, FS](BaseModel):
+class BaseNode[InitialState, ResultState](BaseModel):
     name: ClassVar[str] = "BaseNode"   # create default state
 
-    def __init__(self, state: IS) -> None:
+    def __init__(self, state: InitialState) -> None:
         super().__init__()
-        self.initial_state = state
-        self.final_state: FS = None
+        self.state = state
 
     @classmethod
-    def run(cls, state: IS) -> FS:
+    def run(cls, state: InitialState) -> ResultState:
         return cls(state)._execute()
 
-    def _execute(self) -> FS:
+    def _execute(self) -> ResultState:
         raise NotImplementedError

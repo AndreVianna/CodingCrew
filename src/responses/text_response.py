@@ -5,7 +5,7 @@ from .base_response import BaseResponse
 
 class TextResponse(BaseResponse):
     @classmethod
-    def expected_format(cls, use_markdown: Optional[bool] = False) -> str:
+    def definition(cls, use_markdown: Optional[bool] = False) -> str:
         text_format = "use MARKDOWN syntax" if use_markdown else "be PLAIN TEXT with no formatting"
         return normalize_text(f"""\
             # Expected Response

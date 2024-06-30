@@ -1,15 +1,13 @@
-# pylint: disable=import-error
 from langgraph.graph import END
-# pylint: enable=import-error
 
-from models import AnalysisModel
+from models import UpdateDescriptionModel
 from nodes import UpdateDescription
 
-from .base_edge import BaseEdge
+from .choice_edge import ChoiceEdge
 
-class HasQuestions(BaseEdge[AnalysisModel, str]):
+class HasQuestions(ChoiceEdge[UpdateDescriptionModel, str]):
     @classmethod
-    def check(cls, state: AnalysisModel) -> str:
+    def check(cls, state: UpdateDescriptionModel) -> str:
         super().check(state)
         if not filter(lambda q: not q.done, state.queries):
             return END

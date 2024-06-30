@@ -7,12 +7,8 @@ from .json_model import JsonModel
 
 @dataclass(frozen=True)
 class Query(JsonModel):
-    question: str
-    answer: str
-    done: bool = False
-
-    def __init__(self, question: str, answer: str, done: bool = False, **kwargs) -> None:
-        super().__init__(**kwargs)
+    def __init__(self, question: str, answer: str, done: bool = False) -> None:
+        super().__init__()
         self.question = question
         self.answer = answer
         self.done = done

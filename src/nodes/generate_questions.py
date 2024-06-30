@@ -1,7 +1,7 @@
 import json
 from typing import ClassVar
 
-from models import Project, AnalysisModel
+from models import Project, UpdateDescriptionModel
 from responses import GeneratedQueries
 from utils.common import normalize_text
 
@@ -21,7 +21,7 @@ class GenerateQuestions(AnalysisNode[Project, GeneratedQueries]): # pylint: disa
             IMPORTANT! If the project definition does not provide enough information for you to answer the question properly you most respond with: "According to the current definition, the project does not support that functionality." .
             """), **kwargs)
 
-    def _update_state(self, state: AnalysisModel, response: GeneratedQueries) -> AnalysisModel:
+    def _create_final_state(self, state: UpdateDescriptionModel, response: GeneratedQueries) -> UpdateDescriptionModel:
         state.queries.extend(response.queries)
         state_file = f"{state.folder}/state.json"
         with open(state_file, "w", encoding="utf-8") as state_file:

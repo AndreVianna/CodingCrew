@@ -10,10 +10,6 @@ from .run_model import RunModel
 
 @dataclass(frozen=True)
 class Project(BaseModel):
-    run: RunModel
-    name: str
-    description: Optional[str] = None
-
     def __init__(self, run: RunModel, name: str, description: Optional[str] = "") -> None:
         super().__init__()
         if not run:
