@@ -6,6 +6,8 @@ ResultState = TypeVar("ResultState", bound=BaseModel)
 
 class BaseNode[InitialState, ResultState](BaseModel):
     name: ClassVar[str] = "BaseNode"   # create default state
+    state: InitialState = None
+
 
     def __init__(self, state: InitialState) -> None:
         super().__init__()

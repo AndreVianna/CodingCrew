@@ -2,9 +2,62 @@ print("Starting...")
 
 # pylint: disable=wrong-import-position
 import sys
+import pretty_errors
 
 from utils import terminal
 # pylint: enable=wrong-import-position
+
+pretty_errors.configure(
+    name = "coding-crew",
+    #always_display_bottom     = True,
+    #arrow_head_character      = '^',
+    #arrow_tail_character      = '-',
+    #display_arrow             = True,
+    display_link              = True,
+    display_locals            = True,
+    #display_timestamp         = False,
+    display_trace_locals      = True,
+    #exception_above           = False,
+    #exception_below           = True,
+    #filename_display          = pretty_errors.FILENAME_COMPACT,  # FILENAME_EXTENDED | FILENAME_FULL,
+    #full_line_newline         = False,
+    #infix                     = None,
+    #inner_exception_message   = None,
+    #inner_exception_separator = False,
+    #line_length               = 0,
+    #line_number_first         = True,
+    lines_after               = 2,
+    lines_before              = 5,
+    #postfix                   = None,
+    #prefix                    = None,
+    #reset_stdout              = False,
+    #separator_character       = '-',
+    #show_suppressed           = False,
+    #stack_depth               = 0,
+    #timestamp_function        = time.perf_counter,
+    #top_first                 = False,
+    trace_lines_after         = 2,
+    trace_lines_before        = 1,
+    #truncate_code             = False,
+    #truncate_locals           = True,
+    #arrow_head_color          = '\x1b[1;32m',
+    #arrow_tail_color          = '\x1b[1;32m',
+    #code_color                = '\x1b[1;30m',
+    #exception_arg_color       = '\x1b[1;33m',
+    #exception_color           = '\x1b[1;31m',
+    #exception_file_color      = '\x1b[1;35m',
+    #filename_color            = '\x1b[1;36m',
+    #function_color            = '\x1b[1;34m',
+    #header_color              = '\x1b[1;30m',
+    #line_color                = '\x1b[1;37m',
+    #line_number_color         = '\x1b[1;32m',
+    #link_color                = '\x1b[1;30m',
+    #local_len_color           = '\x1b[1;30m',
+    #local_name_color          = '\x1b[1;35m',
+    #local_value_color         = '\x1b[m',
+    #syntax_error_color        = '\x1b[1;32m',
+    #timestamp_color           = '\x1b[1;30m',
+)
 
 if sys.platform not in ["linux", "win32"]:
     print(f"The '{sys.platform}' is not supported.")
@@ -59,8 +112,9 @@ if __name__ == "__main__":
     import workflow
     from utils.common import is_win32, is_verbose
     from states import BaseState
+    from langchain.globals import set_debug
     # pylint: enable=import-outside-toplevel, ungrouped-imports
-
+    set_debug(is_verbose)
     terminal.write_line("Building workflow...")
     wkf = workflow.build(is_verbose)
     terminal.write_line("Validating workflow...")
@@ -68,7 +122,7 @@ if __name__ == "__main__":
     terminal.write_line("Executing workflow...")
     workspace: str = os.path.expanduser( os.environ["WORKSPACE_FOLDER"].replace("~", "$HOMEPATH").replace("/", "\\")) if is_win32 else \
                      os.path.expanduser( os.environ["WORKSPACE_FOLDER"].replace("$HOMEPATH", "~").replace("\\", "/"))
-    state=BaseState(workspace)
+    state=BaseState(workspace=workspace)
     result = wkf.invoke(input=state, debug=is_verbose)
     terminal.write_line()
     terminal.write_line("Workflow completed.", "green")

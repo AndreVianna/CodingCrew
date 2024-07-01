@@ -24,7 +24,7 @@ class StartProject(BaseNode[BaseState, AnalysisState]): # pylint: disable=too-fe
         result = self.__load_previous_or_create_new_project(name)
         if result.run.status != "NEW":
             return result
-        result.project.description = self.__request_project_description()
+        result.project.description = self.__request_project_description(result.project.description)
         result.run.status = "STARTED"
         result.save()
         self.__show_conclusion()
@@ -47,7 +47,7 @@ class StartProject(BaseNode[BaseState, AnalysisState]): # pylint: disable=too-fe
 
     def __confirm_workspace(self) -> None:
         while True:
-            formatted = terminal.set_style(self.state.base_folder, "cyan")
+            formatted = terminal.set_style(self.state.run.workspace, "cyan")
             terminal.write(f"Workspace folder ({formatted}): ")
             new_folder = terminal.read_line()
             if not new_folder:
@@ -56,7 +56,7 @@ class StartProject(BaseNode[BaseState, AnalysisState]): # pylint: disable=too-fe
                 terminal.write_line("Error: The provided folder does not exist!", "red")
                 continue
             terminal.write_line(f"""The select workspace folder is '{terminal.set_style(new_folder, "cyan")}'.""")
-            self.state.base_folder = new_folder or self.state.base_folder
+            self.state.run.workspace = new_folder or self.state.run.workspace
 
     def __request_project_name(self) -> str:
         return terminal.do_until_confirmed(self.___ask_for_project_name, "Is that correct?")
@@ -70,7 +70,7 @@ class StartProject(BaseNode[BaseState, AnalysisState]): # pylint: disable=too-fe
                 break
             terminal.write_line("Error: Invalid project name!", "red")
             terminal.write_line("The name must start with a letter and contain only letters, digits, spaces, underscores, and hyphens.")
-        project_folder = os.path.join(self.state.base_folder, snake_case(name))
+        project_folder = os.path.join(self.state.run.workspace, snake_case(name))
         formatted = terminal.set_style(project_folder, "cyan")
         terminal.write_line(f"Project location: '{formatted}'.")
         return name
@@ -79,7 +79,7 @@ class StartProject(BaseNode[BaseState, AnalysisState]): # pylint: disable=too-fe
         state_file = self.___find_previous_state_file()
         if not state_file:
             terminal.write_line("Starting new run...")
-            return AnalysisState(self.state, Project(name))
+            return AnalysisState(run=self.state.run, project=Project(name=name))
 
         terminal.write_line("Loading previous run...")
         return AnalysisState.create_from_file(state_file)
@@ -89,7 +89,7 @@ class StartProject(BaseNode[BaseState, AnalysisState]): # pylint: disable=too-fe
         if not latest_run:
             return None
 
-        run_folder = os.path.join(self.state.folder, latest_run)
+        run_folder = os.path.join(self.state.run.folder, latest_run)
         last_step_file = self.____find_last_step(run_folder)
         if not last_step_file:
             delete_tree(latest_run)
@@ -108,7 +108,7 @@ class StartProject(BaseNode[BaseState, AnalysisState]): # pylint: disable=too-fe
         return os.path.join(run_folder, last_step_file) if resume == "y" else None
 
     def ____find_latest_run(self) -> str | None:
-        folder = self.state.folder
+        folder = self.state.run.folder
         if not os.path.isdir(folder):
             return None
 
@@ -123,6 +123,6 @@ class StartProject(BaseNode[BaseState, AnalysisState]): # pylint: disable=too-fe
         steps = entry[2] if entry else None
         return steps[-1] if steps else None
 
-    def __request_project_description(self) -> str:
+    def __request_project_description(self, description: str) -> str:
         terminal.write_line("Please provide a detailed description of the project:")
-        return terminal.read_text(self.state.description)
+        return terminal.read_text(description)

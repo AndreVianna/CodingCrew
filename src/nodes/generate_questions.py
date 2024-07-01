@@ -23,7 +23,7 @@ class GenerateQueries(SimpleAnalystAgentNode[AnalysisState, GeneratedQueries]): 
             """))
 
     def _create_result(self, response: GeneratedQueries) -> AnalysisState:
-        result = AnalysisState(self.state, self.state.queries, self.state.counter)
+        result = AnalysisState(**self.state)
         result.queries.extend(response.value.items)
         result.save()
         return result

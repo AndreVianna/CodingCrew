@@ -1,7 +1,6 @@
 import sys
 import curses
 from typing import Iterable, Literal, Optional
-from dataclasses import dataclass
 
 from .common import static_init, normalize_text
 
@@ -68,7 +67,6 @@ STYLES: dict[Style, int] = {
     "strikethrough": 9,
 }
 
-@dataclass
 class Position:
     line: int
     column: int

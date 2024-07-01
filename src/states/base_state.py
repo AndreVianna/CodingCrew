@@ -3,17 +3,17 @@ import glob
 import json
 
 from typing import Optional, Self
-from dataclasses import dataclass
 
 from pydantic import BaseModel
 
 from models import Run
 
-@dataclass(frozen=True)
 class BaseState(BaseModel):
-    def __init__(self, workspace: str) -> None:
-        super().__init__()
-        self.run = Run(workspace)
+    run: Run = None
+
+    def __init__(self, **data) -> None:
+        super().__init__(**data)
+        self.run = Run(**data) if not data.get("run") else Run(**(data.get("run").__dict__))
 
     @classmethod
     def create_from_file(cls, state_file: str) -> Self:

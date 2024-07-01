@@ -1,13 +1,12 @@
-from dataclasses import dataclass
-from typing import Optional
-
 from models import Query
 
 from .project_state import ProjectState
 
-@dataclass(frozen=True)
 class AnalysisState(ProjectState):
-    def __init__(self, previous: ProjectState, queries: Optional[list[Query]] = None, counter: Optional[int] = 0) -> None:
-        super().__init__(previous, previous.project)
-        self.counter = counter
-        self.queries = queries
+    counter: int = 0
+    queries: list[Query] = list[Query]()
+
+    def __init__(self, **data) -> None:
+        super().__init__(**data)
+        self.counter = data.get("counter") or self.counter
+        self.queries = list[Query](data.get("queries")) if data.get("queries") else self.queries

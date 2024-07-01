@@ -1,24 +1,37 @@
 import os
 from typing import ClassVar
-from dataclasses import dataclass
 
 from utils.common import normalize_text
 from utils.terminal import set_style
 
 from .json_model import JsonModel
 
-@dataclass(frozen=True)
 class Query(JsonModel):
-    def __init__(self, number: int, question: str, answer: str, done: bool = False) -> None:
+    number: int = 0
+    question: str = None
+    answer: str = None
+    is_processed: bool = False
+
+    def __init__(self, **data: dict) -> None:
         super().__init__()
-        self.number = number
-        self.question = question
-        self.answer = answer
-        self.processed = done
+        self.number = data.get("number")
+        if not self.number:
+            raise ValueError("The question number is required.")
+        if self.number < 0:
+            raise ValueError("The question number must be a non-negative integer.")
+
+        self.question = data.get("question")
+        if not self.question:
+            raise ValueError("The question is required.")
+
+        self.answer = data.get("answer")
+        if not self.answer:
+            raise ValueError("The answer is required.")
+
+        self.is_processed = data.get("is_processed") or self.is_processed
 
     schema: ClassVar[str] = normalize_text("""\
     {
-        "$schema": "https://json-schema.org/draft/2020-12/schema#",
         "$id": "https://schema.com/query",
         "title": "Single query",
         "type": "object",
@@ -37,11 +50,11 @@ class Query(JsonModel):
     }
     """)
 
-    PROCESSED = set_style("processed", "green")
-    PENDING = set_style("pending", "yellow", styles=["dim"])
+    PROCESSED: ClassVar[str] = set_style("processed", "green")
+    PENDING: ClassVar[str] = set_style("pending", "yellow", styles=["dim"])
 
     def __str__(self) -> str:
-        status = self.PROCESSED if self.processed else self.PENDING
+        status = self.PROCESSED if self.is_processed else self.PENDING
         return normalize_text(f"""\
             Question {self.number} ({status}):
                 {normalize_text(self.question, indent_level=4)}

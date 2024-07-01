@@ -13,6 +13,8 @@ Response = TypeVar("Response", bound=BaseModel)
 
 class JsonResponse[Response](BaseResponse):
     schema: ClassVar[str] = ""
+    value: Response
+
     @classmethod
     def definition(cls, schema: Optional[str] = None) -> str:
         schema = schema or cls.schema
@@ -51,6 +53,6 @@ class JsonResponse[Response](BaseResponse):
             raise ValueError("JSON schema is required for JSON response format.")
         try:
             self.value: Response = json.loads(answer)
-            jsonschema.validate(self.value, json.loads(schema))
+            jsonschema.validate(self.value, json.loads(schema), jsonschema.Draft202012Validator)
         except jsonschema.ValidationError as exc:
             raise ValueError("The answer does not match the defined schema.") from exc

@@ -4,14 +4,14 @@ from dotenv import load_dotenv
 from langgraph.graph import StateGraph
 # pylint: enable=import-error
 
-from models import Run
+from states import BaseState
 from nodes import StartProject, UpdateDescription, GenerateQueries
 from edges import CanAskQuestions, HasQuestions
 
 load_dotenv()
 
 def build(is_debugging: bool = False):
-    workflow = StateGraph(Run)
+    workflow = StateGraph(BaseState)
 
     workflow.add_node(StartProject.name, StartProject.run)
     workflow.add_node(UpdateDescription.name, UpdateDescription.run)

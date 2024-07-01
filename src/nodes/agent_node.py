@@ -23,6 +23,10 @@ AgentResponse = TypeVar("AgentResponse", bound=BaseResponse)
 ResultState = TypeVar("ResultState", bound=BaseModel)
 
 class AgentNode[InitialState, AgentPersona, AgentResponse, ResultState](BaseNode[InitialState, ResultState]): # pylint: disable=too-few-public-methods
+    agent: AgentPersona = DefaultPersona()
+    goal: str = "Your goal is to help the user to achieve the best answer."
+    preamble: str = ""
+
     def __init__(self,
                  state: InitialState,
                  agent: Optional[AgentPersona] = None,
@@ -34,8 +38,8 @@ class AgentNode[InitialState, AgentPersona, AgentResponse, ResultState](BaseNode
             This is a complex task that requires careful analysis.
             Let's do it step-by-step to arrive the best answer.""")
 
-        self.agent = agent or DefaultPersona()
-        self.goal = goal or "Your goal is to help the user to achieve the best answer."
+        self.agent = agent or self.agent
+        self.goal = goal or self.goal
         match preamble_type:
             case "None":
                 self.preamble = ""
@@ -46,13 +50,12 @@ class AgentNode[InitialState, AgentPersona, AgentResponse, ResultState](BaseNode
 
     def _execute(self) -> ResultState:
         messages = [SystemMessage(content=self._get_system_message())]
-        self._ask_model_to_acknowledge(messages, self.state.describe())
+        self._ask_model_to_confirm(messages, str(self.state.project))
         response = self._ask_model_for_text(messages, "PROCEED")
         return self._create_result(response)
 
     def _ask_model_for_text(self, messages: LanguageModelInput, content: str) -> str:
-        response_format = TextResponse.definition()
-        messages.append(HumanMessage(content=self._get_user_message(content, response_format)))
+        messages.append(HumanMessage(content=self._get_user_message(content, TextResponse.definition())))
         return self._ask_model(messages)
 
     def _ask_model_to_confirm(self, messages: LanguageModelInput, content: str) -> bool:

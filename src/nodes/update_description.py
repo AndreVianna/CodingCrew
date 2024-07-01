@@ -1,4 +1,5 @@
 from typing import ClassVar
+from langchain_core.messages import SystemMessage
 
 from utils.common import normalize_text
 
@@ -21,11 +22,14 @@ class UpdateDescription(SimpleAnalystAgentNode[AnalysisState, UpdatedDescription
             The description can be as long as necessary. DO NOT WORRY about the length of the chapters or bullet point text.
             """))
 
+    def _execute(self) -> AnalysisState:
+        return super()._execute()
+
     def _create_result(self, response: UpdatedDescription) -> AnalysisState:
-        result = AnalysisState(self.state, self.state.queries, self.state.counter)
+        result = AnalysisState(**self.state)
         result.project.description = response.description
         result.counter += 1
-        for query in filter(lambda x: not x.processed, result.queries):
-            query.processed = True
+        for query in filter(lambda x: not x.is_processed, result.queries):
+            query.is_processed = True
         result.save()
         return result

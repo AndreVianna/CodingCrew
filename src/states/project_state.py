@@ -1,16 +1,15 @@
 import os
 
-from dataclasses import dataclass
-
 from utils.common import snake_case
 
 from models import Project
 
 from .base_state import BaseState
 
-@dataclass(frozen=True)
 class ProjectState(BaseState):
-    def __init__(self, previous: BaseState, project: Project) -> None:
-        base_folder = os.path.join(previous.run.base_folder, snake_case(project.name))
-        super().__init__(base_folder)
-        self.project = project
+    project: Project
+
+    def __init__(self, **data) -> None:
+        super().__init__(**data)
+        self.project = Project(**(data.get("project").__dict__))
+        self.run.workspace = os.path.join(self.run.workspace, snake_case(self.project.name))
